@@ -3,24 +3,26 @@ name: licencjat_backend
 
 services:
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Backend.API/Dockerfile
     container_name: dotnet_backend
     ports:
-      - "5000:5000"  # HTTP
-      - "5001:5001"  # HTTPS
-    depends_on:
-      - postgres:
-        condition: service_healthy
+      - "5000:5000"
+      - "5001:5001"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000 #;https://+:5001
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=mydb;Username=myuser;Password=mypassword
-    networks:
-      - app_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - dataprotection-keys:/root/.aspnet/DataProtection-Keys
 
   postgres:
     image: postgres:latest
     container_name: postgres_container
-    restart: always
     environment:
       POSTGRES_DB: mydb
       POSTGRES_USER: myuser
@@ -29,8 +31,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
       interval: 10s
@@ -39,6 +39,4 @@ services:
 
 volumes:
   postgres_data:
-
-networks:
-  app_network:
+  dataprotection-keys:
