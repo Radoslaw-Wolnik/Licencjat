@@ -1,0 +1,50 @@
+# Ignore build and output directories
+bin/
+obj/
+
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.ide
+*.vs/
+.vscode/
+
+# Ignore logs and temp files
+*.log
+logs/
+temp/
+tmp/
+
+# Ignore package caches
+.nuget/
+packages/
+node_modules/
+
+# Ignore EF Core migrations metadata (optional, if you want to exclude them)
+Migrations/
+
+# Ignore Docker-related files
+Dockerfile*
+.dockerignore
+
+# Ignore secrets and config files
+secrets.json
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Test.json
+
+# Ignore compiled DLLs and executables
+*.dll
+*.exe
+*.pdb
+*.so
+*.db
+
+# Ignore Rider/JetBrains-specific files (if using)
+.idea/
+*.iml
+
+# Ignore Git-related files
+.git/
+.gitignore
