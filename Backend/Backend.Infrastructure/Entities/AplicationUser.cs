@@ -1,11 +1,23 @@
 // Backend.Infrastructure/Entities/ApplicationUser.cs
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
 
 public class ApplicationUser : IdentityUser<Guid>
 {
-    // Add custom properties here if needed
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
+    [Required, MaxLength(50)]
+    public string FirstName { get; set; } = null!;
+
+    [Required, MaxLength(50)]
+    public string LastName { get; set; } = null!;
+
+    [Required]
+    public DateTime BirthDate { get; set; }
+
+    public float Reputation { get; set; } // Consider validation (1-5)
+
+    // Address one user one address
+    public virtual Address? Address { get; set; }
+
 }
