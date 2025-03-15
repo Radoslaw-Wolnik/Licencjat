@@ -8,13 +8,10 @@ public class ApplicationUser : IdentityUser<Guid>
 {
     [Required, MaxLength(50)]
     public string FirstName { get; set; } = null!;
-
     [Required, MaxLength(50)]
     public string LastName { get; set; } = null!;
-
     [Required]
     public DateTime BirthDate { get; set; }
-
     public float Reputation { get; set; } // Consider validation (1-5)
 
     // Address one user one address
