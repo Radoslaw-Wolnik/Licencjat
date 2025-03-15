@@ -5,33 +5,65 @@ using Backend.Infrastructure.Entities;
 using Microsoft.AspNetCore.HttpOverrides;
 using Backend.API.Middleware;
 using Swashbuckle.AspNetCore.Annotations;
+using Backend.Application.Interfaces;
+using Backend.Infrastructure.Services;
+using Backend.Infrastructure.Seeders;
+using Backend.Application.Validators;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ========== SERVICE CONFIGURATION ========== //
-
-// [1] Add Controller Support
+// ========== CORE SERVICES ========== //
 builder.Services.AddControllers();
-
-// [2] Add Health Checks
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options => 
+{
+    options.EnableAnnotations();
+});
+// ========== HEALTH CHECKS ========== //
 builder.Services.AddHealthChecks()
-    .AddCheck<DatabaseHealthCheck>("database_health_check"); 
+    .AddCheck<DatabaseHealthCheck>("database_health_check");
 
-// [2] Database Configuration
+// ========== DATABASE CONFIGURATION ========== //
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// [3] Identity Configuration
+// ========== IDENTITY & AUTHENTICATION ========== //
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
-{
-    // Password requirements
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 8;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+    {
+        // Password Policy
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireNonAlphanumeric = false;
+        
+        // User Policy
+        options.User.RequireUniqueEmail = true;
+        options.SignIn.RequireConfirmedEmail = false; // Change when email service ready
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
-// Configure HTTPS based on environment
+// ========== INFRASTRUCTURE SERVICES ========== //
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddScoped<DatabaseHealthCheck>();
+
+// ========== SECURITY CONFIGURATION ========== //
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.SlidingExpiration = true;
+    options.LoginPath = "/api/auth/login";
+    options.AccessDeniedPath = "/api/auth/forbidden";
+    
+    // API-friendly responses
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+});
+
 if (!builder.Environment.IsDevelopment())
 {
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -40,65 +72,49 @@ if (!builder.Environment.IsDevelopment())
     });
 }
 
-// [4] Cookie Authentication Settings
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.HttpOnly = true; // Prevent XSS
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-    options.SlidingExpiration = true; // Renew cookie on activity
-    options.LoginPath = "/api/auth/login"; // Custom auth endpoints
-    options.AccessDeniedPath = "/api/auth/forbidden";
-});
-
-// [5] Swagger Configuration
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.EnableAnnotations();
-});
-
-// ========== APP BUILD & MIDDLEWARE ========== //
+// ========== APP BUILD ========== //
 var app = builder.Build();
 
-// [6] Database Migration
-/*
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    if (app.Environment.IsDevelopment())
-    {
-        dbContext.Database.EnsureCreated(); // Ensure the database schema is created in dev
-    }
-    else
-    {
-        dbContext.Database.Migrate(); // Apply migrations in production
-    }
-}
-*/
-
-// [7] Development Tools
+// ========== ENVIRONMENT CONFIG ========== //
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseHttpsRedirection(); // in dev no https
+    app.UseDeveloperExceptionPage();
 }
 else
 {
     app.UseForwardedHeaders();
     app.UseHsts();
+    app.UseExceptionHandler("/error");
 }
 
-// [8] Security Middleware
-// app.UseHttpsRedirection(); // Force HTTPS
-app.UseCookiePolicy(); // Enforce cookie rules
+// ========== INFRASTRUCTURE SETUP ========== //
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    
+    // Only migrate if enabled in config
+    if (builder.Configuration.GetValue<bool>("EnableMigrations"))
+    {
+        context.Database.Migrate();
+    }
+    
+    // Always seed roles if missing
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+    await InfrastructureSeeder.SeedRolesAsync(roleManager);
+}
 
-// [9] Auth Middleware
-app.UseAuthentication(); // Identity system
-app.UseAuthorization(); // [Authorize] attribute
+// ========== MIDDLEWARE PIPELINE ========== //
+app.UseHttpsRedirection();
+app.UseCookiePolicy();
 
-// [10] Endpoint Mapping
-app.MapControllers(); // Discover controllers
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
