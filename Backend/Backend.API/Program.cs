@@ -9,7 +9,11 @@ using Backend.Application.Interfaces;
 using Backend.Infrastructure.Services;
 using Backend.Infrastructure.Seeders;
 using Backend.Application.Validators;
+using Backend.Application.Validators.Auth;
+using Backend.Application.Behaviors;
 using FluentValidation;
+using MediatR;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +50,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 // ========== INFRASTRUCTURE SERVICES ========== //
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddScoped<DatabaseHealthCheck>();
+
+// ========== MEDIATR & VALIDATION ========== //   <-- Add here
+builder.Services.AddMediatR(cfg => 
+    cfg.RegisterServicesFromAssembly(typeof(RegisterRequestValidator).Assembly));
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 // ========== SECURITY CONFIGURATION ========== //
 builder.Services.ConfigureApplicationCookie(options =>
@@ -106,6 +116,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ========== MIDDLEWARE PIPELINE ========== //
+app.UseMiddleware<ValidationExceptionMiddleware>();
+
+
 app.UseHttpsRedirection();
 app.UseCookiePolicy();
 
