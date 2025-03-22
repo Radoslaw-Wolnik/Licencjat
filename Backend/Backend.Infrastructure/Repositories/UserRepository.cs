@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.AspNetCore.Identity;
+using AutoMapper;
 
 namespace Backend.Infrastructure.Repositories;
 
@@ -12,25 +13,22 @@ public class UserRepository : IUserRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IMapper _mapper;
     
-    public UserRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public UserRepository(
+        ApplicationDbContext context, 
+        UserManager<ApplicationUser> 
+        userManager, IMapper mapper)
     {
         _context = context;
         _userManager = userManager;
+        _mapper = mapper;
     }
     
     public async Task<User> AddAsync(User user, string password)
     {
-        // Map Domain User to ApplicationUser (adjust mapping as needed)
-        var appUser = new ApplicationUser
-        {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            BirthDate = user.BirthDate,
-            // Additional mapping if necessary
-        };
+
+        var appUser = _mapper.Map<ApplicationUser>(user);
 
         // _context.Users.Add(appUser);
         // await _context.SaveChangesAsync();
@@ -46,7 +44,6 @@ public class UserRepository : IUserRepository
     
     public async Task<User?> GetByIdAsync(Guid id)
     {
-        // Example retrieval and mapping
         var appUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (appUser == null)
             return null;
@@ -56,15 +53,9 @@ public class UserRepository : IUserRepository
             throw new InvalidOperationException("User data is incomplete in the databse lol you must be a really special");
         }
 
-        // Map ApplicationUser back to Domain User (this mapping could be handled by a dedicated mapper)
-        var domainUser = new User(
-            appUser.Email,
-            appUser.FirstName,
-            appUser.LastName,
-            appUser.BirthDate);
+        var domainUser = _mapper.Map<User>(appUser);
         return domainUser;
     }
     
-    // Implement additional methods as required
 }
 
