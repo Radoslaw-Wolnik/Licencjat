@@ -13,6 +13,8 @@ using Backend.Application.Validators.Auth;
 using Backend.Application.Behaviors;
 using FluentValidation;
 using MediatR;
+using Backend.Infrastructure.Mapping;
+using AutoMapper;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +52,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 // ========== INFRASTRUCTURE SERVICES ========== //
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddScoped<DatabaseHealthCheck>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddAutoMapper(typeof(AuthenticationProfile));
+builder.Services.AddAutoMapper(typeof(UserProfile));
+
 
 // ========== MEDIATR & VALIDATION ========== //   <-- Add here
 builder.Services.AddMediatR(cfg => 

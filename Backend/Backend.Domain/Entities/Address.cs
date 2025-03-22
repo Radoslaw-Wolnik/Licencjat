@@ -15,7 +15,7 @@ public class Address
         City = city;
     }
 
-    private void Validate(string street, string city)
+    private static void Validate(string street, string city)
     {
         if (string.IsNullOrWhiteSpace(street))
             throw new ArgumentException("Street cannot be empty", nameof(street));
