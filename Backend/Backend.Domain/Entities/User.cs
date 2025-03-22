@@ -6,6 +6,7 @@ public class User
     public Guid Id { get; private set; }
     public string Email { get; private set; }
     // public string PasswordHash { get; private set; }
+    public string UserName {get; private set; }
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
     public DateTime BirthDate { get; private set; }
@@ -13,6 +14,7 @@ public class User
 
     public User(
         string email,
+        string username,
         string firstName,
         string lastName,
         DateTime birthDate)
@@ -21,6 +23,7 @@ public class User
         
         Email = email;
         // PasswordHash = passwordHash;
+        UserName = username;
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;

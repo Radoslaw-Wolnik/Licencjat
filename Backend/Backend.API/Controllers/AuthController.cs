@@ -23,6 +23,7 @@ public class AuthController : ControllerBase
         // Convert DTO to parameters for your domain model
         await _userService.RegisterUserAsync(
             request.Email,
+            request.UserName,
             request.Password,
             request.FirstName,
             request.LastName,

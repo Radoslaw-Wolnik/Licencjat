@@ -16,10 +16,10 @@ public class UserService : IUserService
         _authenticationService = authenticationService;
     }
     
-    public async Task RegisterUserAsync(string email, string password, string firstName, string lastName, DateTime birthDate)
+    public async Task RegisterUserAsync(string email, string username, string password, string firstName, string lastName, DateTime birthDate)
     {
         // You might have additional business logic here (e.g., checking for duplicate emails)
-        var user = new User(email, firstName, lastName, birthDate);
+        var user = new User(email, username, firstName, lastName, birthDate);
         await _userRepository.AddAsync(user, password);
     }
 
