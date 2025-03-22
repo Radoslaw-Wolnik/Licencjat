@@ -83,6 +83,11 @@ dotnet restore
 dotnet ef migrations add InitialCreate --project Backend.Infrastructure
 dotnet ef migrations script --project Backend.Infrastructure --output migrations.sql
 
+dotnet ef migrations add InitialCreate --project Backend.Infrastructure
+dotnet ef database drop --project Backend.Infrastructure
+dotnet ef database update --project Backend.Infrastructure
+
+
 # 3. Start containers
 docker-compose up --build
 
