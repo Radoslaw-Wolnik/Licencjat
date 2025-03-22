@@ -5,7 +5,7 @@ using Backend.Application.Interfaces;
 
 namespace Backend.Application.Services;
 
-public class UserService
+public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IAuthenticationService _authenticationService;
@@ -31,6 +31,11 @@ public class UserService
             throw new UnauthorizedAccessException("Invalid credentials");
         }
         // Optionally perform additional business logic after successful login
+    }
+
+    public async Task<User?> GetByIdAsync(Guid id)
+    {
+        return await _userRepository.GetByIdAsync(id);
     }
 }
 
