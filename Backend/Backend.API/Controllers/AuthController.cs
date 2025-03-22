@@ -1,9 +1,6 @@
 // Backend.API/Controllers/AuthController.cs
-using System.Net;
 using Backend.Application.DTOs.Auth;
-using Backend.Application.Interfaces;
-using Backend.Infrastructure.Entities;
-using Microsoft.AspNetCore.Identity;
+using Backend.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.API.Controllers;
@@ -12,56 +9,41 @@ namespace Backend.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IEmailService _emailService;
-
-    public AuthController(
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
-        IEmailService emailService)
+    private readonly UserService _userService;
+    
+    public AuthController(UserService userService)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _emailService = emailService;
+        _userService = userService;
     }
-
+    
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        
-        var user = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            BirthDate = request.BirthDate
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-        
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        return Ok(new { Message = "Registration successful" });
+        // Convert DTO to parameters for your domain model
+        await _userService.RegisterUserAsync(
+            request.Email,
+            request.Password,
+            request.FirstName,
+            request.LastName,
+            request.BirthDate);
+            
+        return Ok();
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var result = await _signInManager.PasswordSignInAsync(
+        await _userService.LoginUserAsync(
             request.Email, 
             request.Password, 
-            request.RememberMe, 
-            lockoutOnFailure: false);
-
-        if (!result.Succeeded)
-            return Unauthorized("Invalid credentials");
-
-        return Ok(new { Message = "Login successful" });
+            request.RememberMe);
+        // should we here throw things if the login is not sucessfull? 
+        //return Ok(new { Message = "Login successful" });
+        return Ok();
     }
 
+    // rewrite this one to be better
+    /*
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
     {
@@ -79,4 +61,7 @@ public class AuthController : ControllerBase
         
         return Ok();
     }
+    */
+
 }
+
