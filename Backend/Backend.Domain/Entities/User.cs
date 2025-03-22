@@ -5,7 +5,7 @@ public class User
 {
     public Guid Id { get; private set; }
     public string Email { get; private set; }
-    public string PasswordHash { get; private set; }
+    // public string PasswordHash { get; private set; }
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
     public DateTime BirthDate { get; private set; }
@@ -13,7 +13,6 @@ public class User
 
     public User(
         string email,
-        string passwordHash,
         string firstName,
         string lastName,
         DateTime birthDate)
@@ -21,13 +20,13 @@ public class User
         Validate(email, firstName, lastName, birthDate);
         
         Email = email;
-        PasswordHash = passwordHash;
+        // PasswordHash = passwordHash;
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;
     }
 
-    private void Validate(
+    private static void Validate(
         string email,
         string firstName,
         string lastName,
