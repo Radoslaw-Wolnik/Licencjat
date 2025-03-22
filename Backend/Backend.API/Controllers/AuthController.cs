@@ -1,5 +1,6 @@
 // Backend.API/Controllers/AuthController.cs
 using Backend.Application.DTOs.Auth;
+using Backend.Application.Interfaces;
 using Backend.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +10,9 @@ namespace Backend.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
     
-    public AuthController(UserService userService)
+    public AuthController(IUserService userService)
     {
         _userService = userService;
     }
