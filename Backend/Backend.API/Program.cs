@@ -15,6 +15,8 @@ using FluentValidation;
 using MediatR;
 using Backend.Infrastructure.Mapping;
 using AutoMapper;
+using Backend.Application.Services;
+using Backend.Infrastructure.Repositories;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,9 +52,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     .AddDefaultTokenProviders();
 
 // ========== INFRASTRUCTURE SERVICES ========== //
-builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<DatabaseHealthCheck>();
+
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
+
 builder.Services.AddAutoMapper(typeof(AuthenticationProfile));
 builder.Services.AddAutoMapper(typeof(UserProfile));
 
@@ -116,9 +122,9 @@ using (var scope = app.Services.CreateScope())
         context.Database.Migrate();
     }
     
-    // Always seed roles if missing
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-    await InfrastructureSeeder.SeedRolesAsync(roleManager);
+    // Always seed roles ?if missing?
+    // var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+    // await InfrastructureSeeder.SeedRolesAsync(roleManager);
 }
 
 // ========== MIDDLEWARE PIPELINE ========== //
