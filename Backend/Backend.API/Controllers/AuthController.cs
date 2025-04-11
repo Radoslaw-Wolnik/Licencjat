@@ -1,48 +1,70 @@
 // Backend.API/Controllers/AuthController.cs
+using AutoMapper;
+using Backend.API.Extensions;
 using Backend.Application.DTOs.Auth;
+using Backend.Application.Features.Auth;
 using Backend.Application.Interfaces;
-using Backend.Application.Services;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public sealed class AuthController : ControllerBase
 {
-    private readonly IUserService _userService;
+    private readonly ISender _sender;
+    private readonly IMapper _mapper;
     
-    public AuthController(IUserService userService)
+    public AuthController(ISender sender, IMapper mapper)
     {
-        _userService = userService;
+        _sender = sender;
+        _mapper = mapper;
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register(RegisterRequest request)
     {
-        // Convert DTO to parameters for your domain model
-        await _userService.RegisterUserAsync(
-            request.Email,
-            request.UserName,
-            request.Password,
-            request.FirstName,
-            request.LastName,
-            request.BirthDate);
-            
-        return Ok();
+        var command = _mapper.Map<RegisterCommand>(request);
+        var result = await _sender.Send(command);
+
+        return result.Match(
+        onSuccess: userId => CreatedAtAction(
+            nameof(Register), 
+            new { userId }, 
+            new { UserId = userId }),
+        onFailure: errors =>
+        {
+        var problemDetails = errors.ToProblemDetails();
+        return Problem(
+            instance: "api/register",
+            title: problemDetails.Title,
+            statusCode: problemDetails.Status,
+            type: problemDetails.Type,
+            detail: problemDetails.Extensions.ToString()); // this is a dictionary i suppose
+        });
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        await _userService.LoginUserAsync(
-            request.Email, 
-            request.Password, 
-            request.RememberMe);
-        // should we here throw things if the login is not sucessfull? 
-        //return Ok(new { Message = "Login successful" });
-        return Ok();
+        var command = _mapper.Map<LoginCommand>(request);
+        var result = await _sender.Send(command);
+
+        return result.Match(
+            onSuccess: user => Ok(_mapper.Map<LoginResponse>(user)),
+            onFailure: errors => Problem(
+                instance: "api/login",
+                title: "Login error",
+                statusCode: StatusCodes.Status401Unauthorized,
+                detail: string.Join(", ", errors.Select(e => e.Message)))
+            // onFailure: errors => errors.ToProblemDetailsResult().ToString()
+        );
     }
+
+
+
+
 
     // rewrite this one to be better
     /*
