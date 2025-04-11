@@ -1,53 +1,50 @@
-// Domain/Entities/User.cs
+// Domain/User/User.cs
+using Backend.Domain.Common;
+using Backend.Domain.Errors;
+using FluentResults;
+
 namespace Backend.Domain.Entities;
 
-public class User
+public sealed class User : Entity<Guid>
 {
-    public Guid Id { get; private set; }
-    public string Email { get; private set; }
-    // public string PasswordHash { get; private set; }
-    public string UserName {get; private set; }
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
-    public DateTime BirthDate { get; private set; }
-    public Address? Address { get; private set; }
+    public string Email { get; } 
+    public string Username { get; }
+    public string FirstName { get; }
+    public string LastName { get; }
+    public DateTime BirthDate { get; }
 
-    public User(
+    private User(
         string email,
         string username,
         string firstName,
         string lastName,
         DateTime birthDate)
     {
-        Validate(email, firstName, lastName, birthDate);
-        
         Email = email;
-        // PasswordHash = passwordHash;
-        UserName = username;
+        Username = username;
         FirstName = firstName;
         LastName = lastName;
         BirthDate = birthDate;
     }
 
-    private static void Validate(
+    public static Result<User> Create(
         string email,
+        string username,
         string firstName,
         string lastName,
         DateTime birthDate)
     {
-        if (string.IsNullOrWhiteSpace(email))
-            throw new ArgumentException("Email cannot be empty", nameof(email));
+        // Domain validation (business rules)
+        var errors = new List<IError>();
         
-        if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
-            throw new ArgumentException("Invalid email format", nameof(email));
+        if (birthDate > DateTime.UtcNow.AddYears(-13))
+            errors.Add(UserErrors.Underage);
 
-        if (string.IsNullOrWhiteSpace(firstName) || firstName.Length > 50)
-            throw new ArgumentException("First name must be between 1-50 characters", nameof(firstName));
 
-        if (string.IsNullOrWhiteSpace(lastName) || lastName.Length > 50)
-            throw new ArgumentException("Last name must be between 1-50 characters", nameof(lastName));
+        if (errors.Count != 0)
+            return Result.Fail<User>(errors);
 
-        if (birthDate > DateTime.Now.AddYears(-13))
-            throw new ArgumentException("User must be at least 13 years old", nameof(birthDate));
+        var user = new User(email, username, firstName, lastName, birthDate);
+        return Result.Ok(user);
     }
 }
