@@ -12,7 +12,7 @@ public class ApplicationUser : IdentityUser<Guid>
     public string LastName { get; set; } = null!;
     [Required]
     public DateTime BirthDate { get; set; }
-    public float Reputation { get; set; } // Consider validation (1-5)
+    public float Reputation { get; set; } = 4; // Consider validation (1-5)
 
     // Address one user one address
     public virtual Address? Address { get; set; }

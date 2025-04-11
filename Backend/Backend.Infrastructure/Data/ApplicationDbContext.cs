@@ -22,7 +22,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.FirstName).HasMaxLength(50).IsRequired();
             entity.Property(e => e.LastName).HasMaxLength(50).IsRequired();
             entity.Property(e => e.BirthDate).IsRequired();
-            entity.Property(e => e.Reputation).HasDefaultValue(0);
+            entity.Property(e => e.Reputation).HasDefaultValue(4);
             
             // One-to-One relationship with Address (optional)
             entity.HasOne(a => a.Address)
