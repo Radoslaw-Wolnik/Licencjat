@@ -15,8 +15,10 @@ using FluentValidation;
 using MediatR;
 using Backend.Infrastructure.Mapping;
 using AutoMapper;
-using Backend.Application.Services;
 using Backend.Infrastructure.Repositories;
+using AutoMapper.Extensions.ExpressionMapping;
+using BAckend.Infrastructure.Services;
+using Backend.Application.Mapping;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,18 +54,21 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     .AddDefaultTokenProviders();
 
 // ========== INFRASTRUCTURE SERVICES ========== //
+// repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<DatabaseHealthCheck>();
 
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<IUserService, UserService>();
+// services
+builder.Services.AddScoped<ISignInService, SignInService>();
+builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 
-builder.Services.AddAutoMapper(typeof(AuthenticationProfile));
-builder.Services.AddAutoMapper(typeof(UserProfile));
+// mappers
+builder.Services.AddAutoMapper(typeof(UserProfile)); // cfg => {cfg.AddExpressionMapping();},
+builder.Services.AddAutoMapper(typeof(AuthProfile));
 
 
-// ========== MEDIATR & VALIDATION ========== //   <-- Add here
+// ========== MEDIATR & VALIDATION ========== //
 builder.Services.AddMediatR(cfg => 
     cfg.RegisterServicesFromAssembly(typeof(RegisterRequestValidator).Assembly));
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
