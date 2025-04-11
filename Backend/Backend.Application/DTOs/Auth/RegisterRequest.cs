@@ -3,12 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Application.DTOs.Auth;
 
-public class RegisterRequest
-{
-    public string Email { get; set; } = null!;
-    public string UserName {get; set;} = null!;
-    public string Password { get; set; } = null!;
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public DateTime BirthDate { get; set; }
-}
+public sealed record RegisterRequest(
+    string Email,
+    string Username,
+    string Password,
+    string FirstName,
+    string LastName,
+    DateTime BirthDate);
