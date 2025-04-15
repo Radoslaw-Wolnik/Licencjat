@@ -12,7 +12,7 @@ public sealed class User : Entity<Guid>
     public string FirstName { get; }
     public string LastName { get; }
     public DateOnly BirthDate { get; }
-    public Location Location { get; }
+    public Location Location { get; private set; }
     public Reputation Reputation { get; private set; }
     public string? ProfilePicture { get; private set; }
     public string? Bio { get; private set; }
@@ -23,7 +23,7 @@ public sealed class User : Entity<Guid>
     private readonly List<Guid> _following = new();
     private readonly List<Guid> _followers = new();
     private readonly List<Guid> _blockedUsers = new();
-    private readonly List<UserBook> _ownedBooks = new();
+    private readonly List<Guid> _ownedBooks = new(); // guids to userbook
     private readonly List<SocialMediaLink> _socialMediaLinks = new();
 
     public IReadOnlyCollection<Guid> Wishlist => _wishlist.AsReadOnly();
@@ -31,7 +31,7 @@ public sealed class User : Entity<Guid>
     public IReadOnlyCollection<Guid> Following => _following.AsReadOnly();
     public IReadOnlyCollection<Guid> Followers => _followers.AsReadOnly();
     public IReadOnlyCollection<Guid> BlockedUsers => _blockedUsers.AsReadOnly();
-    public IReadOnlyCollection<UserBook> OwnedBooks => _ownedBooks.AsReadOnly();
+    public IReadOnlyCollection<Guid> OwnedBooks => _ownedBooks.AsReadOnly();
     public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks => _socialMediaLinks.AsReadOnly();
 
     private User(
@@ -93,11 +93,11 @@ public sealed class User : Entity<Guid>
         return Result.Ok();
     }
 
-    public Result AddBook(UserBook book)
+    public Result AddBook(Guid userBookId)
     {
         if (_ownedBooks.Count >= 100) return Result.Fail(UserErrors.MaxBookLimit);
-        if (book.OwnerId != Id) return Result.Fail(UserErrors.BookOwnershipMismatch);
-        _ownedBooks.Add(book);
+        // if (userBook.OwnerId != Id) return Result.Fail(UserErrors.BookOwnershipMismatch);
+        _ownedBooks.Add(userBookId);
         return Result.Ok();
     }
 
