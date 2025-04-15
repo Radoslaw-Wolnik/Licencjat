@@ -1,6 +1,6 @@
 // Backend.Infrastructure/Seeders/InfrastructureSeeder.cs
 using Microsoft.AspNetCore.Identity;
-namespace Backend.Infrastructure.Seeders;
+namespace Backend.Infrastructure.Data.Seeders;
 
 public static class InfrastructureSeeder
 {
