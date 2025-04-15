@@ -14,9 +14,25 @@ public sealed class User : Entity<Guid>
     public DateOnly BirthDate { get; }
     public Location Location { get; }
     public Reputation Reputation { get; private set; }
+    public string? ProfilePicture { get; private set; }
+    public string? Bio { get; private set; }
 
-    private readonly List<UserBook> _ownedBooks = new(); // insted list of user books
+    // Relationships
+    private readonly List<Guid> _wishlist = new();
+    private readonly List<Guid> _followedBooks = new();
+    private readonly List<Guid> _following = new();
+    private readonly List<Guid> _followers = new();
+    private readonly List<Guid> _blockedUsers = new();
+    private readonly List<UserBook> _ownedBooks = new();
+    private readonly List<SocialMediaLink> _socialMediaLinks = new();
+
+    public IReadOnlyCollection<Guid> Wishlist => _wishlist.AsReadOnly();
+    public IReadOnlyCollection<Guid> FollowedBooks => _followedBooks.AsReadOnly();
+    public IReadOnlyCollection<Guid> Following => _following.AsReadOnly();
+    public IReadOnlyCollection<Guid> Followers => _followers.AsReadOnly();
+    public IReadOnlyCollection<Guid> BlockedUsers => _blockedUsers.AsReadOnly();
     public IReadOnlyCollection<UserBook> OwnedBooks => _ownedBooks.AsReadOnly();
+    public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks => _socialMediaLinks.AsReadOnly();
 
     private User(
         Guid id,
@@ -44,14 +60,21 @@ public sealed class User : Entity<Guid>
         string firstName,
         string lastName,
         DateOnly birthDate,
-        Location location)
+        string city,
+        string country)
     {
         var errors = new List<IError>();
         
         if (birthDate > DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-13)))
-            errors.Add(UserErrors.Underage);
+            errors.Add(AuthErrors.Underage);
         
-        // we propably should check if location is valid here
+        var code = CountryCode.Create(country);
+        if (code.IsFailed)
+            errors.Add(new Error("wrong country code"));
+
+        var loc = Location.Create(city: city, country: code.Value);
+        if (loc.IsFailed)
+            errors.Add(LocationErrors.WrongLocation);
 
         if (errors.Any())
             return Result.Fail<User>(errors);
@@ -63,30 +86,41 @@ public sealed class User : Entity<Guid>
             firstName,
             lastName,
             birthDate,
-            location,
+            loc.Value,
             Reputation.Initial()
         );
     }
 
+
+
+    // Core business methods
     public Result UpdateReputation(float newValue)
     {
         var result = Reputation.Create(newValue);
-        if (result.IsFailed)
-            return Result.Fail(result.Errors);
-
+        if (result.IsFailed) return result.ToResult();
         Reputation = result.Value;
         return Result.Ok();
     }
 
     public Result AddBook(UserBook book)
     {
-        if (_ownedBooks.Count >= 100)
-            return Result.Fail(UserErrors.MaxBookLimit);
-
-        if (book.OwnerId != Id)
-            return Result.Fail(UserErrors.BookOvnershipMismatch);
-
+        if (_ownedBooks.Count >= 100) return Result.Fail(UserErrors.MaxBookLimit);
+        if (book.OwnerId != Id) return Result.Fail(UserErrors.BookOwnershipMismatch);
         _ownedBooks.Add(book);
+        return Result.Ok();
+    }
+
+    public Result AddSocialMediaLink(SocialMediaLink link)
+    {
+        if (_socialMediaLinks.Count >= 10) return Result.Fail(UserErrors.MaxSocialMediaLinks);
+        _socialMediaLinks.Add(link);
+        return Result.Ok();
+    }
+
+    public Result FollowUser(Guid userId)
+    {
+        if (_following.Contains(userId)) return Result.Fail(UserErrors.AlreadyFollowing);
+        _following.Add(userId);
         return Result.Ok();
     }
 }
