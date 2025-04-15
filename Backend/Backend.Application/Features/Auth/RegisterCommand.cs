@@ -9,4 +9,6 @@ public sealed record RegisterCommand(
     string Password,
     string FirstName,
     string LastName,
-    DateTime BirthDate) : IRequest<Result<Guid>>;
+    DateOnly BirthDate,
+    string City,
+    string Country) : IRequest<Result<Guid>>;

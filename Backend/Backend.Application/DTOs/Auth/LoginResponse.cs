@@ -2,7 +2,6 @@ namespace Backend.Application.DTOs.Auth;
 
 public record LoginResponse(
     Guid UserId,
-    string Email,
     string Username);
 
 

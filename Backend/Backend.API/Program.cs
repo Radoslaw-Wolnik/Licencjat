@@ -7,7 +7,7 @@ using Backend.API.Middleware;
 using Swashbuckle.AspNetCore.Annotations;
 using Backend.Application.Interfaces;
 using Backend.Infrastructure.Services;
-using Backend.Infrastructure.Seeders;
+using Backend.Infrastructure.Data.Seeders;
 using Backend.Application.Validators;
 using Backend.Application.Validators.Auth;
 using Backend.Application.Behaviors;
@@ -127,7 +127,7 @@ using (var scope = app.Services.CreateScope())
         context.Database.Migrate();
     }
     
-    // Always seed roles ?if missing?
+    // Seed roles only if they are missing
     // var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
     // await InfrastructureSeeder.SeedRolesAsync(roleManager);
 }

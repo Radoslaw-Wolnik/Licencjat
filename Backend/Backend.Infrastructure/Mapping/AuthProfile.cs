@@ -15,7 +15,6 @@ public class AuthProfile : Profile
         CreateMap<User, LoginResponse>()
             .ConstructUsing(src => new LoginResponse(
                 src.Id, 
-                src.Email, 
                 src.Username
             ));
     }

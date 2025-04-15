@@ -1,4 +1,5 @@
 // Infrastructure/Services/IdentityService.cs
+using System.Security.Authentication;
 using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Infrastructure.Entities;
@@ -23,9 +24,11 @@ public sealed class IdentityService : IIdentityService
         string password,
         string firstname,
         string lastname,
-        DateTime birthdate)
+        string city,
+        string country,
+        DateOnly birthdate)
     {
-        var user = new ApplicationUser { Email = email, UserName = username, FirstName = firstname, LastName = lastname, BirthDate = birthdate};
+        var user = new ApplicationUser { Email = email, UserName = username, FirstName = firstname, LastName = lastname, City = city, Country = country, BirthDate = birthdate};
         var result = await _userManager.CreateAsync(user, password);
 
         return result.Succeeded

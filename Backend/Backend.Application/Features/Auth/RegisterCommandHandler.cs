@@ -32,13 +32,17 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         var usernameExists = await _userRepo.ExistsAsync(u => u.Username == command.Username);
         if (usernameExists.Value) return Result.Fail<Guid>(UserErrors.UsernameTaken);
 
+        var location = Location.Create(command.City, command.Country);
+        if (location.IsFailed) return Result.Fail<Guid>(UserErrors.WrongLocation);
+
         // 2. Create domain entity
         var userResult = User.Create(
             command.Email,
             command.Username,
             command.FirstName,
             command.LastName,
-            command.BirthDate);
+            command.BirthDate,
+            location.Value);
         
         if (userResult.IsFailed) return Result.Fail<Guid>(userResult.Errors);
 
@@ -49,6 +53,8 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
             command.Password,
             command.FirstName,
             command.LastName,
+            command.City,
+            command.Country,
             command.BirthDate);
 
         if (identityResult.IsFailed)

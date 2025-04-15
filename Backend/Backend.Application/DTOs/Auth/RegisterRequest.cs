@@ -9,4 +9,6 @@ public sealed record RegisterRequest(
     string Password,
     string FirstName,
     string LastName,
-    DateTime BirthDate);
+    DateOnly BirthDate,
+    string City,
+    string Country);

@@ -28,6 +28,7 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .MaximumLength(50).WithMessage("Last name too long");
 
         RuleFor(x => x.BirthDate)
-            .LessThan(DateTime.UtcNow).WithMessage("Invalid birth date");
+            .LessThan(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-13)))
+            .WithMessage("You must be at least 13 years old");
     }
 }

@@ -10,5 +10,7 @@ public interface IIdentityService
         string password, 
         string firstname,
         string lastname,
-        DateTime birthdate);
+        string city,
+        string country,
+        DateOnly birthdate);
 }
