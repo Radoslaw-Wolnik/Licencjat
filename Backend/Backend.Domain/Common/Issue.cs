@@ -5,20 +5,8 @@ using FluentResults;
 
 namespace Backend.Domain.Entities;
 
-public sealed class Issue : Entity<Guid>
+public sealed record Issue(string Description, Guid UserId, Guid SubSwapId)
 {
-    public string Description { get; }
-    public Guid UserId { get; }
-    public Guid SubSwapId { get; }
-
-    private Issue(Guid id, string description, Guid userId, Guid subSwapId)
-    {
-        Id = id;
-        Description = description;
-        UserId = userId;
-        SubSwapId = subSwapId;
-    }
-
     public static Result<Issue> Create(string description, Guid userId, Guid subSwapId)
     {
         var errors = new List<IError>();
@@ -32,10 +20,9 @@ public sealed class Issue : Entity<Guid>
         if (subSwapId == Guid.Empty) 
             errors.Add(SwapErrors.NotFound);
 
-        if (errors.Any()) return Result.Fail<Issue>(errors);
-
-        return new Issue(
-            Guid.NewGuid(),
+        return errors.Count != 0 
+        ? Result.Fail<Issue>(errors)
+        : new Issue(
             description.Trim(),
             userId,
             subSwapId

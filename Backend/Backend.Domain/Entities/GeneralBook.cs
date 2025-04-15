@@ -19,6 +19,8 @@ public sealed class GeneralBook : Entity<Guid>
     private readonly List<BookGenre> _genres = new();
     
     public IReadOnlyCollection<BookGenre> Genres => _genres.AsReadOnly();
+    private readonly List<Guid> _userReviews = new();
+    public IReadOnlyCollection<Guid> UserReviews => _userReviews.AsReadOnly();
 
     private GeneralBook(
         Guid id,
@@ -81,6 +83,15 @@ public sealed class GeneralBook : Entity<Guid>
             return Result.Fail(BookErrors.DuplicateCopy);
             
         _userCopies.Add(userBookId);
+        return Result.Ok();
+    }
+
+    public Result AddUserReview(Guid reviewId)
+    {
+        if (_userReviews.Contains(reviewId))
+            return Result.Fail(ReviewErrors.Duplicate);
+            
+        _userReviews.Add(reviewId);
         return Result.Ok();
     }
 

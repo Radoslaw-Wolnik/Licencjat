@@ -2,16 +2,11 @@
 using FluentResults;
 namespace Backend.Domain.Common;
 
-public sealed record SocialMediaLink
+public sealed record SocialMediaLink(string platform, string url)
 {
-    public string Platform { get; }
-    public string Url { get; }
+    public string Platform { get; } = platform;
+    public string Url { get; } = url;
 
-    private SocialMediaLink(string platform, string url)
-    {
-        Platform = platform;
-        Url = url;
-    }
 
     public static Result<SocialMediaLink> Create(string platform, string url)
     {
