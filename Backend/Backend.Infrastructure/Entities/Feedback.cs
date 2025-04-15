@@ -20,7 +20,7 @@ public class Feedback
 
     // statuses
     [Column(TypeName = "nvarchar(24)")]
-    public SwapLenght Lenght { get; set; }
+    public SwapLength Lenght { get; set; }
     
     [Column(TypeName = "nvarchar(24)")]
     public SwapConditionBook ConditionBook { get; set; }

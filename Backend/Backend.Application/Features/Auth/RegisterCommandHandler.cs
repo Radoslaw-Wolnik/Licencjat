@@ -27,13 +27,10 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
     {
         // 1. Check uniqueness via repository
         var emailExists = await _userRepo.ExistsAsync(u => u.Email == command.Email);
-        if (emailExists.Value) return Result.Fail<Guid>(UserErrors.EmailAlreadyExists);
+        if (emailExists.Value) return Result.Fail<Guid>(AuthErrors.EmailAlreadyExists);
 
         var usernameExists = await _userRepo.ExistsAsync(u => u.Username == command.Username);
-        if (usernameExists.Value) return Result.Fail<Guid>(UserErrors.UsernameTaken);
-
-        var location = Location.Create(command.City, command.Country);
-        if (location.IsFailed) return Result.Fail<Guid>(UserErrors.WrongLocation);
+        if (usernameExists.Value) return Result.Fail<Guid>(AuthErrors.UsernameTaken);
 
         // 2. Create domain entity
         var userResult = User.Create(
@@ -42,7 +39,8 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
             command.FirstName,
             command.LastName,
             command.BirthDate,
-            location.Value);
+            command.City,
+            command.Country);
         
         if (userResult.IsFailed) return Result.Fail<Guid>(userResult.Errors);
 
