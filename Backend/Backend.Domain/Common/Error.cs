@@ -13,4 +13,4 @@ public record DomainError(
     public Dictionary<string, object> Metadata { get; } = new();  // Required by IError
 }
 
-public enum ErrorType { Validation, Conflict, Unauthorized, NotFound, Forbidden, StorageError, ServiceUnavailable }
+public enum ErrorType { Validation, Conflict, Unauthorized, NotFound, Forbidden, StorageError, ServiceUnavailable, BadRequest }
