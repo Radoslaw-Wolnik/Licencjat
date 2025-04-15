@@ -52,4 +52,14 @@ public static class UserErrors
         "User.MaxBooks",
         "Maximum book limit reached",
         ErrorType.Validation);
+    
+    public static DomainError BookOvnershipMismatch => new(
+        "UserErrors.BookOwnershipMismatch",
+        "The userBook is not owned by current user",
+        ErrorType.Conflict);
+    
+    public static DomainError WrongLocation => new(
+        "UserErrors.WrongLocation",
+        "The user location format is invalid",
+        ErrorType.Validation);
 }

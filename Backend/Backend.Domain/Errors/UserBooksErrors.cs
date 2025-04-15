@@ -18,4 +18,19 @@ public static class UserBookErrors
         "UserBook.Unavailable",
         "Book is currently unavailable for swapping",
         ErrorType.Conflict);
+    
+    public static DomainError InvalidState => new(
+        "UserBook.InvalidState",
+        "Book state is invalid",
+        ErrorType.Validation);
+    
+    public static DomainError InvalidStatus => new(
+        "UserBook.InvalidStatus",
+        "Book status is invalid",
+        ErrorType.Validation);
+
+    public static DomainError InvalidPageCount => new(
+        "UserBook.InvalidPageCount",
+        "Number of pages must be higher then 0",
+        ErrorType.Validation);
 }
