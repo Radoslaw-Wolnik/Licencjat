@@ -33,7 +33,7 @@ public sealed record CountryCode
         if (!ValidCodes.Contains(normalized))
             errors.Add(new Error("Unrecognized country code"));
 
-        return errors.Any() 
+        return errors.Count != 0
             ? Result.Fail(errors) 
             : new CountryCode(normalized);
     }

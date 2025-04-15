@@ -16,7 +16,7 @@ public sealed record Location(string City, CountryCode Country)
         if (city.Length > 100)
             errors.Add(new Error("City name too long"));
 
-        return errors.Any() 
+        return errors.Count != 0
             ? Result.Fail<Location>(errors) 
             : new Location(city.Trim(), country);
     }

@@ -33,7 +33,7 @@ public sealed record LanguageCode
         if (!ValidCodes.Contains(normalized))
             errors.Add(new Error("Unrecognized language code"));
 
-        return errors.Any() 
+        return errors.Count != 0
             ? Result.Fail(errors) 
             : new LanguageCode(normalized);
     }
