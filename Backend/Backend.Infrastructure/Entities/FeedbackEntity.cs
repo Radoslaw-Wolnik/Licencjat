@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
 
-public class Feedback
+public class FeedbackEntity
 {
     public Guid Id { get; set; }
     
@@ -31,7 +31,7 @@ public class Feedback
     public Guid UserId { get; set; }
     public Guid SubSwapId { get; set; }
     [Required]
-    public virtual ApplicationUser User { get; set; } = null!;
-    public virtual SubSwap? SubSwap { get; set; } // nullable foreign key structure, ofc it will always be here not null
+    public virtual UserEntity User { get; set; } = null!;
+    public virtual SubSwapEntity? SubSwap { get; set; } // nullable foreign key structure, ofc it will always be here not null
 
 }

@@ -10,6 +10,7 @@ using AutoMapper.QueryableExtensions;
 using System.Linq.Expressions;
 using Backend.Domain.Common;
 using AutoMapper.Extensions.ExpressionMapping;
+using Backend.Domain.Errors;
 
 namespace Backend.Infrastructure.Repositories;
 
@@ -27,23 +28,23 @@ public class UserRepository : IUserRepository
     public async Task<Result<bool>> ExistsAsync(Expression<Func<User, bool>> predicate)
     {
         // Map domain predicate to infrastructure model
-        var appUsrPredicate = _mapper.MapExpression<Expression<Func<ApplicationUser, bool>>>(predicate);
+        var dbUsrPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
         
         bool exists = await _context.Users
-            .AnyAsync(appUsrPredicate);
+            .AnyAsync(dbUsrPredicate);
         
         return Result.Ok(exists);
     }
 
     public async Task<Result<Guid>> AddAsync(User user)
     {
-        var appUser = _mapper.Map<ApplicationUser>(user);
-        _context.Users.Add(appUser);
+        var dbUser = _mapper.Map<UserEntity>(user);
+        _context.Users.Add(dbUser);
 
         try
         {    
             await _context.SaveChangesAsync();
-            return Result.Ok(appUser.Id);
+            return Result.Ok(dbUser.Id);
         }
         catch (DbUpdateException ex)
         {
@@ -58,24 +59,26 @@ public class UserRepository : IUserRepository
 
     public async Task<Result<User>> GetByIdAsync(Guid id)
     {
-        var appUser = await _context.Users.FindAsync(id);
-        return appUser is null 
-            ? Result.Fail<User>(new DomainError("User.NotFound", "User not found", ErrorType.NotFound)) 
-            : Result.Ok(_mapper.Map<User>(appUser));
+        var dbUser = await _context.Users.FindAsync(id);
+        return dbUser is null 
+            // ? Result.Fail<User>(new DomainError("User.NotFound", "User not found", ErrorType.NotFound)) 
+            ? Result.Fail<User>(UserErrors.NotFound)
+            : Result.Ok(_mapper.Map<User>(dbUser));
     }
 
     public async Task<Result<User>> FirstOrDefaultAsync(Expression<Func<User, bool>> predicate)
     {
         try
         {
-            var appUserPredicate = _mapper.MapExpression<Expression<Func<ApplicationUser, bool>>>(predicate);
+            var dbUserPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
             
-            var appUser = await _context.Users
-                .FirstOrDefaultAsync(appUserPredicate);
+            var dbUser = await _context.Users
+                .FirstOrDefaultAsync(dbUserPredicate);
                 
-            return appUser != null 
-                ? _mapper.Map<User>(appUser)
-                : Result.Fail<User>(new DomainError("User.NotFound", "User not found", ErrorType.NotFound));
+            return dbUser != null 
+                ? _mapper.Map<User>(dbUser)
+                // : Result.Fail<User>(new DomainError("User.NotFound", "User not found", ErrorType.NotFound));
+                : Result.Fail<User>(UserErrors.NotFound);
         }
         catch (Exception ex)
         {
@@ -85,4 +88,7 @@ public class UserRepository : IUserRepository
                 ErrorType.StorageError));
         }
     }
+
+    // public async Task<Result<?>> UpdateAsync(User newUserData) {}
+
 }

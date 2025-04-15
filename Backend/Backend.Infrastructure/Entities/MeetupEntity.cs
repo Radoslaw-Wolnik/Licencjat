@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 namespace Backend.Infrastructure.Entities;
 
 [HasUpdatedAt]
-public class Meetup
+public class MeetupEntity
 {
     public Guid Id { get; set; }
     
@@ -27,8 +27,8 @@ public class Meetup
     public Guid SuggestedUserId { get; set; } // could we just have id of user that is suggesting meeting and mby the user that should agree idk? But we dont need entire user reference here
     public Guid SwapId { get; set; }
     [Required]
-    public virtual ApplicationUser User { get; set; } = null!;
+    public virtual UserEntity User { get; set; } = null!;
     [Required]
-    public virtual Swap Swap { get; set; } = null!;
+    public virtual SwapEntity Swap { get; set; } = null!;
 
 }

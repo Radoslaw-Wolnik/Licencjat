@@ -6,7 +6,7 @@ using Backend.Infrastructure.Data.Attributes;
 namespace Backend.Infrastructure.Entities;
 
 [HasUpdatedAt]
-public class SubSwap
+public class SubSwapEntity
 {
     public Guid Id { get; set; }
     
@@ -22,14 +22,14 @@ public class SubSwap
     public Guid? IssueId { get; set; }
 
     [Required]
-    public virtual Swap Swap { get; set; } = null!;
+    public virtual SwapEntity Swap { get; set; } = null!;
     [Required]
-    public virtual ApplicationUser User { get; set; } = null!;
+    public virtual UserEntity User { get; set; } = null!;
     [Required]
-    public virtual UserBook UserBookReading { get; set; } = null!;
+    public virtual UserBookEntity UserBookReading { get; set; } = null!;
     [ForeignKey("FeedbackId")]
 
-    public virtual Feedback? Feedback { get; set; } // do we need ids to them as well? they are not required becouse at beggingin there wont be any
+    public virtual FeedbackEntity? Feedback { get; set; } // do we need ids to them as well? they are not required becouse at beggingin there wont be any
     [ForeignKey("IssueId")]
-    public virtual Issue? Issue { get; set; } // hopefuly wont be here
+    public virtual IssueEntity? Issue { get; set; } // hopefuly wont be here
 }

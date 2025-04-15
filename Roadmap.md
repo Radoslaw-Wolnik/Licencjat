@@ -122,11 +122,7 @@
    - Basic recommendation algorithm
    - Book similarity scoring
 
-2. **Messaging**
-   - Real-time chat with SignalR
-   - Message history storage
-
-3. **Performance**
+2. **Performance**
    - Add caching (Redis)
    - Database optimization
 
@@ -135,12 +131,7 @@
    - Recommendation carousel
    - Personalized suggestions
 
-2. **Chat Interface**
-   - Message list
-   - Chat bubbles
-   - Notification badges
-
-3. **Performance**
+2. **Performance**
    - Image optimization
    - Pagination implementation
 
@@ -158,10 +149,10 @@
 ## Tools Setup Checklist
 ```bash
 # Backend
-- [ ] .NET 8 SDK
-- [ ] Docker Desktop
-- [ ] PostgreSQL
-- [ ] EF Core CLI
+- [x] .NET 8 SDK
+- [x] Docker Desktop
+- [x] PostgreSQL
+- [x] EF Core CLI
 
 # Frontend
 - [ ] Node.js 18+
@@ -169,16 +160,5 @@
 - [ ] Android Studio/Xcode
 
 # Design
-- [ ] Figma
-- [ ] Adobe Color
+- [x] Figma
 ```
-
-## Timeline Estimates
-
-| Phase   | Duration  | Focus Area              |
-|---------|----------|-------------------------|
-| Setup   | 1 week   | Environment config      |
-| Phase 1 | 6-8 weeks | Core functionality     |
-| Phase 2 | 4-6 weeks | Social features        |
-| Phase 3 | 4-5 weeks | Advanced features      |
-| Polish  | 2 weeks  | Testing & bug fixes     |

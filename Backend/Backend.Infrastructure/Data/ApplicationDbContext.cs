@@ -8,36 +8,27 @@ using Backend.Infrastructure.Data.Attributes;
 
 namespace Backend.Infrastructure.Data;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<Guid>, Guid>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
-    
-    private static readonly List<Type> _entitiesWithUpdatedAtTimestamp = new()
-    {
-        typeof(ApplicationUser),
-        typeof(Review),
-        typeof(Swap),
-        typeof(SubSwap),
-        typeof(Meetup)
-    };  
 
-    public DbSet<GeneralBook> GeneralBooks { get; set; }
-    public DbSet<UserBook> UserBooks { get; set; }
-    public DbSet<SocialMediaLink> SocialMediaLinks { get; set; }
-    public DbSet<Review> Reviews { get; set; }
+    public DbSet<GeneralBookEntity> GeneralBooks { get; set; }
+    public DbSet<UserBookEntity> UserBooks { get; set; }
+    public DbSet<SocialMediaLinkEntity> SocialMediaLinks { get; set; }
+    public DbSet<ReviewEntity> Reviews { get; set; }
 
     // New DbSets for Swap system
-    public DbSet<Swap> Swaps { get; set; }
-    public DbSet<SubSwap> SubSwaps { get; set; }
-    public DbSet<Meetup> Meetups { get; set; }
-    public DbSet<Feedback> Feedbacks { get; set; }
-    public DbSet<Issue> Issues { get; set; }
-    public DbSet<Timeline> Timelines { get; set; }
+    public DbSet<SwapEntity> Swaps { get; set; }
+    public DbSet<SubSwapEntity> SubSwaps { get; set; }
+    public DbSet<MeetupEntity> Meetups { get; set; }
+    public DbSet<FeedbackEntity> Feedbacks { get; set; }
+    public DbSet<IssueEntity> Issues { get; set; }
+    public DbSet<TimelineEntity> Timelines { get; set; }
     
     // Many-to-Many Tables
-    public DbSet<UserFollowing> UserFollowings { get; set; }
-    public DbSet<UserBlocked> UserBlockeds { get; set; }
+    public DbSet<UserFollowingEntity> UserFollowings { get; set; }
+    public DbSet<UserBlockedEntity> UserBlockeds { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -112,13 +103,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     private void ConfigureApplicationUser(ModelBuilder builder)
     {
         // Configure Wishlist many-to-many
-        builder.Entity<ApplicationUser>()
+        builder.Entity<UserEntity>()
             .HasMany(u => u.Wishlist)
             .WithMany(g => g.WishlistedByUsers)
             .UsingEntity(j => j.ToTable("Wishlist"));
 
         // Configure FollowedBooks many-to-many
-        builder.Entity<ApplicationUser>()
+        builder.Entity<UserEntity>()
             .HasMany(u => u.FollowedBooks)
             .WithMany(g => g.FollowedByUsers)
             .UsingEntity(j => j.ToTable("BookFollowing"));
@@ -126,12 +117,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureUserBook(ModelBuilder builder)
     {
-        builder.Entity<UserBook>()
+        builder.Entity<UserBookEntity>()
             .HasOne(ub => ub.User)
             .WithMany(u => u.UserBooks)
             .HasForeignKey(ub => ub.UserId);
 
-        builder.Entity<UserBook>()
+        builder.Entity<UserBookEntity>()
             .HasOne(ub => ub.Book)
             .WithMany(b => b.UserBooks)
             .HasForeignKey(ub => ub.BookId);
@@ -139,7 +130,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureSocialMediaLinks(ModelBuilder builder)
     {
-        builder.Entity<SocialMediaLink>()
+        builder.Entity<SocialMediaLinkEntity>()
             .HasOne(s => s.User)
             .WithMany(u => u.SocialMediaLinks)
             .HasForeignKey(s => s.UserId);
@@ -147,7 +138,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureGeneralBook(ModelBuilder builder)
     {
-        builder.Entity<GeneralBook>()
+        builder.Entity<GeneralBookEntity>()
             .Property(g => g.ReviewAverage)
             .HasComputedColumnSql("(SELECT AVG(CAST([Rating] AS float)) FROM [Reviews] WHERE [BookId] = [Id])")
             .ValueGeneratedOnAddOrUpdate();
@@ -156,12 +147,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     private void ConfigureReview(ModelBuilder builder)
     {
         // Reviews
-        builder.Entity<Review>()
+        builder.Entity<ReviewEntity>()
             .HasOne(r => r.User)
             .WithMany(u => u.Reviews)
             .HasForeignKey(r => r.UserId);
 
-        builder.Entity<Review>()
+        builder.Entity<ReviewEntity>()
             .HasOne(r => r.Book)
             .WithMany(b => b.Reviews)
             .HasForeignKey(r => r.BookId);
@@ -169,24 +160,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureSwap(ModelBuilder builder)
     {
-        builder.Entity<Swap>()
+        builder.Entity<SwapEntity>()
             .HasOne(s => s.SubSwapA)
             .WithOne()
-            .HasForeignKey<Swap>(s => s.SubSwapAId)
+            .HasForeignKey<SwapEntity>(s => s.SubSwapAId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<Swap>()
+        builder.Entity<SwapEntity>()
             .HasOne(s => s.SubSwapB)
             .WithOne()
-            .HasForeignKey<Swap>(s => s.SubSwapBId)
+            .HasForeignKey<SwapEntity>(s => s.SubSwapBId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<Swap>()
+        builder.Entity<SwapEntity>()
             .HasMany(s => s.Meetups)
             .WithOne(m => m.Swap)
             .HasForeignKey(m => m.SwapId);
 
-        builder.Entity<Swap>()
+        builder.Entity<SwapEntity>()
             .HasMany(s => s.TimelineUpdates)
             .WithOne(t => t.Swap)
             .HasForeignKey(t => t.SwapId);
@@ -194,33 +185,33 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureSubSwap(ModelBuilder builder)
     {
-        builder.Entity<SubSwap>()
+        builder.Entity<SubSwapEntity>()
             .HasOne(s => s.User)
             .WithMany(u => u.SubSwaps)
             .HasForeignKey(s => s.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<SubSwap>()
+        builder.Entity<SubSwapEntity>()
             .HasOne(s => s.UserBookReading)
             .WithMany(ub => ub.SubSwaps)
             .HasForeignKey(s => s.UserBookReadingId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<SubSwap>()
+        builder.Entity<SubSwapEntity>()
             .HasOne(s => s.Feedback)
             .WithOne(f => f.SubSwap)
-            .HasForeignKey<Feedback>(f => f.SubSwapId);
+            .HasForeignKey<FeedbackEntity>(f => f.SubSwapId);
 
-        builder.Entity<SubSwap>()
+        builder.Entity<SubSwapEntity>()
             .HasOne(s => s.Issue)
             .WithOne(i => i.SubSwap)
-            .HasForeignKey<Issue>(i => i.SubSwapId);
+            .HasForeignKey<IssueEntity>(i => i.SubSwapId);
     }
 
 
     private void ConfigureMeetup(ModelBuilder builder)
     {
-        builder.Entity<Meetup>()
+        builder.Entity<MeetupEntity>()
             .HasOne(m => m.User)
             .WithMany(u => u.Meetups)
             .HasForeignKey(m => m.SuggestedUserId)
@@ -229,7 +220,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureFeedback(ModelBuilder builder)
     {
-        builder.Entity<Feedback>()
+        builder.Entity<FeedbackEntity>()
             .HasOne(f => f.User)
             .WithMany(u => u.SwapsFeedbacks)
             .HasForeignKey(f => f.UserId)
@@ -238,7 +229,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureIssue(ModelBuilder builder)
     {
-        builder.Entity<Issue>()
+        builder.Entity<IssueEntity>()
             .HasOne(i => i.User)
             .WithMany(u => u.SwapsIssues)
             .HasForeignKey(i => i.UserId)
@@ -247,7 +238,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureTimeline(ModelBuilder builder)
     {
-        builder.Entity<Timeline>()
+        builder.Entity<TimelineEntity>()
             .HasOne(t => t.User)
             .WithMany(u => u.SwapsTimelineupdates)
             .HasForeignKey(t => t.UserId)
@@ -256,16 +247,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureUserFollowing(ModelBuilder builder)
     {
-        builder.Entity<UserFollowing>()
+        builder.Entity<UserFollowingEntity>()
             .HasKey(uf => new { uf.FollowerId, uf.FollowedId });
 
-        builder.Entity<UserFollowing>()
+        builder.Entity<UserFollowingEntity>()
             .HasOne(uf => uf.Follower)
             .WithMany(u => u.Following)
             .HasForeignKey(uf => uf.FollowerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<UserFollowing>()
+        builder.Entity<UserFollowingEntity>()
             .HasOne(uf => uf.Followed)
             .WithMany(u => u.Followers)
             .HasForeignKey(uf => uf.FollowedId)
@@ -274,16 +265,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureUserBlocked(ModelBuilder builder)
     {
-        builder.Entity<UserBlocked>()
+        builder.Entity<UserBlockedEntity>()
             .HasKey(ub => new { ub.BlockerId, ub.BlockedId });
 
-        builder.Entity<UserBlocked>()
+        builder.Entity<UserBlockedEntity>()
             .HasOne(ub => ub.Blocker)
             .WithMany(u => u.BlockedUsers)
             .HasForeignKey(ub => ub.BlockerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Entity<UserBlocked>()
+        builder.Entity<UserBlockedEntity>()
             .HasOne(ub => ub.Blocked)
             .WithMany()
             .HasForeignKey(ub => ub.BlockedId)
@@ -293,31 +284,31 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     private void ConfigureDataTypesAndConstraints(ModelBuilder builder)
     {
         // Coordinates precision
-        builder.Entity<Meetup>()
+        builder.Entity<MeetupEntity>()
             .Property(m => m.Location_X)
             .HasColumnType("decimal(10,7)");
 
-        builder.Entity<Meetup>()
+        builder.Entity<MeetupEntity>()
             .Property(m => m.Location_Y)
             .HasColumnType("decimal(10,7)");
         
         // Reputation constraint
-        builder.Entity<ApplicationUser>()
+        builder.Entity<UserEntity>()
             .Property(u => u.Reputation)
             .HasColumnType("decimal(4,3)");
 
         // Using ToTable for check constraints
-        builder.Entity<ApplicationUser>(entity =>
+        builder.Entity<UserEntity>(entity =>
         {
             entity.ToTable(t => t.HasCheckConstraint("CK_Reputation_Range", "[Reputation] BETWEEN 0 AND 5"));
         });
 
-        builder.Entity<Feedback>(entity =>
+        builder.Entity<FeedbackEntity>(entity =>
         {
             entity.ToTable(t => t.HasCheckConstraint("CK_Feedback_Stars", "[Stars] BETWEEN 1 AND 10"));
         });
 
-        builder.Entity<Review>(entity =>
+        builder.Entity<ReviewEntity>(entity =>
         {
             entity.ToTable(t => t.HasCheckConstraint("CK_Review_Stars", "[Stars] BETWEEN 1 AND 10"));
         });

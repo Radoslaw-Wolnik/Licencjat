@@ -7,7 +7,7 @@ using Backend.Domain.Errors;
 
 namespace Backend.Infrastructure.Entities;
 
-public class GeneralBook
+public class GeneralBookEntity
 {
     public Guid Id { get; set; }
     // info
@@ -30,8 +30,8 @@ public class GeneralBook
     public virtual ICollection<BookGenre> Genres { get; set; } = [];
 
     // references
-    public virtual ICollection<UserBook> UserBooks { get; set; } = [];
-    public virtual ICollection<Review> Reviews { get; set; } = [];
-    public virtual ICollection<ApplicationUser> WishlistedByUsers { get; set; } = [];
-    public virtual ICollection<ApplicationUser> FollowedByUsers { get; set; } = [];
+    public virtual ICollection<UserBookEntity> UserBooks { get; set; } = [];
+    public virtual ICollection<ReviewEntity> Reviews { get; set; } = [];
+    public virtual ICollection<UserEntity> WishlistedByUsers { get; set; } = [];
+    public virtual ICollection<UserEntity> FollowedByUsers { get; set; } = [];
 }

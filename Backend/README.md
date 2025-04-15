@@ -13,6 +13,7 @@
 ├── 📂 Backend.Application # Application Layer
 │   ├── 📂 Services # Business logic implementations
 │   ├── 📂 DTOs # Data Transfer Objects
+│   ├── 📂 Validators # validation logic for DTOs
 │   └── 📂 Interfaces # Service contracts
 ├── 📂 Backend.Infrastructure # Infrastructure Layer
 │   ├── 📂 Data # Database configuration
@@ -62,15 +63,6 @@
 
 ---
 
-## NuGet Packages
-- **API**: Web-related packages (JWT, Swagger)
-- **Infrastructure**: EF Core + PostgreSQL
-- **Application/Domain**: Typically no packages needed (pure business logic)
-- Optional for Application:
-  ```bash
-  dotnet add package MediatR          # For CQRS
-  dotnet add package AutoMapper       # For object mapping
-  ```
 
 ## First time setup project
 ``` bash
@@ -89,21 +81,14 @@ dotnet ef database update --project Backend.Infrastructure
 
 
 # 3. Start containers
-docker-compose up --build
+docker-compose up --build --d
+# --d for detached
 
 # 4. Test API
 curl https://localhost:5000/swagger
 ```
 
-## Testing Authentication
-``` bash
-# Login example
-curl -X POST "https://localhost:5001/api/auth/login" \
-     -H "Content-Type: application/json" \
-     -d '{"email":"user@example.com","password":"Password123!"}'
 
-# Response will set auth cookies automatically
-```
-
+## Additional info
 to remove migrations use: 
-`ef migrations remove`
+`ef migrations remove` - but you need to run db to do it

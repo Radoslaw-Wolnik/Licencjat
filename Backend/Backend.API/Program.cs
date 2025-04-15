@@ -39,7 +39,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ========== IDENTITY & AUTHENTICATION ========== //
-builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+builder.Services.AddIdentity<UserEntity, IdentityRole<Guid>>(options =>
     {
         // Password Policy
         options.Password.RequireDigit = true;

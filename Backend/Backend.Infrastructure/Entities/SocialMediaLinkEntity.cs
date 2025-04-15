@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
 
-public class SocialMediaLink
+public class SocialMediaLinkEntity
 {
     public Guid Id { get; set; }
     
@@ -16,5 +16,5 @@ public class SocialMediaLink
     // references
     public Guid UserId {get; set; }
     [Required]
-    public virtual ApplicationUser User { get; set; } = null!;
+    public virtual UserEntity User { get; set; } = null!;
 }

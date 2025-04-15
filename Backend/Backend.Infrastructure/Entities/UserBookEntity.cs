@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
 
-public class UserBook
+public class UserBookEntity
 {
     public Guid Id { get; set; }
     
@@ -29,9 +29,9 @@ public class UserBook
     public Guid UserId { get; set; }
     public Guid BookId { get; set; }
     [Required]
-    public virtual ApplicationUser User { get; set; } = null!;
+    public virtual UserEntity User { get; set; } = null!;
     [Required]
-    public virtual GeneralBook Book { get; set; } = null!;
+    public virtual GeneralBookEntity Book { get; set; } = null!;
 
-    public virtual ICollection<SubSwap> SubSwaps { get; set; } = [];
+    public virtual ICollection<SubSwapEntity> SubSwaps { get; set; } = [];
 }
