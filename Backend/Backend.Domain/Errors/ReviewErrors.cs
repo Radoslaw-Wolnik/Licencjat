@@ -12,4 +12,9 @@ public static class ReviewErrors
         "Review.CommentTooLong",
         "Review comment cannot exceed 500 characters",
         ErrorType.BadRequest);
+    
+    public static DomainError Duplicate => new(
+        "Review.Duplicate",
+        "Somehow user managed to post duplicate of their review",
+        ErrorType.Conflict);
 }

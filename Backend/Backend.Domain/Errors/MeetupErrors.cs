@@ -8,4 +8,14 @@ public static class MeetupErrors
         "Specified meetup status is not valid",
         ErrorType.BadRequest);
 
+    public static DomainError TooMany => new(
+        "Meetup.TooMany",
+        "Only two meetings are allowed per swap",
+        ErrorType.BadRequest);
+    
+    public static DomainError AlreadyConfirmed => new(
+        "Meetup.AlreadyConfirmed",
+        "The meetup was already confirmed or done",
+        ErrorType.BadRequest);
+
 }

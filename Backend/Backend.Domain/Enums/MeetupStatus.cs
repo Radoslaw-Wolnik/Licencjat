@@ -7,7 +7,7 @@ public enum MeetupStatus
     NoLocation,
     [Display(Name = "Changed the Location")]
     ChangedLocation,
-    Waiting,
-    Agreed,
+    Proposed,
+    Confirmed,
     Completed
 }
