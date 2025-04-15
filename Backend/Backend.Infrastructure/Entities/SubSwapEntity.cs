@@ -12,7 +12,7 @@ public class SubSwapEntity
     
     // info
     public int PageAt { get; set; } = 0; // page that user a is currently at
-    public bool IsRequesting { get; set; } // is this the requesting or the accepting user
+    // public bool IsRequesting { get; set; } // is this the requesting or the accepting user
 
     // Many To One
     public Guid SwapId { get; set; }

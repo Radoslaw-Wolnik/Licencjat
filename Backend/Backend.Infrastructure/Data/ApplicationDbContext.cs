@@ -161,15 +161,15 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
     private void ConfigureSwap(ModelBuilder builder)
     {
         builder.Entity<SwapEntity>()
-            .HasOne(s => s.SubSwapA)
+            .HasOne(s => s.SubSwapRequesting)
             .WithOne()
-            .HasForeignKey<SwapEntity>(s => s.SubSwapAId)
+            .HasForeignKey<SwapEntity>(s => s.SubSwapRequestingId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<SwapEntity>()
-            .HasOne(s => s.SubSwapB)
+            .HasOne(s => s.SubSwapAccepting)
             .WithOne()
-            .HasForeignKey<SwapEntity>(s => s.SubSwapBId)
+            .HasForeignKey<SwapEntity>(s => s.SubSwapAcceptingId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<SwapEntity>()

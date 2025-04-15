@@ -12,12 +12,12 @@ public class SwapEntity
     public Guid Id { get; set; }
 
     // Many To One
-    public Guid SubSwapAId { get; set; } // person that requests the swap
-    public Guid SubSwapBId { get; set; } // person that agrees for swap
+    public Guid SubSwapRequestingId { get; set; } // person that requests the swap
+    public Guid? SubSwapAcceptingId { get; set; } // person that agrees for swap
     [Required]
-    public virtual SubSwapEntity SubSwapA { get; set; } = null!;
-    [Required]
-    public virtual SubSwapEntity SubSwapB { get; set; } = null!;
+    public virtual SubSwapEntity SubSwapRequesting { get; set; } = null!;
+    [ForeignKey("SubSwapAcceptingId")]
+    public virtual SubSwapEntity? SubSwapAccepting { get; set; }
 
     // two/many to One
     public virtual ICollection<MeetupEntity> Meetups { get; set; } = []; // 2
