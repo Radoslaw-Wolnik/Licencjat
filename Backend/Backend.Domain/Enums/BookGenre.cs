@@ -2,10 +2,22 @@ namespace Backend.Domain.Enums;
 
 public enum BookGenre
 {
-    Action,
-    Adventure,
-    Autobiography,
-    Biography,
+    Fiction,
+    NonFiction,
+    Mystery,
+    Thriller,
+    Romance,
+    ScienceFiction,
     Fantasy,
-    SciFi
+    Biography,
+    History,
+    SelfHelp,
+    YoungAdult,
+    Children,
+    Poetry,
+    Drama,
+    Horror,
+    Comedy,
+    Academic,
+    // more genres ...
 }

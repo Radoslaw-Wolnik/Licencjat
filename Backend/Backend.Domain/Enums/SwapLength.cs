@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace Backend.Domain.Enums;
 
-public enum SwapLenght
+public enum SwapLength
 {
     [Display(Name = "Just right")]
     JustRigh,
