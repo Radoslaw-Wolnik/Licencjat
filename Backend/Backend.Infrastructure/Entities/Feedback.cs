@@ -1,6 +1,7 @@
 // Backend.Infrastructure/Entities/Feedback.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Backend.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
@@ -33,35 +34,4 @@ public class Feedback
     public virtual ApplicationUser User { get; set; } = null!;
     public virtual SubSwap? SubSwap { get; set; } // nullable foreign key structure, ofc it will always be here not null
 
-}
-
-public enum SwapLenght
-{
-    [Display(Name = "Just right")]
-    JustRigh,
-    [Display(Name = "Too long")]
-    TooLong,
-    [Display(Name = "Too short")]
-    TooShort,
-}
-
-public enum SwapConditionBook
-{
-    Same,
-    Worse,
-    [Display(Name = "Very very bad")]
-    VeryVeryBad,
-    [Display(Name = "Somehow better")]
-    Better,
-    Destroyed
-}
-
-public enum SwapCommunication
-{
-    Okay,
-    Slow,
-    Perfect,
-    [Display(Name = "Too much")]
-    TooMuch,
-    Problematic
 }

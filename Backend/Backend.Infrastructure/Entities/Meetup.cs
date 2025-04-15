@@ -1,6 +1,7 @@
 // Backend.Infrastructure/Entities/ApplicationUser.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Backend.Domain.Enums;
 using Backend.Infrastructure.Data.Attributes;
 using Microsoft.AspNetCore.Identity;
 
@@ -30,15 +31,4 @@ public class Meetup
     [Required]
     public virtual Swap Swap { get; set; } = null!;
 
-}
-
-public enum MeetupStatus
-{
-    [Display(Name = "No location selected")]
-    NoLocation,
-    [Display(Name = "Changed the Location")]
-    ChangedLocation,
-    Waiting,
-    Agreed,
-    Completed
 }

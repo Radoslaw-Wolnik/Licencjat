@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Domain.Entities;
+using Backend.Domain.Enums;
 using Backend.Domain.Errors;
 
 namespace Backend.Infrastructure.Entities;
@@ -24,6 +25,9 @@ public class GeneralBook
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     [Column(TypeName = "decimal(4,3)")]
     public float? ReviewAverage { get; set; } // calculated based on reviews but easier to fetch then calculate every time
+
+
+    public virtual ICollection<BookGenre> Genres { get; set; } = [];
 
     // references
     public virtual ICollection<UserBook> UserBooks { get; set; } = [];

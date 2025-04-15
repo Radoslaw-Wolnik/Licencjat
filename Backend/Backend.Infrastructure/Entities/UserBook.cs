@@ -1,6 +1,7 @@
 // Backend.Infrastructure/Entities/ApplicationUser.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Backend.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
@@ -33,23 +34,4 @@ public class UserBook
     public virtual GeneralBook Book { get; set; } = null!;
 
     public virtual ICollection<SubSwap> SubSwaps { get; set; } = [];
-}
-
-public enum BookStatus
-{
-    Finished,
-    Reading,
-    Waiting,
-    [Display(Name = "Coffee Table Decoration")]
-    CoffeeTableDecoration
-}
-
-public enum BookState
-{
-    Borrowed,
-    Available,
-    [Display(Name = "Not Owned")]
-    NotOwned,
-    [Display(Name = "Not Available")]
-    NotAvailable
 }
