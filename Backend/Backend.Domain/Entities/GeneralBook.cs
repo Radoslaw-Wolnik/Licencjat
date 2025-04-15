@@ -38,7 +38,7 @@ public sealed class GeneralBook : Entity<Guid>
         string title,
         string author,
         DateOnly published,
-        string originalLanguage)
+        LanguageCode originalLanguage)
     {
         var errors = new List<IError>();
 
@@ -46,9 +46,10 @@ public sealed class GeneralBook : Entity<Guid>
         //     errors.Add(BookErrors.InvalidPublicationDate);
 
         // honestly we cound check if language is valid here
-        var lng = LanguageCode.Create(originalLanguage);
-        if (lng.IsFailed)
-            errors.Add(new Error("wrong languge code"));
+        // var lng = LanguageCode.Create(originalLanguage);
+        // if (lng.IsFailed)
+        //     errors.Add(new Error("wrong languge code"));
+        // this is a validation of request so it resides in the apliction layer, not here
         
         if (errors.Any())
             return Result.Fail<GeneralBook>(errors);
@@ -58,7 +59,7 @@ public sealed class GeneralBook : Entity<Guid>
             title,
             author,
             published,
-            lng.Value
+            originalLanguage
         );
     }
 

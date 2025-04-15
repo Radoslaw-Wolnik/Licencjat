@@ -1,6 +1,7 @@
 
 // Application/Features/Auth/RegisterCommandHandler.cs
 using Backend.Application.Interfaces;
+using Backend.Domain.Common;
 using Backend.Domain.Entities;
 using Backend.Domain.Errors;
 using FluentResults;
@@ -33,14 +34,20 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         if (usernameExists.Value) return Result.Fail<Guid>(AuthErrors.UsernameTaken);
 
         // 2. Create domain entity
+
+        var code = CountryCode.Create(command.Country);
+        if (code.IsFailed) return Result.Fail<Guid>(AuthErrors.InvalidCountryCode);
+
+        var loc = Location.Create(city: command.City, country: code.Value);
+        if (loc.IsFailed) return Result.Fail<Guid>(LocationErrors.WrongLocation);
+
         var userResult = User.Create(
             command.Email,
             command.Username,
             command.FirstName,
             command.LastName,
             command.BirthDate,
-            command.City,
-            command.Country);
+            loc.Value);
         
         if (userResult.IsFailed) return Result.Fail<Guid>(userResult.Errors);
 

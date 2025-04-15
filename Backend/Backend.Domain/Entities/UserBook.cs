@@ -38,7 +38,7 @@ public sealed class UserBook : Entity<Guid>
         Guid generalBookId,
         BookStatus status,
         BookState state,
-        string language,
+        LanguageCode language,
         int pageCount)
     {
         var errors = new List<IError>();
@@ -58,14 +58,13 @@ public sealed class UserBook : Entity<Guid>
         if (pageCount <= 0)
             errors.Add(UserBookErrors.InvalidPageCount);
 
-        var lng = LanguageCode.Create(language);
-
-        if (lng.IsFailed)
-            errors.Add(new Error("wrong language code")); // ik this shoudl be propagated by lng.Errors
+        // var lng = LanguageCode.Create(language);
+        // if (lng.IsFailed)
+        //     errors.Add(new Error("wrong language code")); // ik this shoudl be propagated by lng.Errors
         
+
         if (errors.Any())
             return Result.Fail<UserBook>(errors);
-        
 
         return new UserBook(
             Guid.NewGuid(),
@@ -73,7 +72,7 @@ public sealed class UserBook : Entity<Guid>
             generalBookId,
             status,
             state,
-            lng.Value,
+            language,
             pageCount
         );
     }

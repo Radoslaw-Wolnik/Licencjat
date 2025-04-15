@@ -60,21 +60,12 @@ public sealed class User : Entity<Guid>
         string firstName,
         string lastName,
         DateOnly birthDate,
-        string city,
-        string country)
+        Location location)
     {
         var errors = new List<IError>();
         
         if (birthDate > DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-13)))
             errors.Add(AuthErrors.Underage);
-        
-        var code = CountryCode.Create(country);
-        if (code.IsFailed)
-            errors.Add(new Error("wrong country code"));
-
-        var loc = Location.Create(city: city, country: code.Value);
-        if (loc.IsFailed)
-            errors.Add(LocationErrors.WrongLocation);
 
         if (errors.Any())
             return Result.Fail<User>(errors);
@@ -86,7 +77,7 @@ public sealed class User : Entity<Guid>
             firstName,
             lastName,
             birthDate,
-            loc.Value,
+            location,
             Reputation.Initial()
         );
     }

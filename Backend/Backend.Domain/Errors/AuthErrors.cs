@@ -36,4 +36,9 @@ public static class AuthErrors
         "Account is temporarily locked",
         ErrorType.Forbidden);
 
+    public static DomainError InvalidCountryCode => new(
+        "User.InvalidCountryCode",
+        "the country code provided is not valid",
+        ErrorType.Validation);
+
 }
