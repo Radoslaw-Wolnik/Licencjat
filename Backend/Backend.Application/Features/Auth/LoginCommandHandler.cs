@@ -36,7 +36,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<U
         var userResult = await _userRepo.FirstOrDefaultAsync(predicate);
         
         if (userResult.IsFailed)
-            return Result.Fail<User>(UserErrors.InvalidCredentials);
+            return Result.Fail<User>(AuthErrors.InvalidCredentials);
 
         // Attempt login with stored email
         var loginResult = await _signInService.LoginAsync(

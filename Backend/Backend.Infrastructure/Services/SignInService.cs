@@ -14,11 +14,11 @@ namespace Backend.Infrastructure.Services;
 
 public class SignInService : ISignInService
 {
-    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly SignInManager<UserEntity> _signInManager;
     private readonly IMapper _mapper;
 
     public SignInService(
-        SignInManager<ApplicationUser> signInManager,
+        SignInManager<UserEntity> signInManager,
         IMapper mapper)
     {
         _signInManager = signInManager;
@@ -29,7 +29,7 @@ public class SignInService : ISignInService
     {
         var user = await _signInManager.UserManager.FindByEmailAsync(email);
         if (user is null)
-            return Result.Fail(UserErrors.InvalidCredentials);
+            return Result.Fail(AuthErrors.InvalidCredentials);
 
         var result = await _signInManager.PasswordSignInAsync(
             user, password, rememberMe, lockoutOnFailure: true);
@@ -38,7 +38,7 @@ public class SignInService : ISignInService
             return Result.Ok();
 
         return result.IsLockedOut
-            ? Result.Fail(UserErrors.AccountLocked)
-            : Result.Fail(UserErrors.InvalidCredentials);
+            ? Result.Fail(AuthErrors.AccountLocked)
+            : Result.Fail(AuthErrors.InvalidCredentials);
     }
 }

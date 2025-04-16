@@ -10,10 +10,10 @@ namespace BAckend.Infrastructure.Services;
 
 public sealed class IdentityService : IIdentityService
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly UserManager<UserEntity> _userManager;
 
     public IdentityService(
-        UserManager<ApplicationUser> userManager)
+        UserManager<UserEntity> userManager)
     {
         _userManager = userManager;
     }
@@ -28,7 +28,7 @@ public sealed class IdentityService : IIdentityService
         string country,
         DateOnly birthdate)
     {
-        var user = new ApplicationUser { Email = email, UserName = username, FirstName = firstname, LastName = lastname, City = city, Country = country, BirthDate = birthdate};
+        var user = new UserEntity { Email = email, UserName = username, FirstName = firstname, LastName = lastname, City = city, Country = country, BirthDate = birthdate};
         var result = await _userManager.CreateAsync(user, password);
 
         return result.Succeeded
