@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.Reflection;
 using Backend.Infrastructure.Data.Attributes;
+using Backend.Infrastructure.Views;
 
 namespace Backend.Infrastructure.Data;
 
@@ -29,6 +30,9 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
     // Many-to-Many Tables
     public DbSet<UserFollowingEntity> UserFollowings { get; set; }
     public DbSet<UserBlockedEntity> UserBlockeds { get; set; }
+
+    // views
+    public DbSet<GeneralBookWithAverageRating> GeneralBooksWithAverageRatings { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -38,7 +42,6 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
 
         // Configurate Single tables
         ConfigureApplicationUser(builder);
-        ConfigureGeneralBook(builder);
         ConfigureUserBook(builder);
         ConfigureSocialMediaLinks(builder);
         ConfigureReview(builder);
@@ -55,6 +58,13 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
 
         // Constrains
         ConfigureDataTypesAndConstraints(builder);
+
+        // Views
+        builder.Entity<GeneralBookWithAverageRating>(entity =>
+        {
+            entity.HasNoKey(); // Views typically don't have keys
+            entity.ToView("GeneralBooksWithAverageRatings"); // Name of the view
+        });
     }
 
     private void ConfigureShadowProperties(ModelBuilder builder)
@@ -134,14 +144,6 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
             .HasOne(s => s.User)
             .WithMany(u => u.SocialMediaLinks)
             .HasForeignKey(s => s.UserId);
-    }
-
-    private void ConfigureGeneralBook(ModelBuilder builder)
-    {
-        builder.Entity<GeneralBookEntity>()
-            .Property(g => g.ReviewAverage)
-            .HasComputedColumnSql("(SELECT AVG(CAST([Rating] AS float)) FROM [Reviews] WHERE [BookId] = [Id])")
-            .ValueGeneratedOnAddOrUpdate();
     }
 
     private void ConfigureReview(ModelBuilder builder)
@@ -300,17 +302,26 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
         // Using ToTable for check constraints
         builder.Entity<UserEntity>(entity =>
         {
-            entity.ToTable(t => t.HasCheckConstraint("CK_Reputation_Range", "[Reputation] BETWEEN 0 AND 5"));
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_Reputation_Range", 
+                "\"Reputation\" BETWEEN 1 AND 5" // PostgreSQL-compatible syntax
+            ));
         });
 
         builder.Entity<FeedbackEntity>(entity =>
         {
-            entity.ToTable(t => t.HasCheckConstraint("CK_Feedback_Stars", "[Stars] BETWEEN 1 AND 10"));
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_Feedback_Stars", 
+                "\"Stars\" BETWEEN 1 AND 5"
+            ));
         });
 
         builder.Entity<ReviewEntity>(entity =>
         {
-            entity.ToTable(t => t.HasCheckConstraint("CK_Review_Stars", "[Stars] BETWEEN 1 AND 10"));
+            entity.ToTable(t => t.HasCheckConstraint(
+                "CK_Review_Stars", 
+                "\"Rating\" BETWEEN 1 AND 10"
+            ));
         });
     }
 }

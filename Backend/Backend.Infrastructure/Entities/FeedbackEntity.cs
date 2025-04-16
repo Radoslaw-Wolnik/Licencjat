@@ -19,12 +19,8 @@ public class FeedbackEntity
     public bool Recommend { get; set; } // would you or would you not recomend
 
     // statuses
-    [Column(TypeName = "nvarchar(24)")]
     public SwapLength Lenght { get; set; }
-    
-    [Column(TypeName = "nvarchar(24)")]
     public SwapConditionBook ConditionBook { get; set; }
-    [Column(TypeName = "nvarchar(24)")]
     public SwapCommunication Communication { get; set; }
 
     // references

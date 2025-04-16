@@ -19,7 +19,6 @@ public class MeetupEntity
     public float? Location_Y { get; set; }
 
     // status 
-    [Column(TypeName = "nvarchar(24)")]
     public MeetupStatus Status { get; set; }
     
 

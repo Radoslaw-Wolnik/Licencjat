@@ -14,7 +14,6 @@ public class TimelineEntity
     public string Description { get; set; } = null!;
 
     // status 
-    [Column(TypeName = "nvarchar(24)")]
     public TimelineStatus Status { get; set; }
     
 

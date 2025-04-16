@@ -19,10 +19,7 @@ public class UserBookEntity
     public string CoverPhoto { get; set; } = null!;
 
     // status & state
-    [Column(TypeName = "nvarchar(24)")]
     public BookStatus Status { get; set; }
-    
-    [Column(TypeName = "nvarchar(24)")]
     public BookState State { get; set; }
 
     // references

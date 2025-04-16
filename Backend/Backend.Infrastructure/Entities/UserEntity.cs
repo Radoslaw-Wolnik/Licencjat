@@ -25,7 +25,8 @@ public class UserEntity : IdentityUser<Guid>
     public string? Bio { get; set; } = null;
     
     [Column(TypeName = "decimal(4,3)")] // 4 digits total (e.g., 5.000)
-    public float Reputation { get; set; } = 4; // 1-5
+    [Range(1.0, 5.0)]
+    public float Reputation { get; set; } = 4.0f; // 1-5
 
     // RelationShips
     public virtual ICollection<UserBookEntity> UserBooks { get; set; } = [];
