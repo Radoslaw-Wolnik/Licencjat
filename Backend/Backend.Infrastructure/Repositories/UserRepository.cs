@@ -13,6 +13,7 @@ using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Domain.Errors;
 using Backend.Infrastructure.Mapping;
 using Backend.Application.DTOs;
+using Backend.Application.DTOs.Auth;
 
 namespace Backend.Infrastructure.Repositories;
 
@@ -29,13 +30,9 @@ public class UserRepository : IUserRepository
 
     public async Task<Result<bool>> ExistsAsync(Expression<Func<UserProjection, bool>> predicate)
     {
-        // Map domain predicate to infrastructure model in the projection in between
-        var projectionPredicate = _mapper.MapExpression<Expression<Func<UserProjection, bool>>>(predicate);
-        var entityPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(projectionPredicate);
-        
-        bool exists = await _context.Users
-            .AnyAsync(entityPredicate);
-        
+        var exists = await _context.Users
+            .ProjectTo<UserProjection>(_mapper.ConfigurationProvider)
+            .AnyAsync(predicate);
         return Result.Ok(exists);
     }
 
@@ -69,29 +66,28 @@ public class UserRepository : IUserRepository
             : Result.Ok(_mapper.Map<User>(dbUser));
     }
 
-    public async Task<Result<User>> FirstOrDefaultAsync(
+    public async Task<Result<User>> GetByAsync(
         Expression<Func<UserProjection, bool>> predicate
     ){
         try
         {
-            Console.WriteLine($"[User repository] passed expression: {predicate}");
-            var projectionPredicate = _mapper.MapExpression<Expression<Func<UserProjection, bool>>>(predicate);
-            var entityPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(projectionPredicate);
-            
-            var dbUser = await _context.Users
+            var entityPredicate = 
+                _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
+
+            var entity = await _context.Users
                 .FirstOrDefaultAsync(entityPredicate);
-                
-            return dbUser != null 
-                ? _mapper.Map<User>(dbUser)
-                // : Result.Fail<User>(new DomainError("User.NotFound", "User not found", ErrorType.NotFound));
-                : Result.Fail<User>(UserErrors.NotFound);
+            
+            if (entity is null)
+                return Result.Fail<User>(UserErrors.NotFound);
+
+            // Automapper will then run your ConstructUsing(src=>MapToDomain(src))
+            var user = _mapper.Map<User>(entity);
+            return Result.Ok(user);
         }
         catch (Exception ex)
         {
-            return Result.Fail<User>(new DomainError(
-                "DatabaseError", 
-                ex.Message, 
-                ErrorType.StorageError));
+            return Result.Fail<User>
+                (new DomainError("DatabaseError", ex.Message, ErrorType.StorageError));
         }
     }
 
@@ -101,26 +97,44 @@ public class UserRepository : IUserRepository
     ){
         try
         {
-            var query = _context.Users.AsQueryable();
-            
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
+            IQueryable<UserEntity> query = _context.Users;
+            foreach (var inc in includes)
+                query = query.Include(inc);
 
             var entity = await query.FirstOrDefaultAsync(u => u.Id == userId);
-            // return _mapper.Map<User>(entity);
-            return entity != null 
-                ? _mapper.Map<User>(entity)
-                : Result.Fail<User>(UserErrors.NotFound);
-            }
+            if (entity is null)
+                return Result.Fail<User>(UserErrors.NotFound);
+
+            return Result.Ok(_mapper.Map<User>(entity));
+        }
         catch (Exception ex)
         {
-            return Result.Fail<User>(new DomainError(
-                "DatabaseError", 
-                ex.Message, 
-                ErrorType.StorageError));
+            return Result.Fail<User>(
+                new DomainError("DatabaseError", ex.Message, ErrorType.StorageError)
+            );
         }
+    }
+
+    public async Task<Result<LoginUserInfo>> GetLoginInfoAsync(
+        Expression<Func<UserProjection,bool>> predicate
+    ){
+        var entityPredicate = 
+            _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
+
+        var info = await _context.Users
+            .Where(entityPredicate)
+            .Select(u => new LoginUserInfo {
+            Id           = u.Id,
+            Email        = u.Email,
+            UserName     = u.UserName,
+            // PasswordHash = u.PasswordHash,
+            // …
+            })
+            .FirstOrDefaultAsync();
+
+        return info is null
+            ? Result.Fail<LoginUserInfo>(AuthErrors.InvalidCredentials)
+            : Result.Ok(info);
     }
 
 
