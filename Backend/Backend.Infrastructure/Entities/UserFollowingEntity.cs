@@ -3,6 +3,7 @@ namespace Backend.Infrastructure.Entities;
 
 public class UserFollowingEntity
 {
+    public Guid Id { get; set; }
     public Guid FollowerId { get; set; }
     public Guid FollowedId { get; set; }
     

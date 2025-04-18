@@ -3,6 +3,7 @@ namespace Backend.Infrastructure.Entities;
 
 public class UserBlockedEntity
 {
+    public Guid Id { get; set; }
     public Guid BlockerId { get; set; }
     public Guid BlockedId { get; set; }
     
