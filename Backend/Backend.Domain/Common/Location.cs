@@ -3,8 +3,17 @@ using FluentResults;
 
 namespace Backend.Domain.Common;
 
-public sealed record Location(string City, CountryCode Country)
+public sealed record Location
 {
+    public string City { get; }
+    public CountryCode Country { get; }
+
+    public Location(string city, CountryCode country)
+    {
+        City = city;
+        Country = country;
+    }
+
     public static Result<Location> Create(string city, CountryCode country)
     {
 
@@ -20,4 +29,11 @@ public sealed record Location(string City, CountryCode Country)
             ? Result.Fail<Location>(errors) 
             : new Location(city.Trim(), country);
     }
+    
+    public void Deconstruct(out string city, out CountryCode country)
+    {
+        city = City;
+        country = Country;
+    }
+
 }

@@ -6,6 +6,8 @@ namespace Backend.Domain.Common;
 
 public sealed record LanguageCode
 {
+    public string Code { get; }
+
     private static readonly Regex ValidationRegex = new("^[a-z]{2,3}$");
     private static readonly HashSet<string> ValidCodes = new()
     {
@@ -14,8 +16,6 @@ public sealed record LanguageCode
         "pt", "sv", "no", "da", "fi", "ar", "hi", "ko", "el", "he",
         // Add other codes
     };
-
-    public string Code { get; }
 
     private LanguageCode(string code) => Code = code;
 

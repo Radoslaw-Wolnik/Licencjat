@@ -17,8 +17,10 @@ public sealed record CountryCode
 
     public string Code { get; }
 
-    private CountryCode(string code) => Code = code;
-
+    public CountryCode(string code) { 
+        Code = code;
+    }
+    
     public static Result<CountryCode> Create(string code)
     {
         var errors = new List<IError>();
@@ -37,4 +39,6 @@ public sealed record CountryCode
             ? Result.Fail(errors) 
             : new CountryCode(normalized);
     }
+
+    public static CountryCode FromCode(string code) => new(code);
 }
