@@ -1,10 +1,9 @@
-using System.Linq;
 using AutoMapper;
-using Backend.Infrastructure.Entities;
 using Backend.Domain.Entities;
+using Backend.Infrastructure.Entities;
 using Backend.Domain.Common;
 using Backend.Domain.Errors;
-using FluentResults;
+using Backend.Application.DTOs;
 
 namespace Backend.Infrastructure.Mapping
 {
@@ -12,12 +11,30 @@ namespace Backend.Infrastructure.Mapping
     {
         public UserProfile()
         {
-            // Entity -> Domain via a single-expression ConstructUsing calling a static helper
+            
+            // Entity -> Domain Mapping
             CreateMap<UserEntity, User>(MemberList.None)
-                .ConstructUsing(src => CreateDomainUser(src))
+                .ConstructUsing(src => MapToDomain(src))
                 .ForAllMembers(opt => opt.Ignore());
 
-            // Domain -> Entity (standard mappings)
+            // Domain -> Entity Mapping
+            CreateMap<User, UserEntity>()
+                .ConvertUsing(src => MapToEntity(src));
+
+            // Query Projection for database operations
+            CreateMap<UserEntity, UserProjection>()
+                .ForMember(dest => dest.LocationCity, opt => opt.MapFrom(src => src.City))
+                .ForMember(dest => dest.LocationCountry, opt => opt.MapFrom(src => src.Country))
+                .ReverseMap();
+            
+            /*
+            CreateMap<User, UserProjection>()
+            .ForMember(dest => dest.LocationCity, opt => opt.MapFrom(src => src.Location.City))
+                .ForMember(dest => dest.LocationCountry, opt => opt.MapFrom(src => src.Location.Country))
+                .ReverseMap();
+            */
+
+            /*
             CreateMap<User, UserEntity>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
@@ -37,9 +54,17 @@ namespace Backend.Infrastructure.Mapping
                 .ForMember(dest => dest.BlockedUsers, opt => opt.Ignore())
                 .ForMember(dest => dest.UserBooks, opt => opt.Ignore())
                 .ForMember(dest => dest.SocialMediaLinks, opt => opt.Ignore());
+            
+            // Entity -> Domain via a single-expression ConstructUsing calling a static helper
+            CreateMap<UserEntity, User>(MemberList.None)
+                .ConstructUsing(src => MapToDomain(src))
+                .ForAllMembers(opt => opt.Ignore());
+            
+            */
+            
         }
 
-        private static User CreateDomainUser(UserEntity src)
+        private static User MapToDomain(UserEntity src)
         {
             // Handle CountryCode creation
             var countryCodeResult = CountryCode.Create(src.Country);
@@ -59,16 +84,6 @@ namespace Backend.Infrastructure.Mapping
                 throw new AutoMapperMappingException(
                     $"Invalid reputation: {string.Join(", ", reputationResult.Errors)}");
 
-            // Extract collection IDs
-            var wishlist = src.Wishlist.Select(gb => gb.Id).ToList();
-            var followedBooks = src.FollowedBooks.Select(gb => gb.Id).ToList();
-            var following = src.Following.Select(f => f.FollowedId).ToList();
-            var followers = src.Followers.Select(f => f.FollowerId).ToList();
-            var blockedUsers = src.BlockedUsers.Select(b => b.BlockedId).ToList();
-            var ownedBooks = src.UserBooks.Select(ub => ub.Id).ToList();
-            var socialMediaLinks = src.SocialMediaLinks.Select(sml => sml.Id).ToList();
-
-            // Reconstitute domain User
             return User.Reconstitute(
                 src.Id,
                 src.Email!,
@@ -80,14 +95,42 @@ namespace Backend.Infrastructure.Mapping
                 reputationResult.Value,
                 src.ProfilePicture,
                 src.Bio,
-                wishlist,
-                followedBooks,
-                following,
-                followers,
-                blockedUsers,
-                ownedBooks,
-                socialMediaLinks
+                // if src.Wishlist is null (not loaded), use empty
+                src.Wishlist?.Select(gb => gb.Id)               ?? Enumerable.Empty<Guid>(),
+                src.FollowedBooks?.Select(gb => gb.Id)          ?? [],
+                src.Following?.Select(f => f.FollowedId)        ?? [],
+                src.Followers?.Select(f => f.FollowerId)        ?? [],
+                src.BlockedUsers?.Select(b => b.BlockedId)      ?? [],
+                src.UserBooks?.Select(ub => ub.Id)              ?? [],
+                src.SocialMediaLinks?.Select(sml => sml.Id)     ?? []
             );
         }
+
+        private static UserEntity MapToEntity(User user)
+        {
+            return new UserEntity
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.Username,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                BirthDate = user.BirthDate,
+                City = user.Location.City,
+                Country = user.Location.Country.Code,
+                Reputation = user.Reputation.Value,
+                ProfilePicture = user.ProfilePicture,
+                Bio = user.Bio,
+                // Collections are handled through separate relationships
+                Wishlist = new List<GeneralBookEntity>(),
+                FollowedBooks = [],
+                Following = [],
+                Followers = [],
+                BlockedUsers = [],
+                UserBooks = [],
+                SocialMediaLinks = []
+            };
+        }
     }
+
 }
