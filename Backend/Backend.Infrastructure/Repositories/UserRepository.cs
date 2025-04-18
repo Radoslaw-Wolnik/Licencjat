@@ -11,6 +11,8 @@ using System.Linq.Expressions;
 using Backend.Domain.Common;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Domain.Errors;
+using Backend.Infrastructure.Mapping;
+using Backend.Application.DTOs;
 
 namespace Backend.Infrastructure.Repositories;
 
@@ -25,13 +27,14 @@ public class UserRepository : IUserRepository
         _mapper = mapper;
     }
 
-    public async Task<Result<bool>> ExistsAsync(Expression<Func<User, bool>> predicate)
+    public async Task<Result<bool>> ExistsAsync(Expression<Func<UserProjection, bool>> predicate)
     {
-        // Map domain predicate to infrastructure model
-        var dbUsrPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
+        // Map domain predicate to infrastructure model in the projection in between
+        var projectionPredicate = _mapper.MapExpression<Expression<Func<UserProjection, bool>>>(predicate);
+        var entityPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(projectionPredicate);
         
         bool exists = await _context.Users
-            .AnyAsync(dbUsrPredicate);
+            .AnyAsync(entityPredicate);
         
         return Result.Ok(exists);
     }
@@ -66,14 +69,17 @@ public class UserRepository : IUserRepository
             : Result.Ok(_mapper.Map<User>(dbUser));
     }
 
-    public async Task<Result<User>> FirstOrDefaultAsync(Expression<Func<User, bool>> predicate)
-    {
+    public async Task<Result<User>> FirstOrDefaultAsync(
+        Expression<Func<UserProjection, bool>> predicate
+    ){
         try
         {
-            var dbUserPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
+            Console.WriteLine($"[User repository] passed expression: {predicate}");
+            var projectionPredicate = _mapper.MapExpression<Expression<Func<UserProjection, bool>>>(predicate);
+            var entityPredicate = _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(projectionPredicate);
             
             var dbUser = await _context.Users
-                .FirstOrDefaultAsync(dbUserPredicate);
+                .FirstOrDefaultAsync(entityPredicate);
                 
             return dbUser != null 
                 ? _mapper.Map<User>(dbUser)
@@ -88,6 +94,35 @@ public class UserRepository : IUserRepository
                 ErrorType.StorageError));
         }
     }
+
+    public async Task<Result<User>> GetUserWithIncludes(
+        Guid userId, 
+        params Expression<Func<UserEntity, object>>[] includes
+    ){
+        try
+        {
+            var query = _context.Users.AsQueryable();
+            
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            var entity = await query.FirstOrDefaultAsync(u => u.Id == userId);
+            // return _mapper.Map<User>(entity);
+            return entity != null 
+                ? _mapper.Map<User>(entity)
+                : Result.Fail<User>(UserErrors.NotFound);
+            }
+        catch (Exception ex)
+        {
+            return Result.Fail<User>(new DomainError(
+                "DatabaseError", 
+                ex.Message, 
+                ErrorType.StorageError));
+        }
+    }
+
 
     // public async Task<Result<?>> UpdateAsync(User newUserData) {}
 
