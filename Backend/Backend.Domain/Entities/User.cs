@@ -18,13 +18,13 @@ public sealed class User : Entity<Guid>
     public string? Bio { get; private set; }
 
     // Relationships
-    private readonly List<Guid> _wishlist = new();
-    private readonly List<Guid> _followedBooks = new();
-    private readonly List<Guid> _following = new();
-    private readonly List<Guid> _followers = new();
-    private readonly List<Guid> _blockedUsers = new();
-    private readonly List<Guid> _ownedBooks = new(); // guids to userbook
-    private readonly List<SocialMediaLink> _socialMediaLinks = new();
+    private List<Guid> _wishlist = new();
+    private List<Guid> _followedBooks = new();
+    private List<Guid> _following = new();
+    private List<Guid> _followers = new();
+    private List<Guid> _blockedUsers = new();
+    private List<Guid> _ownedBooks = new(); // guids to userbook
+    private List<Guid> _socialMediaLinks = new();
 
     public IReadOnlyCollection<Guid> Wishlist => _wishlist.AsReadOnly();
     public IReadOnlyCollection<Guid> FollowedBooks => _followedBooks.AsReadOnly();
@@ -32,7 +32,7 @@ public sealed class User : Entity<Guid>
     public IReadOnlyCollection<Guid> Followers => _followers.AsReadOnly();
     public IReadOnlyCollection<Guid> BlockedUsers => _blockedUsers.AsReadOnly();
     public IReadOnlyCollection<Guid> OwnedBooks => _ownedBooks.AsReadOnly();
-    public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks => _socialMediaLinks.AsReadOnly();
+    public IReadOnlyCollection<Guid> SocialMediaLinks => _socialMediaLinks.AsReadOnly();
 
     private User(
         Guid id,
@@ -67,10 +67,9 @@ public sealed class User : Entity<Guid>
         if (birthDate > DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-13)))
             errors.Add(AuthErrors.Underage);
 
-        if (errors.Any())
-            return Result.Fail<User>(errors);
-
-        return new User(
+        return errors.Count != 0
+        ? Result.Fail<User>(errors)
+        : new User(
             Guid.NewGuid(),
             email,
             username,
@@ -80,6 +79,70 @@ public sealed class User : Entity<Guid>
             location,
             Reputation.Initial()
         );
+    }
+
+    // Reconstitution method (for loading from DB)
+    public static User Reconstitute(
+        Guid id,
+        string email,
+        string username,
+        string firstName,
+        string lastName,
+        DateOnly birthDate,
+        Location location,
+        Reputation reputation,
+        string? profilePicture,
+        string? bio,
+        IEnumerable<Guid> wishlist,
+        IEnumerable<Guid> followedBooks,
+        IEnumerable<Guid> following,
+        IEnumerable<Guid> followers,
+        IEnumerable<Guid> blockedUsers,
+        IEnumerable<Guid> ownedBooks,
+        IEnumerable<Guid> socialMediaLinks
+    )
+    {
+        return new User(id, email, username, firstName, lastName, birthDate, location, reputation)
+        {
+            ProfilePicture = profilePicture,
+            Bio = bio,
+            _wishlist = wishlist.ToList(),
+            _followedBooks = followedBooks.ToList(),
+            _following = following.ToList(),
+            _followers = followers.ToList(),
+            _blockedUsers = blockedUsers.ToList(),
+            _ownedBooks = ownedBooks.ToList(),
+            _socialMediaLinks = socialMediaLinks.ToList()
+        };
+        /*
+        user.HydrateCollections(wishlist,
+            followedBooks,
+            following,
+            followers,
+            blockedUsers,
+            ownedBooks,
+            socialMediaLinks);
+        */
+    }
+
+     // Collection hydration method
+    public void HydrateCollections(
+        IEnumerable<Guid> wishlist,
+        IEnumerable<Guid> followedBooks,
+        IEnumerable<Guid> following,
+        IEnumerable<Guid> followers,
+        IEnumerable<Guid> blockedUsers,
+        IEnumerable<Guid> ownedBooks,
+        IEnumerable<Guid> socialMediaLinks
+    )
+    {
+        _wishlist = wishlist.ToList();
+        _followedBooks = followedBooks.ToList();
+        _following = following.ToList();
+        _followers = followers.ToList();
+        _blockedUsers = blockedUsers.ToList();
+        _ownedBooks = ownedBooks.ToList();
+        _socialMediaLinks = socialMediaLinks.ToList();
     }
 
 
@@ -101,7 +164,7 @@ public sealed class User : Entity<Guid>
         return Result.Ok();
     }
 
-    public Result AddSocialMediaLink(SocialMediaLink link)
+    public Result AddSocialMediaLink(Guid link)
     {
         if (_socialMediaLinks.Count >= 10) return Result.Fail(UserErrors.MaxSocialMediaLinks);
         _socialMediaLinks.Add(link);
