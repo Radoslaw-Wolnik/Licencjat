@@ -5,5 +5,5 @@ namespace Backend.Application.Interfaces;
 
 public interface ISignInService
 {
-    Task<Result> LoginAsync(string password, string usernameOrEmail, bool rememberMe);
+    Task<Result> LoginAsync(LoginUserInfo userInfo, string usernameOrEmail, bool rememberMe);
 }

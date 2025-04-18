@@ -25,8 +25,12 @@ public class SignInService : ISignInService
         _mapper = mapper;
     }
     
-    public async Task<Result> LoginAsync(string email, string password, bool rememberMe)
+    public async Task<Result> LoginAsync(LoginUserInfo userInfo, string password, bool rememberMe)
     {
+        var email = userInfo.Email;
+        if (email is null)
+            return Result.Fail(AuthErrors.InvalidCredentials); // its like impossible
+
         var user = await _signInManager.UserManager.FindByEmailAsync(email);
         if (user is null)
             return Result.Fail(AuthErrors.InvalidCredentials);
