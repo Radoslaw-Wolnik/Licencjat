@@ -16,7 +16,7 @@ public class UserEntity : IdentityUser<Guid>
     [Required, MaxLength(50)]
     public string LastName { get; set; } = null!;
     [Required]
-    public DateOnly BirthDate { get; set; } // changed to DateOnly
+    public DateOnly BirthDate { get; set; }
     [Required]
     public string City { get; set; } = null!; 
     [Required]

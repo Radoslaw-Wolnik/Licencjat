@@ -4,7 +4,7 @@ using Backend.Application.Features.Auth;
 using AutoMapper;
 using Backend.Domain.Entities;
 
-namespace Backend.Application.Mapping;
+namespace Backend.Infrastructure.Mapping;
 
 public class AuthProfile : Profile
 {

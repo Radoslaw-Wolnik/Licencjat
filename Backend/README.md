@@ -92,3 +92,4 @@ curl https://localhost:5000/swagger
 ## Additional info
 to remove migrations use: 
 `ef migrations remove` - but you need to run db to do it
+`API Request → Handler (input validation) → Domain Entity (business logic) → Repository (persistence)`
