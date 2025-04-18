@@ -11,14 +11,15 @@ using Backend.Infrastructure.Data.Seeders;
 using Backend.Application.Validators;
 using Backend.Application.Validators.Auth;
 using Backend.Application.Behaviors;
-using FluentValidation;
 using MediatR;
 using Backend.Infrastructure.Mapping;
 using AutoMapper;
 using Backend.Infrastructure.Repositories;
 using AutoMapper.Extensions.ExpressionMapping;
 using BAckend.Infrastructure.Services;
-using Backend.Application.Mapping;
+using Backend.Application.Features.Auth;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,10 +70,24 @@ builder.Services.AddAutoMapper(typeof(AuthProfile));
 
 
 // ========== MEDIATR & VALIDATION ========== //
+
+// MediatR
 builder.Services.AddMediatR(cfg => 
-    cfg.RegisterServicesFromAssembly(typeof(RegisterRequestValidator).Assembly));
+    cfg.RegisterServicesFromAssembly(typeof(RegisterCommand).Assembly));
+
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+
+// Optional command validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+// AutoMapper
+builder.Services.AddAutoMapper(cfg => 
+{
+    cfg.AddExpressionMapping();
+    cfg.AddMaps(typeof(UserProfile), typeof(AuthProfile));
+});
 
 // ========== SECURITY CONFIGURATION ========== //
 builder.Services.ConfigureApplicationCookie(options =>
