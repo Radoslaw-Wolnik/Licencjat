@@ -35,21 +35,21 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<U
             ? u => u.Email == command.UsernameOrEmail
             : u => u.Username == command.UsernameOrEmail;
 
-        var userResult = await _userRepo.FirstOrDefaultAsync(predicate);
-        Console.WriteLine($"[Login command handler] user result: {userResult}");
-        
-        if (userResult.IsFailed){
+        var loginInfoResult = await _userRepo.GetLoginInfoAsync(predicate);
+        if (loginInfoResult.IsFailed)
             return Result.Fail<User>(AuthErrors.InvalidCredentials);
-        }
 
-        // Attempt login with stored email
-        var loginResult = await _signInService.LoginAsync(
-            userResult.Value.Email,
-            command.Password,
-            command.RememberMe ?? false);
+        // pass the hash into your sign-in service
+        var signInResult = await _signInService.LoginAsync(
+            loginInfoResult.Value, command.Password, command.RememberMe ?? false);
 
-        return loginResult.IsSuccess 
-            ? userResult
-            : Result.Fail(loginResult.Errors);
+        if (!signInResult.IsSuccess)
+            return Result.Fail<User>(AuthErrors.InvalidCredentials);
+        
+        Console.WriteLine($"\n\n[Login command handler] got all the way down to the user fetching\n\n");
+
+        // now that they’re authenticated, load the full domain user:
+        var userResult = await _userRepo.GetByAsync(predicate);
+        return userResult;
     }
 }
