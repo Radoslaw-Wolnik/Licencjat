@@ -30,9 +30,13 @@ public class UserRepository : IUserRepository
 
     public async Task<Result<bool>> ExistsAsync(Expression<Func<UserProjection, bool>> predicate)
     {
+        var entityPredicate = 
+                _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
         var exists = await _context.Users
-            .ProjectTo<UserProjection>(_mapper.ConfigurationProvider)
-            .AnyAsync(predicate);
+            .AnyAsync(entityPredicate);
+        // var exists = await _context.Users
+        //     .ProjectTo<UserProjection>(_mapper.ConfigurationProvider)
+        //     .AnyAsync(predicate);
         return Result.Ok(exists);
     }
 
@@ -93,13 +97,16 @@ public class UserRepository : IUserRepository
 
     public async Task<Result<User>> GetUserWithIncludes(
         Guid userId, 
-        params Expression<Func<UserEntity, object>>[] includes
+        params Expression<Func<UserProjection, object>>[] includes
     ){
         try
         {
             IQueryable<UserEntity> query = _context.Users;
-            foreach (var inc in includes)
-                query = query.Include(inc);
+            foreach (var inc in includes){
+                var entityInclude = 
+                    _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(inc); // not sure if this will work
+                query = query.Include(entityInclude);
+            }
 
             var entity = await query.FirstOrDefaultAsync(u => u.Id == userId);
             if (entity is null)
