@@ -12,13 +12,15 @@ public sealed class GeneralBook : Entity<Guid>
     public string Author { get; }
     public DateOnly Published { get; }
     public LanguageCode OriginalLanguage { get; }
-
+    public Rating RatingAvg { get; private set; } // 1-10 
+    public Photo CoverPhoto { get; }
+    
+    private readonly List<BookGenre> _genres = new();
+    public IReadOnlyCollection<BookGenre> Genres => _genres.AsReadOnly();
+    
     private readonly List<Guid> _userCopies = new();
     public IReadOnlyCollection<Guid> UserCopies => _userCopies.AsReadOnly();
 
-    private readonly List<BookGenre> _genres = new();
-    
-    public IReadOnlyCollection<BookGenre> Genres => _genres.AsReadOnly();
     private readonly List<Guid> _userReviews = new();
     public IReadOnlyCollection<Guid> UserReviews => _userReviews.AsReadOnly();
 
@@ -27,31 +29,28 @@ public sealed class GeneralBook : Entity<Guid>
         string title,
         string author,
         DateOnly published,
-        LanguageCode originalLanguage)
+        LanguageCode originalLanguage,
+        Rating ratingAvg,
+        Photo coverPhoto)
     {
         Id = id;
         Title = title;
         Author = author;
         Published = published;
         OriginalLanguage = originalLanguage;
+        RatingAvg = ratingAvg;
+        CoverPhoto = coverPhoto;
     }
 
     public static Result<GeneralBook> Create(
         string title,
         string author,
         DateOnly published,
-        LanguageCode originalLanguage)
+        LanguageCode originalLanguage,
+        Rating ratingAvg,
+        Photo coverPhoto)
     {
         var errors = new List<IError>();
-
-        // if (published > DateTime.UtcNow)
-        //     errors.Add(BookErrors.InvalidPublicationDate);
-
-        // honestly we cound check if language is valid here
-        // var lng = LanguageCode.Create(originalLanguage);
-        // if (lng.IsFailed)
-        //     errors.Add(new Error("wrong languge code"));
-        // this is a validation of request so it resides in the apliction layer, not here
         
         if (errors.Any())
             return Result.Fail<GeneralBook>(errors);
@@ -61,9 +60,34 @@ public sealed class GeneralBook : Entity<Guid>
             title,
             author,
             published,
-            originalLanguage
+            originalLanguage,
+            ratingAvg,
+            coverPhoto
         );
     }
+
+    public static GeneralBook Reconstitute(
+        Guid id,
+        string title,
+        string author,
+        DateOnly published,
+        LanguageCode originalLanguage,
+        Photo coverPhoto,
+        Rating ratingAvg,
+        IEnumerable<BookGenre> genres,
+        IEnumerable<Guid> userCopies,
+        IEnumerable<Guid> userReviews
+    )
+    {
+        var book =  new GeneralBook(id, title, author, published, originalLanguage, ratingAvg, coverPhoto);
+
+        foreach (var g in genres)      book._genres.Add(g);
+        foreach (var c in userCopies)  book._userCopies.Add(c);
+        foreach (var r in userReviews) book._userReviews.Add(r);
+
+        return book;
+    }
+
 
     public Result AddGenre(BookGenre genre)
     {
@@ -86,13 +110,21 @@ public sealed class GeneralBook : Entity<Guid>
         return Result.Ok();
     }
 
-    public Result AddUserReview(Guid reviewId)
+
+    public Result AddUserReview(Guid reviewId, int reviewRating)
     {
+
         if (_userReviews.Contains(reviewId))
             return Result.Fail(ReviewErrors.Duplicate);
-            
+        
         _userReviews.Add(reviewId);
+
+        var countOld = _userReviews.Count - 1; // before adding
+        var totalOld = RatingAvg.Value * countOld;
+        var newAvg = (totalOld + reviewRating) / _userReviews.Count;
+        RatingAvg = Rating.Create(newAvg).Value;
         return Result.Ok();
     }
+
 
 }

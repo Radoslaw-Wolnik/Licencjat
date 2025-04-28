@@ -14,6 +14,11 @@ public sealed class UserBook : Entity<Guid>
     public BookState State { get; private set; }
     public LanguageCode Language { get; }
     public int PageCount { get; }
+    public Photo CoverPhoto { get; private set; }
+
+    private List<Bookmark> _bookmarks = new();
+    public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.AsReadOnly();
+
 
     private UserBook(
         Guid id,
@@ -22,7 +27,8 @@ public sealed class UserBook : Entity<Guid>
         BookStatus status,
         BookState state,
         LanguageCode language,
-        int pageCount)
+        int pageCount,
+        Photo coverPhoto)
     {
         Id = id;
         OwnerId = ownerId;
@@ -31,15 +37,18 @@ public sealed class UserBook : Entity<Guid>
         State = state;
         Language = language;
         PageCount = pageCount;
+        CoverPhoto = coverPhoto;
     }
 
     public static Result<UserBook> Create(
+        Guid id,
         Guid ownerId,
         Guid generalBookId,
         BookStatus status,
         BookState state,
         LanguageCode language,
-        int pageCount)
+        int pageCount,
+        Photo coverPhoto)
     {
         var errors = new List<IError>();
         
@@ -57,24 +66,48 @@ public sealed class UserBook : Entity<Guid>
 
         if (pageCount <= 0)
             errors.Add(UserBookErrors.InvalidPageCount);
-
-        // var lng = LanguageCode.Create(language);
-        // if (lng.IsFailed)
-        //     errors.Add(new Error("wrong language code")); // ik this shoudl be propagated by lng.Errors
         
 
-        if (errors.Any())
+        if (errors.Count != 0)
             return Result.Fail<UserBook>(errors);
 
         return new UserBook(
-            Guid.NewGuid(),
+            id,
             ownerId,
             generalBookId,
             status,
             state,
             language,
-            pageCount
+            pageCount,
+            coverPhoto
         );
+    }
+
+    public static Result<UserBook> Reconstitute(
+        Guid id,
+        Guid ownerId,
+        Guid generalBookId,
+        BookStatus status,
+        BookState state,
+        LanguageCode language,
+        int pageCount,
+        Photo coverPhoto,
+        IEnumerable<Bookmark> bookmarks
+    ) {
+         var userBook = new UserBook(
+            id,
+            ownerId,
+            generalBookId,
+            status,
+            state,
+            language,
+            pageCount,
+            coverPhoto
+        );
+
+        foreach (var b in bookmarks) userBook._bookmarks.Add(b);
+        
+        return userBook;
     }
 
     public Result UpdateStatus(BookStatus newStatus)
