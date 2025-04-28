@@ -9,9 +9,9 @@ using Backend.Domain.Enums;
 
 namespace Backend.Infrastructure.Mapping;
 
-public class BookProfile : Profile
+public class GeneralBookProfile : Profile
 {
-    public BookProfile()
+    public GeneralBookProfile()
     {
         // Entity -> Domain Mapping
         CreateMap<GeneralBookEntity, GeneralBook>(MemberList.None)
