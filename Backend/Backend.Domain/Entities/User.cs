@@ -1,5 +1,6 @@
 // Backend.Domain/Entities/User.cs
 using Backend.Domain.Common;
+using Backend.Domain.Enums;
 using Backend.Domain.Errors;
 using FluentResults;
 
@@ -14,25 +15,32 @@ public sealed class User : Entity<Guid>
     public DateOnly BirthDate { get; }
     public Location Location { get; private set; }
     public Reputation Reputation { get; private set; }
-    public string? ProfilePicture { get; private set; }
+    public Photo? ProfilePicture { get; private set; }
     public string? Bio { get; private set; }
 
     // Relationships
-    private List<Guid> _wishlist = new();
-    private List<Guid> _followedBooks = new();
-    private List<Guid> _following = new();
-    private List<Guid> _followers = new();
-    private List<Guid> _blockedUsers = new();
-    private List<Guid> _ownedBooks = new(); // guids to userbook
-    private List<Guid> _socialMediaLinks = new();
+    // the strategy is - if the relaction is simple eg wishilist is just ids of geenral books that user wants to read then the list is just <Guid> in this case of general book ids
+    // if the relation is more complex (eg socialMediaLinks have urls and are represented by sealed records becouse of some custom logic)
+    // then the list is of that records in this case <SocialMediaLinks> to represent user owning them and have better mappings and controll over them
+    private readonly List<Guid> _wishlist = new(); // general book id
+    private readonly List<Guid> _following = new();
+    private readonly List<Guid> _followers = new();
+    private readonly List<Guid> _blockedUsers = new();
+    // records - more complex relations
+    private readonly List<UserBook> _ownedBooks = new();
+    private readonly List<SocialMediaLink> _socialMediaLinks = new();
+    
 
+    // simple id relations
     public IReadOnlyCollection<Guid> Wishlist => _wishlist.AsReadOnly();
-    public IReadOnlyCollection<Guid> FollowedBooks => _followedBooks.AsReadOnly();
     public IReadOnlyCollection<Guid> Following => _following.AsReadOnly();
     public IReadOnlyCollection<Guid> Followers => _followers.AsReadOnly();
     public IReadOnlyCollection<Guid> BlockedUsers => _blockedUsers.AsReadOnly();
-    public IReadOnlyCollection<Guid> OwnedBooks => _ownedBooks.AsReadOnly();
-    public IReadOnlyCollection<Guid> SocialMediaLinks => _socialMediaLinks.AsReadOnly();
+
+    // records
+    public IReadOnlyCollection<UserBook> OwnedBooks => _ownedBooks.AsReadOnly();
+    public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks
+        => _socialMediaLinks.AsReadOnly();
 
     private User(
         Guid id,
@@ -91,83 +99,65 @@ public sealed class User : Entity<Guid>
         DateOnly birthDate,
         Location location,
         Reputation reputation,
-        string? profilePicture,
+        Photo? profilePicture,
         string? bio,
-        IEnumerable<Guid> wishlist,
-        IEnumerable<Guid> followedBooks,
+        IEnumerable<Guid> wishlist, 
         IEnumerable<Guid> following,
         IEnumerable<Guid> followers,
         IEnumerable<Guid> blockedUsers,
-        IEnumerable<Guid> ownedBooks,
-        IEnumerable<Guid> socialMediaLinks
-    )
-    {
-        return new User(id, email, username, firstName, lastName, birthDate, location, reputation)
+        IEnumerable<UserBook> ownedBooks,
+        IEnumerable<SocialMediaLink> socialMediaLinks
+    ) {
+        var user = new User(id, email, username, firstName, lastName, birthDate, location, reputation)
         {
             ProfilePicture = profilePicture,
-            Bio = bio,
-            _wishlist = wishlist.ToList(),
-            _followedBooks = followedBooks.ToList(),
-            _following = following.ToList(),
-            _followers = followers.ToList(),
-            _blockedUsers = blockedUsers.ToList(),
-            _ownedBooks = ownedBooks.ToList(),
-            _socialMediaLinks = socialMediaLinks.ToList()
+            Bio = bio
         };
-        /*
-        user.HydrateCollections(wishlist,
-            followedBooks,
-            following,
-            followers,
-            blockedUsers,
-            ownedBooks,
-            socialMediaLinks);
-        */
-    }
+        
+        foreach(var w in wishlist) user._wishlist.Add(w);
+        foreach(var fing in following) user._following.Add(fing);
+        foreach(var flers in followers) user._followers.Add(flers);
+        foreach(var bu in blockedUsers) user._blockedUsers.Add(bu);
+        foreach(var ob in ownedBooks) user._ownedBooks.Add(ob);
+        foreach(var sml in socialMediaLinks) user._socialMediaLinks.Add(sml);
 
-     // Collection hydration method
-    public void HydrateCollections(
-        IEnumerable<Guid> wishlist,
-        IEnumerable<Guid> followedBooks,
-        IEnumerable<Guid> following,
-        IEnumerable<Guid> followers,
-        IEnumerable<Guid> blockedUsers,
-        IEnumerable<Guid> ownedBooks,
-        IEnumerable<Guid> socialMediaLinks
-    )
-    {
-        _wishlist = wishlist.ToList();
-        _followedBooks = followedBooks.ToList();
-        _following = following.ToList();
-        _followers = followers.ToList();
-        _blockedUsers = blockedUsers.ToList();
-        _ownedBooks = ownedBooks.ToList();
-        _socialMediaLinks = socialMediaLinks.ToList();
+        return user;
     }
-
 
 
     // Core business methods
     public Result UpdateReputation(float newValue)
     {
         var result = Reputation.Create(newValue);
-        if (result.IsFailed) return result.ToResult();
+        if (result.IsFailed) return Result.Fail(result.Errors);
         Reputation = result.Value;
         return Result.Ok();
     }
 
-    public Result AddBook(Guid userBookId)
+    public Result AddBook(UserBook userBook)
     {
         if (_ownedBooks.Count >= 100) return Result.Fail(UserErrors.MaxBookLimit);
         // if (userBook.OwnerId != Id) return Result.Fail(UserErrors.BookOwnershipMismatch);
-        _ownedBooks.Add(userBookId);
+        _ownedBooks.Add(userBook);
         return Result.Ok();
     }
 
-    public Result AddSocialMediaLink(Guid link)
+    public Result AddSocialMediaLink(SocialMediaLink socilaMediaLink)
     {
-        if (_socialMediaLinks.Count >= 10) return Result.Fail(UserErrors.MaxSocialMediaLinks);
-        _socialMediaLinks.Add(link);
+        // construct the SocialMediaLink record somewhere else and in user just pass the ready record and check for buisness logic considering the agregation
+        // eg the max socialmedialinks ammount
+        if (_socialMediaLinks.Count >= 10)
+            return Result.Fail(UserErrors.MaxSocialMediaLinks);
+
+        _socialMediaLinks.Add(socilaMediaLink);
+        return Result.Ok();
+    }
+
+    public Result RemoveSocialMediaLink(Guid linkId)
+    {
+        var link = _socialMediaLinks.FirstOrDefault(l => l.Id == linkId);
+        if (link == null) return Result.Fail("Not found");
+        _socialMediaLinks.Remove(link);
         return Result.Ok();
     }
 
