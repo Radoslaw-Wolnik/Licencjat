@@ -20,6 +20,8 @@ using BAckend.Infrastructure.Services;
 using Backend.Application.Features.Auth;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using Backend.Infrastructure.Repositories.UserBooks;
+using Backend.Infrastructure.Repositories.GeneralBooks;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,7 +58,12 @@ builder.Services.AddIdentity<UserEntity, IdentityRole<Guid>>(options =>
 
 // ========== INFRASTRUCTURE SERVICES ========== //
 // repositories
+// builder.Services.AddScoped<IGeneralBookRepository, GeneralBookRepository>();
+// builder.Services.AddScoped<ISwapRepository, SwapRepository>();
+// builder.Services.AddScoped<IUserBookRepository, UserBookRepository>();
+// im not sure but mby i should add subrepositories as well (the ones that are inherited by the main ones)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<DatabaseHealthCheck>();
 
 // services
@@ -65,8 +72,12 @@ builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 
 // mappers
-builder.Services.AddAutoMapper(typeof(UserProfile)); // cfg => {cfg.AddExpressionMapping();},
 builder.Services.AddAutoMapper(typeof(AuthProfile));
+builder.Services.AddAutoMapper(typeof(BookmarkProfile));
+builder.Services.AddAutoMapper(typeof(GeneralBookProfile));
+builder.Services.AddAutoMapper(typeof(SocialMediaProfile));
+builder.Services.AddAutoMapper(typeof(UserBookProfile));
+builder.Services.AddAutoMapper(typeof(UserProfile)); // cfg => {cfg.AddExpressionMapping();},
 
 
 // ========== MEDIATR & VALIDATION ========== //
