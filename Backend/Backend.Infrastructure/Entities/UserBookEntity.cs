@@ -31,4 +31,5 @@ public class UserBookEntity
     public virtual GeneralBookEntity Book { get; set; } = null!;
 
     public virtual ICollection<SubSwapEntity> SubSwaps { get; set; } = [];
+    public virtual ICollection<BookmarkEntity> Bookmarks { get; set; } = [];
 }
