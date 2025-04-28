@@ -29,5 +29,4 @@ public class GeneralBookEntity
     public virtual ICollection<UserBookEntity> UserBooks { get; set; } = [];
     public virtual ICollection<ReviewEntity> Reviews { get; set; } = [];
     public virtual ICollection<UserEntity> WishlistedByUsers { get; set; } = [];
-    public virtual ICollection<UserEntity> FollowedByUsers { get; set; } = [];
 }

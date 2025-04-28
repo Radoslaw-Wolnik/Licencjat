@@ -36,7 +36,6 @@ public class UserEntity : IdentityUser<Guid>
     
     // Many to Many relations
     public virtual ICollection<GeneralBookEntity> Wishlist { get; set; } = [];
-    public virtual ICollection<GeneralBookEntity> FollowedBooks { get; set; } = [];
 
     public virtual ICollection<UserFollowingEntity> Following { get; set; } = [];
     public virtual ICollection<UserFollowingEntity> Followers { get; set; } = [];
