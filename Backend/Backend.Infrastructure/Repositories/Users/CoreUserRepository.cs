@@ -15,14 +15,30 @@ using Backend.Infrastructure.Mapping;
 using Backend.Application.DTOs;
 using Backend.Application.DTOs.Auth;
 
-namespace Backend.Infrastructure.Repositories;
+namespace Backend.Infrastructure.Repositories.Users;
 
-public class UserRepository : IUserRepository
+// Core user (scalars + existence)
+public interface ICoreUserRepository
+{
+    Task<Result<bool>> ExistsAsync(Expression<Func<UserProjection, bool>> predicate);
+    Task<Result<Guid>> AddAsync(User user);
+    Task<Result<User>> GetByIdAsync(Guid id);
+    Task<Result<User>> GetByAsync(Expression<Func<UserProjection, bool>> predicate);
+    Task<Result<User>> GetUserWithIncludes(Guid userId, 
+        params Expression<Func<UserProjection, object>>[] includes);
+
+    Task<Result>  UpdateAsync(User user);
+    Task<Result>  DeleteAsync(Guid id);
+}
+
+
+
+public class CoreUserRepository : ICoreUserRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;
 
-    public UserRepository(ApplicationDbContext context, IMapper mapper)
+    public CoreUserRepository(ApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
@@ -31,7 +47,7 @@ public class UserRepository : IUserRepository
     public async Task<Result<bool>> ExistsAsync(Expression<Func<UserProjection, bool>> predicate)
     {
         var entityPredicate = 
-            _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
+                _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
         var exists = await _context.Users
             .AnyAsync(entityPredicate);
         // var exists = await _context.Users
@@ -122,29 +138,53 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<Result<LoginUserInfo>> GetLoginInfoAsync(
-        Expression<Func<UserProjection,bool>> predicate
-    ){
-        var entityPredicate = 
-            _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
+    public async Task<Result> UpdateAsync(User user)
+    {
+        var existing = await _context.Users.FindAsync(user.Id);
+        if (existing == null)
+            return Result.Fail(UserErrors.NotFound);
 
-        var info = await _context.Users
-            .Where(entityPredicate)
-            .Select(u => new LoginUserInfo {
-            Id           = u.Id,
-            Email        = u.Email,
-            UserName     = u.UserName,
-            // PasswordHash = u.PasswordHash,
-            // …
-            })
-            .FirstOrDefaultAsync();
+        _mapper.Map(user, existing);
 
-        return info is null
-            ? Result.Fail<LoginUserInfo>(AuthErrors.InvalidCredentials)
-            : Result.Ok(info);
+        try
+        {    
+            await _context.SaveChangesAsync();
+            return Result.Ok();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            // e.g. row-version mismatch
+            return Result.Fail(
+                new DomainError("ConcurrencyError", ex.Message, ErrorType.Conflict)
+            );
+        }
+        catch (DbUpdateException ex)
+        {
+            return Result.Fail(
+                new DomainError("DatabaseError", ex.InnerException?.Message ?? ex.Message, ErrorType.StorageError)
+            );
+        }
     }
 
+    public async Task<Result>  DeleteAsync(Guid id)
+    {
+        var dbUser = await _context.Users.FindAsync(id);
+        if (dbUser == null)
+            return Result.Fail(UserErrors.NotFound); 
 
-    // public async Task<Result<?>> UpdateAsync(User newUserData) {}
+        _context.Users.Remove(dbUser);
+        try
+        {
+            await _context.SaveChangesAsync();
+            return Result.Ok();
+        }
+        catch (DbUpdateException ex)
+        {
+            // mby more in future for special-cases foreign‐key / constraint errors
+            return Result.Fail(
+                new DomainError("DatabaseError", ex.InnerException?.Message ?? ex.Message, ErrorType.StorageError)
+            );
+        }
+    }
 
 }
