@@ -33,4 +33,9 @@ public static class UserBookErrors
         "UserBook.InvalidPageCount",
         "Number of pages must be higher then 0",
         ErrorType.Validation);
+    
+    public static DomainError UserBookExists => new(
+        "UserBook.UserBookExists",
+        "User book alredy exsisits - tried to add the same user book multiple times",
+        ErrorType.Conflict);
 }
