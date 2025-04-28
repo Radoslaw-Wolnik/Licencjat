@@ -51,6 +51,13 @@ public class UserSocialMediaRepository : IUserSocialMediaRepository
             .Include(u => u.SocialMediaLinks)
             .FirstOrDefaultAsync(u => u.Id == userId);
         if (user is null) return Result.Fail(UserErrors.NotFound);
+        
+        // check for duplicate
+        if (user.SocialMediaLinks.Any(sm => sm.Platform == link.Platform))
+            return Result.Fail(WishlistErrors.ItemExists);
+        
+        if (user.SocialMediaLinks.Any(sm => sm.Url == link.Url))
+            return Result.Fail(WishlistErrors.ItemExists);
 
         // add
         var entity = _mapper.Map<SocialMediaLinkEntity>(link);

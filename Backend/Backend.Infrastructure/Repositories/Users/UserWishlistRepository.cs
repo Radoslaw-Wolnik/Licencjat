@@ -46,9 +46,12 @@ public class UserWishlistRepository : IUserWishlistRepository
         var user = await _context.Users
             .Include(u => u.Wishlist)
             .FirstOrDefaultAsync(u => u.Id == userId);
-        
         if (user is null) 
             return Result.Fail(UserErrors.NotFound);
+
+        // check duplicate
+        if (user.Wishlist.Any(gb => gb.Id == bookId))
+            return Result.Fail(WishlistErrors.ItemExists);
 
         // load the book
         var book = await _context.GeneralBooks
