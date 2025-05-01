@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Reflection;
 using Backend.Infrastructure.Data.Attributes;
 using Backend.Infrastructure.Views;
+using Backend.Domain.Common;
 
 namespace Backend.Infrastructure.Data;
 
@@ -19,7 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
     public DbSet<SocialMediaLinkEntity> SocialMediaLinks { get; set; }
     public DbSet<ReviewEntity> Reviews { get; set; }
 
-    // New DbSets for Swap system
+    // DbSets for Swaps
     public DbSet<SwapEntity> Swaps { get; set; }
     public DbSet<SubSwapEntity> SubSwaps { get; set; }
     public DbSet<MeetupEntity> Meetups { get; set; }
@@ -27,9 +28,13 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
     public DbSet<IssueEntity> Issues { get; set; }
     public DbSet<TimelineEntity> Timelines { get; set; }
     
-    // Many-to-Many Tables
+    // DbSets for Users
     public DbSet<UserFollowingEntity> UserFollowings { get; set; }
     public DbSet<UserBlockedEntity> UserBlockeds { get; set; }
+    public DbSet<UserWishlistEntity> UserWishlists { get; set; }
+
+    // DbSets for UserBooks
+    public DbSet<BookmarkEntity> Bookmarks { get; set; }
 
     // views
     public DbSet<GeneralBookWithAverageRating> GeneralBooksWithAverageRatings { get; set; }
@@ -51,10 +56,12 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
         ConfigureFeedback(builder);
         ConfigureIssue(builder);
         ConfigureTimeline(builder);
+        ConfigureBookmark(builder);
 
         // Many-to-Many Configurations
         ConfigureUserFollowing(builder);
         ConfigureUserBlocked(builder);
+        ConfigureUserWishlists(builder);
 
         // Constrains
         ConfigureDataTypesAndConstraints(builder);
@@ -112,17 +119,7 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
 
     private void ConfigureApplicationUser(ModelBuilder builder)
     {
-        // Configure Wishlist many-to-many
-        builder.Entity<UserEntity>()
-            .HasMany(u => u.Wishlist)
-            .WithMany(g => g.WishlistedByUsers)
-            .UsingEntity(j => j.ToTable("Wishlist"));
 
-        // Configure FollowedBooks many-to-many
-        builder.Entity<UserEntity>()
-            .HasMany(u => u.FollowedBooks)
-            .WithMany(g => g.FollowedByUsers)
-            .UsingEntity(j => j.ToTable("BookFollowing"));
     }
 
     private void ConfigureUserBook(ModelBuilder builder)
@@ -136,6 +133,12 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
             .HasOne(ub => ub.Book)
             .WithMany(b => b.UserBooks)
             .HasForeignKey(ub => ub.BookId);
+        
+        builder.Entity<UserBookEntity>()
+            .HasMany(ub => ub.SubSwaps)
+            .WithOne(s => s.UserBookReading)
+            .HasForeignKey(s => s.UserBookReadingId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private void ConfigureSocialMediaLinks(ModelBuilder builder)
@@ -173,6 +176,12 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
             .WithOne()
             .HasForeignKey<SwapEntity>(s => s.SubSwapAcceptingId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Entity<SwapEntity>()
+            .HasMany(s => s.SubSwaps)
+            .WithOne(sub => sub.Swap)
+            .HasForeignKey(sub => sub.SwapId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<SwapEntity>()
             .HasMany(s => s.Meetups)
@@ -198,6 +207,12 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
             .WithMany(ub => ub.SubSwaps)
             .HasForeignKey(s => s.UserBookReadingId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Entity<SubSwapEntity>()
+            .HasOne(s => s.Swap)
+            .WithMany(s => s.SubSwaps)
+            .HasForeignKey(s => s.SwapId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<SubSwapEntity>()
             .HasOne(s => s.Feedback)
@@ -280,6 +295,33 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
             .HasOne(ub => ub.Blocked)
             .WithMany()
             .HasForeignKey(ub => ub.BlockedId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    private void ConfigureUserWishlists(ModelBuilder builder)
+    {
+        builder.Entity<UserWishlistEntity>()
+            .HasKey(x => new { x.UserId, x.GeneralBookId });
+
+        builder.Entity<UserWishlistEntity>()
+            .HasOne(x => x.User)
+            .WithMany(u => u.Wishlist)
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<UserWishlistEntity>()
+            .HasOne(x => x.GeneralBook)
+            .WithMany(/* g => g.WishlistedBy, if you add that nav */)
+            .HasForeignKey(x => x.GeneralBookId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    private void ConfigureBookmark(ModelBuilder builder)
+    {
+        builder.Entity<BookmarkEntity>()
+            .HasOne(b => b.UserBook)
+            .WithMany(ub => ub.Bookmarks)
+            .HasForeignKey(b => b.UserBookId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 
