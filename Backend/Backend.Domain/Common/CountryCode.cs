@@ -1,4 +1,3 @@
-// Backend.Domain/Common/CountryCode.cs
 using FluentResults;
 using System.Text.RegularExpressions;
 

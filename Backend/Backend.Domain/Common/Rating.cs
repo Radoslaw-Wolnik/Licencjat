@@ -1,4 +1,3 @@
-// Backend.Domain/Common/Rating.cs
 using FluentResults;
 
 namespace Backend.Domain.Common;

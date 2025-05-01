@@ -1,4 +1,3 @@
-// Backend.Domain/Common/Location.cs
 using FluentResults;
 
 namespace Backend.Domain.Common;

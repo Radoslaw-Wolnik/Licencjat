@@ -1,4 +1,3 @@
-// Backend.Domain/Entities/UserBook.cs
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;

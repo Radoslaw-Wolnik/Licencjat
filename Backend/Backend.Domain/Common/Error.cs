@@ -1,4 +1,3 @@
-// Domain/Common/DomainError.cs
 using FluentResults;
 
 namespace Backend.Domain.Common;

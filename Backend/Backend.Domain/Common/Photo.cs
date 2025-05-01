@@ -1,4 +1,3 @@
-// Backend.Domain/Common/Photo.cs
 using FluentResults;
 
 namespace Backend.Domain.Common;

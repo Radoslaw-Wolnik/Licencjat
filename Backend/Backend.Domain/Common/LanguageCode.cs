@@ -1,4 +1,3 @@
-// Backend.Domain/Common/LanguageCode.cs
 using FluentResults;
 using System.Text.RegularExpressions;
 

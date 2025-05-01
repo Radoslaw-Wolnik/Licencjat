@@ -1,4 +1,3 @@
-// Backend.Domain/Common/Reputation.cs
 using FluentResults;
 
 namespace Backend.Domain.Common;
@@ -14,4 +13,5 @@ public sealed record Reputation(float Value)
 
         return new Reputation(value);
     }
+
 }

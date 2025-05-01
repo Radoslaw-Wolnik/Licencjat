@@ -1,4 +1,3 @@
-// Domain/Common/Entity.cs
 namespace Backend.Domain.Common;
 
 public abstract class Entity<TId>
