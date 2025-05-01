@@ -1,6 +1,6 @@
-// Backend.Domain/Common/SocialMediaLink.cs
 using Backend.Domain.Enums;
 using FluentResults;
+
 namespace Backend.Domain.Common;
 
 public sealed record SocialMediaLink(Guid Id, SocialMediaPlatform Platform, string Url)
