@@ -1,11 +1,12 @@
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
 using FluentResults;
+
 namespace Backend.Domain.Common;
 
-public sealed record TimelineUpdate(string Description, TimelineStatus Status, Guid userId)
+public sealed record TimelineUpdate(Guid Id, Guid UserId, TimelineStatus Status, string Description)
 {
-    public static Result<TimelineUpdate> Create(string description, TimelineStatus status, Guid userId)
+    public static Result<TimelineUpdate> Create(Guid id, Guid userId, TimelineStatus status,  string description)
     {
 
         var errors = new List<IError>();
@@ -24,7 +25,7 @@ public sealed record TimelineUpdate(string Description, TimelineStatus Status, G
 
         return errors.Count != 0
             ? Result.Fail<TimelineUpdate>(errors) 
-            : new TimelineUpdate(description.Trim(), status, userId);
+            : new TimelineUpdate(id, userId, status, description.Trim());
     }
 
 }

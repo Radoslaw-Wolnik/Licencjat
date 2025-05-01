@@ -1,4 +1,3 @@
-// Backend.Domain/Entities/Review.cs
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
@@ -6,10 +5,10 @@ using FluentResults;
 
 namespace Backend.Domain.Common;
 
-public sealed record Review(Guid UserId, Guid BookId, int Rating, string? Comment)
+public sealed record Review(Guid Id, Guid UserId, Guid BookId, int Rating, string? Comment)
 {
 
-    public static Result<Review> Create(Guid userId, Guid bookId, int rating, string? comment)
+    public static Result<Review> Create(Guid id, Guid userId, Guid bookId, int rating, string? comment)
     {
         var errors = new List<IError>();
         
@@ -22,6 +21,7 @@ public sealed record Review(Guid UserId, Guid BookId, int Rating, string? Commen
         return errors.Count != 0
         ? Result.Fail<Review>(errors)
         : new Review(
+            id,
             userId,
             bookId,
             rating,

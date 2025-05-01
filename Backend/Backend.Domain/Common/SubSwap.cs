@@ -1,4 +1,3 @@
-// Backend.Domain/Entities/SubSwap.cs
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
@@ -7,17 +6,19 @@ using FluentResults;
 namespace Backend.Domain.Common;
 
 public sealed record SubSwap(
+        Guid Id,
         Guid UserId, 
-        Guid UserBookReadingId,
         int PageAt,
+        Guid? UserBookReadingId,
         Guid? FeedbackId,
         Guid? IssueId
         )
 {
     public static Result<SubSwap> Create(
+        Guid id,
         Guid userId, 
-        Guid userBookReadingId,
         int pageAt,
+        Guid? userBookReadingId,
         Guid? feedbackId,
         Guid? issueId
         )
@@ -31,11 +32,16 @@ public sealed record SubSwap(
         return errors.Count != 0
         ? Result.Fail<SubSwap>(errors)
         : new SubSwap(
+            id,
             userId,
-            userBookReadingId,
             pageAt,
+            userBookReadingId,
             feedbackId,
             issueId
         );
+    }
+
+    public static SubSwap Initial(Guid userId, Guid? userBookReadingId){
+        return new SubSwap(Guid.NewGuid(), userId, 0, userBookReadingId, null, null);
     }
 }

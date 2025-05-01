@@ -1,13 +1,12 @@
-// Backend.Domain/Entities/Issue.cs
 using Backend.Domain.Common;
 using Backend.Domain.Errors;
 using FluentResults;
 
-namespace Backend.Domain.Entities;
+namespace Backend.Domain.Common;
 
-public sealed record Issue(string Description, Guid UserId, Guid SubSwapId)
+public sealed record Issue(Guid Id, Guid UserId, Guid SubSwapId, string Description)
 {
-    public static Result<Issue> Create(string description, Guid userId, Guid subSwapId)
+    public static Result<Issue> Create(Guid id, Guid userId, Guid subSwapId, string description)
     {
         var errors = new List<IError>();
         
@@ -23,9 +22,10 @@ public sealed record Issue(string Description, Guid UserId, Guid SubSwapId)
         return errors.Count != 0 
         ? Result.Fail<Issue>(errors)
         : new Issue(
-            description.Trim(),
+            id,
             userId,
-            subSwapId
+            subSwapId,
+            description.Trim()
         );
     }
 }
