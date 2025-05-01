@@ -1,6 +1,7 @@
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
+using Backend.Domain.ValueObjects;
 using FluentResults;
 
 namespace Backend.Domain.Entities;
@@ -15,9 +16,8 @@ public sealed class UserBook : Entity<Guid>
     public int PageCount { get; }
     public Photo CoverPhoto { get; private set; }
 
-    private List<Bookmark> _bookmarks = new();
-    public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.AsReadOnly();
-
+    private BookmarksCollection _bookmarks = new();
+    public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.Bookmarks;
 
     private UserBook(
         Guid id,
