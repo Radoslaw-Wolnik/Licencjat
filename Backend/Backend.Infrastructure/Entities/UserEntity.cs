@@ -1,9 +1,8 @@
-// Backend.Infrastructure/Entities/ApplicationUser.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Backend.Domain.Errors;
 using Backend.Infrastructure.Data.Attributes;
 using Microsoft.AspNetCore.Identity;
+using Backend.Domain.Errors;
 
 namespace Backend.Infrastructure.Entities;
 
@@ -35,8 +34,7 @@ public class UserEntity : IdentityUser<Guid>
 
     
     // Many to Many relations
-    public virtual ICollection<GeneralBookEntity> Wishlist { get; set; } = [];
-
+    public virtual ICollection<UserWishlistEntity> Wishlist { get; set; } = [];
     public virtual ICollection<UserFollowingEntity> Following { get; set; } = [];
     public virtual ICollection<UserFollowingEntity> Followers { get; set; } = [];
     public virtual ICollection<UserBlockedEntity> BlockedUsers { get; set; } = [];
