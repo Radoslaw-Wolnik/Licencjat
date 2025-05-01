@@ -1,8 +1,5 @@
-// Backend.Infrastructure/Entities/Feedback.cs
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Domain.Enums;
-using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
 
@@ -28,6 +25,6 @@ public class FeedbackEntity
     public Guid SubSwapId { get; set; }
     [Required]
     public virtual UserEntity User { get; set; } = null!;
-    public virtual SubSwapEntity? SubSwap { get; set; } // nullable foreign key structure, ofc it will always be here not null
-
+    [Required]
+    public virtual SubSwapEntity SubSwap { get; set; } = null!;
 }
