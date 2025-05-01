@@ -1,149 +1,65 @@
 using AutoMapper;
 using Backend.Domain.Common;
-using Backend.Domain.Errors;
 using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
-using FluentResults;
 using Microsoft.EntityFrameworkCore;
+using Backend.Domain.Errors;
+using Backend.Application.Interfaces;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
 // Social‑media (rich nav)
-// change to use automapper <-------------------------------- <---
 public interface IUserSocialMediaRepository
 {
-    Task<Result<IReadOnlyCollection<SocialMediaLink>>> GetSocialMediaAsync(Guid userId);
+    Task<IReadOnlyCollection<SocialMediaLink>> GetByUserIdAsync(Guid userId);
 
-    Task<Result> AddSocialMediaAsync(Guid userId, SocialMediaLink link);
-    Task<Result> RemoveSocialMediaAsync(Guid userId, Guid linkId);
-    Task<Result> UpdateSocialMediaAsync(Guid userId, SocialMediaLink updated);
-    
-    Task<Result<bool>> SocialMediaContainsAsync(Guid userId, Guid bookId);
+    Task AddAsync(SocialMediaLink link);
+    Task RemoveAsync(Guid linkId);
+    Task UpdateAsync(SocialMediaLink link);
 }
 
 
 public class UserSocialMediaRepository : IUserSocialMediaRepository
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ApplicationDbContext _db;
     private readonly IMapper _mapper;
 
-    public UserSocialMediaRepository(ApplicationDbContext context, IMapper mapper)
+    public UserSocialMediaRepository(ApplicationDbContext db, IMapper mapper)
     {
-        _context = context;
+        _db     = db;
         _mapper = mapper;
     }
 
-    public async Task<Result<IReadOnlyCollection<SocialMediaLink>>> GetSocialMediaAsync(Guid userId)
+    public async Task<IReadOnlyCollection<SocialMediaLink>> GetByUserIdAsync(Guid userId)
     {
-        var data = await _context.SocialMediaLinks
-            .Where(s => s.UserId == userId)
-            // .Select(s => new { s.Platform, s.Url })
+        var entities = await _db.SocialMediaLinks
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
             .ToListAsync();
-        
-        var mappedList = _mapper.Map<IReadOnlyCollection<SocialMediaLink>>(data);
-
-        return Result.Ok(mappedList);
+        return _mapper.Map<List<SocialMediaLink>>(entities);
     }
 
-    public async Task<Result> AddSocialMediaAsync(Guid userId, SocialMediaLink link)
+    public async Task AddAsync(SocialMediaLink link)
     {
-        var user = await _context.Users
-            .Include(u => u.SocialMediaLinks)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-        if (user is null) return Result.Fail(UserErrors.NotFound);
-        
-        // check for duplicate
-        if (user.SocialMediaLinks.Any(sm => sm.Platform == link.Platform))
-            return Result.Fail(WishlistErrors.ItemExists);
-        
-        if (user.SocialMediaLinks.Any(sm => sm.Url == link.Url))
-            return Result.Fail(WishlistErrors.ItemExists);
-
-        // add
         var entity = _mapper.Map<SocialMediaLinkEntity>(link);
-        entity.UserId = userId;   // make sure the FK is set
-        user.SocialMediaLinks.Add(entity);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-            return Result.Ok();
-        }
-        catch (Exception ex)
-        {
-            return Result.Fail(
-                new DomainError("DatabaseError", ex.Message, ErrorType.StorageError)
-            );
-        }
+        _db.SocialMediaLinks.Add(entity);
+        await _db.SaveChangesAsync();
     }
 
-    public async Task<Result> RemoveSocialMediaAsync(Guid userId, Guid linkId)
+    public async Task RemoveAsync(Guid linkId)
     {
-        var entity = await _context.SocialMediaLinks
-            .FirstOrDefaultAsync(s => s.UserId == userId && s.Id == linkId);
-        if (entity is null) return Result.Fail(UserErrors.NotFound);
+        var existing = await _db.SocialMediaLinks.FindAsync(linkId);
+        if (existing is null)
+            throw new KeyNotFoundException($"SocialMediaLink with Id = {linkId} was not found.");
 
-        _context.SocialMediaLinks.Remove(entity);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-            return Result.Ok();
-        }
-        catch (Exception ex)
-        {
-            return Result.Fail(
-                new DomainError("DatabaseError", ex.Message, ErrorType.StorageError)
-            );
-        }
+        _db.SocialMediaLinks.Remove(existing);
     }
 
-    
-    public async Task<Result> UpdateSocialMediaAsync(Guid userId, SocialMediaLink updated)
+    public async Task UpdateAsync(SocialMediaLink link)
     {
-        var user = await _context.Users
-            .Include(u => u.SocialMediaLinks)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-        
-        if (user is null) return Result.Fail(UserErrors.NotFound);
-        
-        var entity = user.SocialMediaLinks
-            .SingleOrDefault(sm => sm.Id == updated.Id);
-
-        if (entity is null)
-            return Result.Fail(SocialMediaErrors.NotFound);
-
-        // check duplicates among *the others* before you overwrite
-        var others = user.SocialMediaLinks.Where(sm => sm.Id != updated.Id);
-
-        if (others.Any(sm => sm.Platform == updated.Platform))
-            return Result.Fail(SocialMediaErrors.PlatformAlreadyExists);
-
-        if (others.Any(sm => sm.Url == updated.Url))
-            return Result.Fail(SocialMediaErrors.UrlAlreadyExists);
-        
-        _mapper.Map(updated, entity);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-            return Result.Ok();
-        }
-        catch (Exception ex)
-        {
-            return Result.Fail(
-                new DomainError("DatabaseError", ex.Message, ErrorType.StorageError)
-            );
-        }
+        var existing = await _db.SocialMediaLinks.FindAsync(link.Id);
+        _mapper.Map(existing, link);
+        await _db.SaveChangesAsync();
     }
-
-    public async Task<Result<bool>> SocialMediaContainsAsync(Guid userId, Guid socialMediaId)
-    {
-        var exists = await _context.SocialMediaLinks
-            .AnyAsync(s => s.UserId == userId && s.Id == socialMediaId);
-
-        return Result.Ok(exists);
-    }
-
     
 }
