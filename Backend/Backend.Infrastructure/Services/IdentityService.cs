@@ -1,5 +1,3 @@
-// Infrastructure/Services/IdentityService.cs
-using System.Security.Authentication;
 using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Infrastructure.Entities;

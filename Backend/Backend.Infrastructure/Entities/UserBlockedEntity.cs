@@ -1,6 +1,5 @@
 namespace Backend.Infrastructure.Entities;
 
-
 public class UserBlockedEntity
 {
     public Guid Id { get; set; }

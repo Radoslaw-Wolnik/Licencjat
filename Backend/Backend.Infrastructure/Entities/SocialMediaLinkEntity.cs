@@ -1,7 +1,5 @@
-// Backend.Infrastructure/Entities/ApplicationUser.cs
 using System.ComponentModel.DataAnnotations;
 using Backend.Domain.Enums;
-using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
 

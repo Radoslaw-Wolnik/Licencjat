@@ -1,6 +1,5 @@
 namespace Backend.Infrastructure.Entities;
 
-
 public class UserFollowingEntity
 {
     public Guid Id { get; set; }
@@ -9,5 +8,4 @@ public class UserFollowingEntity
     
     public virtual UserEntity Follower { get; set; } = null!;
     public virtual UserEntity Followed { get; set; } = null!;
-
 }

@@ -2,10 +2,9 @@ using AutoMapper;
 using Backend.Domain.Entities;
 using Backend.Infrastructure.Entities;
 using Backend.Domain.Common;
-using Backend.Domain.Errors;
 using Backend.Application.DTOs;
-using FluentResults;
 using Backend.Domain.Enums;
+using Backend.Domain.Errors;
 
 namespace Backend.Infrastructure.Mapping;
 
@@ -24,7 +23,7 @@ public class GeneralBookProfile : Profile
         
         // Domain -> Entity Mapping
         CreateMap<GeneralBook, GeneralBookEntity>(MemberList.Source)
-        // map your core scalar values:
+        // map core scalar values
         .ForMember(dest => dest.Id,            opt => opt.MapFrom(src => src.Id))
         .ForMember(dest => dest.Title,         opt => opt.MapFrom(src => src.Title))
         .ForMember(dest => dest.Author,        opt => opt.MapFrom(src => src.Author))

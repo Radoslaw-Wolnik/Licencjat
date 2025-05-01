@@ -2,9 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Backend.Application.Interfaces;
 using Backend.Infrastructure.Entities;
 using Backend.Application.DTOs.Auth;
-
-using System.Threading.Tasks;
-using System.Data;
 using AutoMapper;
 using FluentResults;
 using Backend.Domain.Errors;

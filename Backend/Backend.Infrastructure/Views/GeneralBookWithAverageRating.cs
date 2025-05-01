@@ -1,4 +1,3 @@
-// Backend.Infrastructure/Views/GeneralBookWithAverageRating.cs
 namespace Backend.Infrastructure.Views;
 
 public class GeneralBookWithAverageRating

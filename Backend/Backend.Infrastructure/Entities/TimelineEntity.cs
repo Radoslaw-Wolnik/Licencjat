@@ -1,6 +1,4 @@
-// Backend.Infrastructure/Entities/ApplicationUser.cs
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Domain.Enums;
 
 namespace Backend.Infrastructure.Entities;
@@ -18,7 +16,7 @@ public class TimelineEntity
     
 
     // references
-    public Guid UserId { get; set; } // could we just have id of user that is suggesting meeting and mby the user that should agree idk? But we dont need entire user reference here
+    public Guid UserId { get; set; }
     public Guid SwapId { get; set; }
     [Required]
     public virtual UserEntity User { get; set; } = null!;

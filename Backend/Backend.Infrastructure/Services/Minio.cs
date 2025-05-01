@@ -6,7 +6,7 @@ using Minio.DataModel.Args;
 
 public class MinioImageStorageService : IImageStorageService
 {
-    private readonly IMinioClient _minioClient; // Changed to IMinioClient
+    private readonly IMinioClient _minioClient;
     private readonly string _bucketName;
     
     public MinioImageStorageService(IConfiguration configuration)
@@ -26,7 +26,6 @@ public class MinioImageStorageService : IImageStorageService
     {
         try
         {
-            // Removed Minio.DataModel reference
             bool found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName));
             if (!found)
             {
@@ -54,7 +53,7 @@ public class MinioImageStorageService : IImageStorageService
     {
         var objectKey = $"users/{userId}/bookcovers/{fileName}";
         var presignedUrl = await _minioClient.PresignedPutObjectAsync(
-            new PresignedPutObjectArgs() // Correct namespace
+            new PresignedPutObjectArgs()
                 .WithBucket(_bucketName)
                 .WithObject(objectKey)
                 .WithExpiry((int)expiration.TotalSeconds));
@@ -64,7 +63,7 @@ public class MinioImageStorageService : IImageStorageService
     public async Task<string> GenerateDownloadUrlAsync(string objectKey, TimeSpan expiration)
     {
         var presignedUrl = await _minioClient.PresignedGetObjectAsync(
-            new PresignedGetObjectArgs() // Correct namespace
+            new PresignedGetObjectArgs()
                 .WithBucket(_bucketName)
                 .WithObject(objectKey)
                 .WithExpiry((int)expiration.TotalSeconds));

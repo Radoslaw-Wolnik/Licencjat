@@ -1,7 +1,4 @@
-// Backend.Infrastructure/Entities/GeneralBook.cs
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Backend.Domain.Entities;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
 

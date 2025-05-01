@@ -1,4 +1,3 @@
-// Backend.Infrastructure/Services/EmailService.cs
 using Backend.Application.Interfaces;
 
 namespace Backend.Infrastructure.Services;

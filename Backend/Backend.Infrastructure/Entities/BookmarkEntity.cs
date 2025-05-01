@@ -1,8 +1,5 @@
-// Backend.Infrastructure/Entities/Feedback.cs
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Domain.Enums;
-using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Infrastructure.Entities;
 
@@ -19,6 +16,4 @@ public class BookmarkEntity
 
     [Required]
     public virtual UserBookEntity UserBook { get; set; } = null!;
-
-
 }
