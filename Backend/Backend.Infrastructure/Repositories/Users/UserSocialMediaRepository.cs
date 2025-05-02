@@ -4,20 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Users;
-
-// Social‑media (rich nav)
-public interface IUserSocialMediaRepository
-{
-    Task<IReadOnlyCollection<SocialMediaLink>> GetByUserIdAsync(Guid userId);
-
-    Task AddAsync(SocialMediaLink link);
-    Task RemoveAsync(Guid linkId);
-    Task UpdateAsync(SocialMediaLink link);
-}
-
 
 public class UserSocialMediaRepository : IUserSocialMediaRepository
 {

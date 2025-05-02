@@ -4,20 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.UserBooks;
-
-// Bookmark (rich nav)
-public interface IUserBookBookmarkRepository
-{
-    Task<IReadOnlyCollection<Bookmark>> GetByUserBookIdAsync(Guid userBookId);
-
-    Task AddAsync(Bookmark bookmark);
-    Task RemoveAsync(Guid bookmarkId);
-    Task UpdateAsync(Bookmark bookmark);
-}
-
 
 public class UserBookBookmarkRepository : IUserBookBookmarkRepository
 {

@@ -2,19 +2,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Users;
-
-// Blocked (ID‑only nav)
-public interface IUserBlockedRepository
-{
-    Task<IReadOnlyCollection<Guid>> GetByUserIdAsync(Guid userId);
-
-    Task AddAsync(Guid userId, Guid blockedId);
-    Task RemoveAsync(Guid userId, Guid unblockedId);
-    
-}
 
 public class UserBlockedRepository : IUserBlockedRepository
 {

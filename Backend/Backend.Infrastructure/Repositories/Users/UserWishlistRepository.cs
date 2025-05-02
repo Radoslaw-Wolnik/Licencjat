@@ -2,19 +2,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Users;
-
-// Wishlist (ID‑only nav)
-public interface IUserWishlistRepository
-{
-    Task<IReadOnlyCollection<Guid>> GetByUserIdAsync(Guid userId);
-
-    Task AddAsync(Guid userId, Guid bookId);
-    Task RemoveAsync(Guid userId, Guid bookId);
-    
-}
 
 public class UserWishlistRepository : IUserWishlistRepository
 {

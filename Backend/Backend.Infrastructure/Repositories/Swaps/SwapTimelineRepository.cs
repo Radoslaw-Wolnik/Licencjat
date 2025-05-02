@@ -4,17 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
-
-public interface ISwapTimelineRepository
-{
-    Task<IReadOnlyCollection<TimelineUpdate>> GetByIdAsync(Guid swapId);
-
-    Task AddAsync(TimelineUpdate timelineUpdate);
-}
-
 
 public class SwapTimelineRepository : ISwapTimelineRepository
 {

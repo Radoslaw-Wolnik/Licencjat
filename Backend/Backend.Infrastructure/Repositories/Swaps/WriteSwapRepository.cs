@@ -3,18 +3,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using AutoMapper;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
-
-public interface IWriteSwapRepository
-{
-    Task AddAsync(Swap swap);
-    Task UpdateAsync(Swap swap);
-    Task DeleteAsync(Guid swapId);
-}
-
-
 
 public class WriteSwapRepository : IWriteSwapRepository
 {

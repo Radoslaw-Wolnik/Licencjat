@@ -3,18 +3,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using AutoMapper;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Users;
-
-public interface IWriteUserRepository
-{
-    Task AddAsync(User user);
-    Task UpdateAsync(User user);
-    Task DeleteAsync(Guid id);
-}
-
-
 
 public class WriteUserRepository : IWriteUserRepository
 {

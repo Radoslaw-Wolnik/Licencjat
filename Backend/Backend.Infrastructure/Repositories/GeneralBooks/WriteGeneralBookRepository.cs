@@ -4,18 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using AutoMapper;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.GeneralBooks;
-
-public interface IWriteGeneralBookRepository
-{
-    Task AddAsync(GeneralBook user);
-    Task UpdateAsync(GeneralBook book);
-    Task DeleteAsync(Guid bookId);
-}
-
-
 
 public class WriteGeneralBookRepository : IWriteGeneralBookRepository
 {

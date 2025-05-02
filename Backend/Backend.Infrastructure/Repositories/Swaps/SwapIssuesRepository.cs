@@ -4,19 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
-
-public interface ISwapIssueRepository
-{
-    Task<Issue> GetByIdAsync(Guid subSwapId);
-
-    Task AddAsync(Issue issue);
-    Task RemoveAsync(Guid issueId);
-    Task UpdateAsync(Issue issue);
-}
-
 
 public class SwapIssueRepository : ISwapIssueRepository
 {

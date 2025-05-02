@@ -3,19 +3,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using AutoMapper;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.UserBooks;
-
-public interface IWriteUserBookRepository
-{
-    Task AddAsync(UserBook book);
-
-    Task UpdateAsync(UserBook book);
-    Task DeleteAsync(Guid bookId);
-}
-
-
 
 public class WriteUserBookRepository : IWriteUserBookRepository
 {

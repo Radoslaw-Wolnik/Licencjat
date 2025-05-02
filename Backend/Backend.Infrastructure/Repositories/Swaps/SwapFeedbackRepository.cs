@@ -4,19 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
-
-public interface ISwapFeedbackRepository
-{
-    Task<Feedback> GetByIdAsync(Guid swapId);
-
-    Task AddAsync(Feedback feedback);
-    Task RemoveAsync(Guid feedbackId);
-    Task UpdateAsync(Feedback feedback);
-}
-
 
 public class SwapFeedbackRepository : ISwapFeedbackRepository
 {

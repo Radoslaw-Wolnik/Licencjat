@@ -4,19 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
-
-public interface ISwapMeetupRepository
-{
-    Task<IReadOnlyCollection<Meetup>> GetByIdAsync(Guid swapId);
-
-    Task AddAsync(Meetup meetup);
-    Task RemoveAsync(Guid meetupId);
-    Task UpdateAsync(Meetup meetup);
-}
-
 
 public class SwapMeetupRepository : ISwapMeetupRepository
 {

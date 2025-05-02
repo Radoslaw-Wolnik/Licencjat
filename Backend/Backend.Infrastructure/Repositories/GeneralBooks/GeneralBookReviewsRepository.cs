@@ -4,19 +4,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.GeneralBooks;
-
-public interface IGeneralBookReviewsRepository
-{
-    Task<IReadOnlyCollection<Bookmark>> GetByBookIdAsync(Guid bookId);
-
-    Task AddAsync(Review review);
-    Task RemoveAsync(Guid reviewId);
-    Task UpdateAsync(Review review);
-}
-
 
 public class GeneralBookReviewsRepository : IGeneralBookReviewsRepository
 {

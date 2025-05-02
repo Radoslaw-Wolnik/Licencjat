@@ -7,17 +7,9 @@ using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
 using Backend.Application.DTOs.Auth;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Users;
-
-// authentication info 
-public interface IAuthUserRepository
-{
-    Task<LoginUserInfo?> GetLoginInfoAsync(Expression<Func<UserProjection,bool>> predicate);
-}
-
-
 
 public class AuthUserRepository : IAuthUserRepository
 {

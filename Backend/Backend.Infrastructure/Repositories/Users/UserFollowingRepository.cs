@@ -2,18 +2,9 @@ using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Users;
-
-// Following (ID‑only nav)
-public interface IUserFollowingRepository
-{
-    Task<IReadOnlyCollection<Guid>> GetFollowingAsync(Guid userId);
-
-    Task AddToFollowingAsync(Guid userId, Guid newFollowingId);
-    Task RemoveFromFollowingAsync(Guid userId, Guid unfollowingId);
-}
 
 public class UserFollowingRepository : IUserFollowingRepository
 {
