@@ -7,19 +7,9 @@ using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.DbReads;
 
 namespace Backend.Infrastructure.Services.DbReads;
-
-public interface IUserBookReadService
-{
-    Task<UserBook> GetByIdAsync(Guid id);
-    Task<UserBook> GetByAsync(Expression<Func<BookProjection, bool>> predicate);
-    Task<UserBook> GetBookWithIncludes(Guid bookId, 
-        params Expression<Func<BookProjection, object>>[] includes);
-}
-
-
 
 public class UserBookReadService : IUserBookReadService
 {

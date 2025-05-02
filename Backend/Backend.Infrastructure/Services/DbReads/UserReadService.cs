@@ -8,19 +8,9 @@ using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.DbReads;
 
 namespace Backend.Infrastructure.Services.DbReads;
-
-public interface IUserReadService
-{
-    Task<bool> ExistsAsync(Expression<Func<UserProjection, bool>> predicate);
-    Task<User?> GetByIdAsync(Guid UserId);
-    Task<User?> GetByAsync(Expression<Func<UserProjection, bool>> predicate);
-    Task<User?> GetUserWithIncludes(Guid userId, 
-        params Expression<Func<UserProjection, object>>[] includes);
-}
-
 
 public class UserReadService : IUserReadService
 {

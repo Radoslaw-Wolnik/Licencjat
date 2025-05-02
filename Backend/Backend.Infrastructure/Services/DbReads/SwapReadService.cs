@@ -3,15 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Infrastructure.Data;
 using AutoMapper;
 using Backend.Domain.Errors;
-using Backend.Application.Interfaces;
+using Backend.Application.Interfaces.DbReads;
 
 namespace Backend.Infrastructure.Services.DbReads;
-
-public interface ISwapReadService
-{
-    Task<Swap?> GetByIdAsync(Guid swapId);
-}
-
 
 public class SwapReadService : ISwapReadService
 {
