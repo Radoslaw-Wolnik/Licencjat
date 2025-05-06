@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Backend.Application.Interfaces;
 using Minio.DataModel.Args;
 
+namespace Backend.Infrastructure.Services;
+
 public class MinioImageStorageService : IImageStorageService
 {
     private readonly IMinioClient _minioClient;
