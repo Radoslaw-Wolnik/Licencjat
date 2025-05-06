@@ -12,9 +12,9 @@ public class MeetupEntity
     
     // info
     [Column(TypeName = "float(24)")] // SQL float(24) ≈ C# double
-    public double? Location_X { get; set; }
+    public double Location_X { get; set; }
     [Column(TypeName = "float(24)")]
-    public float? Location_Y { get; set; }
+    public float Location_Y { get; set; }
 
     // status 
     public MeetupStatus Status { get; set; }
