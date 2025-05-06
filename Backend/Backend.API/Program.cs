@@ -1,33 +1,40 @@
-using Backend.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Backend.Infrastructure.Entities;
 using Microsoft.AspNetCore.HttpOverrides;
-using Backend.API.Middleware;
 using Swashbuckle.AspNetCore.Annotations;
-using Backend.Application.Interfaces;
-using Backend.Infrastructure.Services;
-using Backend.Infrastructure.Data.Seeders;
-using Backend.Application.Validators;
-using Backend.Application.Validators.Auth;
-using Backend.Application.Behaviors;
 using MediatR;
-using Backend.Infrastructure.Mapping;
-using AutoMapper;
-using Backend.Infrastructure.Repositories;
 using AutoMapper.Extensions.ExpressionMapping;
-using BAckend.Infrastructure.Services;
-using Backend.Application.Features.Auth;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+
+using Backend.API.Middleware;
+
+using Backend.Application.Interfaces;
+using Backend.Application.Behaviors;
+
+using Backend.Infrastructure.Data;
+using Backend.Infrastructure.Data.Seeders;
+using Backend.Infrastructure.Entities;
+using Backend.Infrastructure.Mapping;
+
+// validators
+using Backend.Application.Validators;
+using Backend.Application.Validators.Commands.Auth;
+
+// commands
+using Backend.Application.Commands.Auth;
+
+// repositories
+using Backend.Application.Interfaces.Repositories;
 using Backend.Infrastructure.Repositories.UserBooks;
 using Backend.Infrastructure.Repositories.GeneralBooks;
-using Backend.Application.Interfaces.Repositories;
 using Backend.Infrastructure.Repositories.Swaps;
 using Backend.Infrastructure.Repositories.Users;
+
+// services
 using Backend.Application.Interfaces.DbReads;
 using Backend.Infrastructure.Services.DbReads;
-
+using Backend.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,6 +121,17 @@ builder.Services.AddAutoMapper(typeof(TimelineProfile));
 builder.Services.AddAutoMapper(typeof(UserBookProfile));
 builder.Services.AddAutoMapper(typeof(UserProfile)); // cfg => {cfg.AddExpressionMapping();},
 
+// AutoMapper - expression mapping added to specyfic mappers
+builder.Services.AddAutoMapper(cfg => 
+{
+    cfg.AddExpressionMapping();
+    cfg.AddMaps(
+        typeof(UserProfile), 
+        typeof(AuthProfile),
+        typeof(GeneralBookProfile),
+        typeof(UserBookProfile));
+});
+
 // health check for db
 builder.Services.AddScoped<DatabaseHealthCheck>();
 
@@ -128,19 +146,9 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
-// Optional command validation pipeline
+// - optional - command validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
-// AutoMapper - expression mapping added to specyfic mappers
-builder.Services.AddAutoMapper(cfg => 
-{
-    cfg.AddExpressionMapping();
-    cfg.AddMaps(
-        typeof(UserProfile), 
-        typeof(AuthProfile),
-        typeof(GeneralBookProfile),
-        typeof(UserBookProfile));
-});
 
 // ========== SECURITY CONFIGURATION ========== //
 builder.Services.ConfigureApplicationCookie(options =>
