@@ -1,5 +1,5 @@
-using Backend.Application.DTOs.Auth;
-using Backend.Application.Features.Auth;
+using Backend.Application.DTOs.Commands.Auth;
+using Backend.Application.Commands.Auth;
 using AutoMapper;
 using Backend.Domain.Entities;
 using Backend.Domain.Errors;

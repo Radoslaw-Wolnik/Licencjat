@@ -1,4 +1,4 @@
-using Backend.Application.DTOs.Auth;
+using Backend.Application.DTOs.Commands.Auth;
 using FluentResults;
 
 namespace Backend.Application.Interfaces;

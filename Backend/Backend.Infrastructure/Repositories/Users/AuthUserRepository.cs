@@ -5,13 +5,13 @@ using AutoMapper;
 using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
-using Backend.Application.DTOs.Auth;
+using Backend.Application.DTOs.Commands.Auth;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
-public class AuthUserRepository : IAuthUserRepository
+public class AuthUserRepository : IAuthUserRepository // change to read service
 {
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;

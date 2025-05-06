@@ -4,7 +4,7 @@ using Backend.Infrastructure.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 
-namespace BAckend.Infrastructure.Services;
+namespace Backend.Infrastructure.Services;
 
 public sealed class IdentityService : IIdentityService
 {

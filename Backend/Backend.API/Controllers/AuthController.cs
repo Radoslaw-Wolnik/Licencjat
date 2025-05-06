@@ -1,8 +1,8 @@
 // Backend.API/Controllers/AuthController.cs
 using AutoMapper;
 using Backend.API.Extensions;
-using Backend.Application.DTOs.Auth;
-using Backend.Application.Features.Auth;
+using Backend.Application.DTOs.Commands.Auth;
+using Backend.Application.Commands.Auth;
 using Backend.Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
