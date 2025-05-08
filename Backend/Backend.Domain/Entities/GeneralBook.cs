@@ -1,6 +1,7 @@
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
+using Backend.Domain.ValueObjects;
 using FluentResults;
 
 namespace Backend.Domain.Entities;
@@ -14,14 +15,14 @@ public sealed class GeneralBook : Entity<Guid>
     public Rating RatingAvg { get; private set; } // 1-10 
     public Photo CoverPhoto { get; }
     
-    private readonly List<BookGenre> _genres = new();
-    public IReadOnlyCollection<BookGenre> Genres => _genres.AsReadOnly();
+    private readonly GenresCollection _genres = new();
+    public IReadOnlyCollection<BookGenre> Genres => _genres.Genres;
     
-    private readonly List<Guid> _userCopies = new();
-    public IReadOnlyCollection<Guid> UserCopies => _userCopies.AsReadOnly();
+    private readonly UserCopiesCollection _userCopies = new();
+    public IReadOnlyCollection<UserBook> UserCopies => _userCopies.UserBooks;
 
-    private readonly List<Guid> _userReviews = new();
-    public IReadOnlyCollection<Guid> UserReviews => _userReviews.AsReadOnly();
+    private readonly ReviewsCollection _reviews = new();
+    public IReadOnlyCollection<Review> UserReviews => _reviews.Reviews;
 
     private GeneralBook(
         Guid id,
@@ -42,25 +43,25 @@ public sealed class GeneralBook : Entity<Guid>
     }
 
     public static Result<GeneralBook> Create(
+        Guid id,
         string title,
         string author,
         DateOnly published,
         LanguageCode originalLanguage,
-        Rating ratingAvg,
         Photo coverPhoto)
     {
         var errors = new List<IError>();
         
-        if (errors.Any())
+        if (errors.Count != 0)
             return Result.Fail<GeneralBook>(errors);
 
         return new GeneralBook(
-            Guid.NewGuid(),
+            id,
             title,
             author,
             published,
             originalLanguage,
-            ratingAvg,
+            Rating.Initial(),
             coverPhoto
         );
     }
@@ -74,56 +75,41 @@ public sealed class GeneralBook : Entity<Guid>
         Photo coverPhoto,
         Rating ratingAvg,
         IEnumerable<BookGenre> genres,
-        IEnumerable<Guid> userCopies,
-        IEnumerable<Guid> userReviews
+        IEnumerable<UserBook> userCopies,
+        IEnumerable<Review> userReviews
     )
     {
         var book =  new GeneralBook(id, title, author, published, originalLanguage, ratingAvg, coverPhoto);
 
         foreach (var g in genres)      book._genres.Add(g);
         foreach (var c in userCopies)  book._userCopies.Add(c);
-        foreach (var r in userReviews) book._userReviews.Add(r);
+        foreach (var r in userReviews) book._reviews.Add(r);
 
         return book;
     }
 
 
     public Result AddGenre(BookGenre genre)
-    {
-        if (!Enum.IsDefined(typeof(BookGenre), genre))
-            return Result.Fail(BookErrors.InvalidGenre);
-            
-        if (_genres.Contains(genre))
-            return Result.Fail(BookErrors.DuplicateGenre);
+        => _genres.Add(genre);
+    
+    public Result RemoveGenre(BookGenre genre)
+        => _genres.Remove(genre);
 
-        _genres.Add(genre);
-        return Result.Ok();
-    }
+    public Result AddUserCopy(UserBook userBook)
+        => _userCopies.Add(userBook);
+    
+    public Result RemoveUserCopy(Guid userBookId)
+        => _userCopies.Remove(userBookId);
+    
+    public Result UpdateUserCopy(UserBook userBook)
+        => _userCopies.Update(userBook);
 
-    public Result AddUserCopy(Guid userBookId)
-    {
-        if (_userCopies.Contains(userBookId))
-            return Result.Fail(BookErrors.DuplicateCopy);
-            
-        _userCopies.Add(userBookId);
-        return Result.Ok();
-    }
-
-
-    public Result AddUserReview(Guid reviewId, int reviewRating)
-    {
-
-        if (_userReviews.Contains(reviewId))
-            return Result.Fail(ReviewErrors.Duplicate);
-        
-        _userReviews.Add(reviewId);
-
-        var countOld = _userReviews.Count - 1; // before adding
-        var totalOld = RatingAvg.Value * countOld;
-        var newAvg = (totalOld + reviewRating) / _userReviews.Count;
-        RatingAvg = Rating.Create(newAvg).Value;
-        return Result.Ok();
-    }
-
-
+    public Result AddReview(Review review)
+        => _reviews.Add(review);
+    
+    public Result RemoveReview(Guid reviewId)
+        =>  _reviews.Remove(reviewId);
+    
+    public Result UpdateReview(Review review)
+        => _reviews.Update(review);
 }
