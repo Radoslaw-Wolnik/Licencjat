@@ -1,13 +1,22 @@
+using Backend.Domain.Enums;
+
 namespace Backend.Application.Interfaces;
+
+public record UploadInfo(string ObjectKey, string Url);
 
 public interface IImageStorageService
 {
-    // Generates a pre-signed URL for a user to upload a profile picture.
-    Task<string> GenerateProfilePictureUploadUrlAsync(Guid userId, string fileName, TimeSpan expiration);
-    
-    // Generates a pre-signed URL for a user to upload a book cover image.
-    Task<string> GenerateUserBookCoverUploadUrlAsync(Guid userId, string fileName, TimeSpan expiration);
+    string GenerateObjectKey(StorageDestination dest, Guid id, string originalName);
+    string GenerateUserBookObjectKey(Guid userId, Guid userBookId, string originalName);
 
-    // Generates a pre-signed URL for downloading an image.
-    Task<string> GenerateDownloadUrlAsync(string objectKey, TimeSpan expiration);
+    Task<string> GenerateUploadUrlAsync(string objectKey);
+
+    Task<string> GenerateSignedDownloadUrlAsync(string objectKey, TimeSpan expiration);
+
+    string GetPublicUrl(string objectKey);
+    string GetThumbnailUrl(string objectKey);
+
+    Task<bool> ExistsAsync(
+        string objectKey,
+        CancellationToken cancellationToken = default);
 }
