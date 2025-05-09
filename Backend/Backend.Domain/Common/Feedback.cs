@@ -26,9 +26,9 @@ public sealed record Feedback(
     ) {
         var errors = new List<IError>();
         
-        if (stars < 1 || stars > 5) errors.Add(FeedbackErrors.InvalidStars);
-        if (userId == Guid.Empty) errors.Add(UserErrors.NotFound);
-        if (subSwapId == Guid.Empty) errors.Add(SwapErrors.NotFound);
+        if (stars < 1 || stars > 5) errors.Add(DomainErrorFactory.Invalid("Feedback", "Stars must be between 1 and 5"));
+        if (userId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("User", userId));
+        if (subSwapId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("SubSwap", subSwapId));
 
         return errors.Count != 0
         ? Result.Fail<Feedback>(errors)

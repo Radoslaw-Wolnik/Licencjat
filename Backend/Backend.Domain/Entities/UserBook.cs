@@ -52,19 +52,19 @@ public sealed class UserBook : Entity<Guid>
         var errors = new List<IError>();
         
         if (ownerId == Guid.Empty)
-            errors.Add(UserErrors.NotFound);
+            errors.Add(DomainErrorFactory.NotFound("User", ownerId));
 
         if (generalBookId == Guid.Empty)
-            errors.Add(BookErrors.NotFound);
+            errors.Add(DomainErrorFactory.NotFound("GeneralBook", generalBookId));
 
         if (!Enum.IsDefined(typeof(BookStatus), status))
-            errors.Add(UserBookErrors.InvalidStatus);
+            errors.Add(DomainErrorFactory.Invalid("BookStatus", "Given status of userbook was found invalid"));
 
         if (!Enum.IsDefined(typeof(BookState), state))
-            errors.Add(UserBookErrors.InvalidState);
+            errors.Add(DomainErrorFactory.Invalid("BookState", "Given book state was found invalid"));
 
         if (pageCount <= 0)
-            errors.Add(UserBookErrors.InvalidPageCount);
+            errors.Add(DomainErrorFactory.Invalid("UserBook", "The page count was invalid"));
         
 
         if (errors.Count != 0)
@@ -111,9 +111,6 @@ public sealed class UserBook : Entity<Guid>
 
     public Result UpdateStatus(BookStatus newStatus)
     {
-        if (!Enum.IsDefined(typeof(BookStatus), newStatus))
-            return Result.Fail(UserBookErrors.InvalidStatus);
-
         Status = newStatus;
         return Result.Ok();
     }

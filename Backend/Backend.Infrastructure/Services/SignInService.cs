@@ -26,11 +26,11 @@ public class SignInService : ISignInService
     {
         var email = userInfo.Email;
         if (email is null)
-            return Result.Fail(AuthErrors.InvalidCredentials); // its like impossible
+            return Result.Fail(DomainErrorFactory.BadRequest("Auth.Invalid", "invalid credentials")); // its like impossible
 
         var user = await _signInManager.UserManager.FindByEmailAsync(email);
         if (user is null)
-            return Result.Fail(AuthErrors.InvalidCredentials);
+            return Result.Fail(DomainErrorFactory.BadRequest("Auth.Invalid", "invalid credentials"));
 
         var result = await _signInManager.PasswordSignInAsync(
             user, password, rememberMe, lockoutOnFailure: true);
@@ -39,7 +39,7 @@ public class SignInService : ISignInService
             return Result.Ok();
 
         return result.IsLockedOut
-            ? Result.Fail(AuthErrors.AccountLocked)
-            : Result.Fail(AuthErrors.InvalidCredentials);
+            ? Result.Fail(DomainErrorFactory.Forbidden("Auth.Locked", "account was locked out"))
+            : Result.Fail(DomainErrorFactory.BadRequest("Auth.Invalid", "Invalid credentials"));
     }
 }

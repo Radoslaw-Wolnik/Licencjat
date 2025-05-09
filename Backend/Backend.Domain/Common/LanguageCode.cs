@@ -1,3 +1,4 @@
+using Backend.Domain.Errors;
 using FluentResults;
 using System.Text.RegularExpressions;
 
@@ -24,13 +25,13 @@ public sealed record LanguageCode
         var normalized = code.Trim().ToLower();
 
         if (string.IsNullOrWhiteSpace(normalized))
-            errors.Add(new Error("Language code cannot be empty"));
+            errors.Add(DomainErrorFactory.Invalid("LanguageCode", "Language code cannot be empty"));
         
         if (!ValidationRegex.IsMatch(normalized))
-            errors.Add(new Error("Invalid language code format (must be 2-3 lowercase letters)"));
+            errors.Add(DomainErrorFactory.Invalid("LanguageCode", "Invalid language code format (must be 2-3 lowercase letters)"));
             
         if (!ValidCodes.Contains(normalized))
-            errors.Add(new Error("Unrecognized language code"));
+            errors.Add(DomainErrorFactory.Invalid("LanguageCode", "Unrecognized language code"));
 
         return errors.Count != 0
             ? Result.Fail(errors) 

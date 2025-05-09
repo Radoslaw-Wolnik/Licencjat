@@ -40,21 +40,21 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<U
 
         var loginInfo = await _authRepo.GetLoginInfoAsync(predicate);
         if (loginInfo == null)
-            return Result.Fail<User>(AuthErrors.InvalidCredentials);
+            return Result.Fail<User>(DomainErrorFactory.BadRequest("Auth.Invalid", "Invalid credentials"));
 
         // pass the hash into your sign-in service
         var signInResult = await _signInService.LoginAsync(
             loginInfo, command.Password, command.RememberMe ?? false);
 
         if (!signInResult.IsSuccess)
-            return Result.Fail<User>(AuthErrors.InvalidCredentials);
+            return Result.Fail<User>(DomainErrorFactory.BadRequest("Auth.Invalid", "Invalid credentials"));
         
         Console.WriteLine($"\n\n[Login command handler] got all the way down to the user fetching\n\n");
 
         // now that they’re authenticated, load the full domain user:
         var user = await _userRead.GetByAsync(predicate);
         if (user == null)
-            return Result.Fail<User>(UserErrors.NotFound);
+            return Result.Fail<User>(DomainErrorFactory.NotFound("User", predicate));
         
         return user;
     }

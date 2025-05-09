@@ -73,7 +73,7 @@ public sealed class User : Entity<Guid>
         var errors = new List<IError>();
         
         if (birthDate > DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-13)))
-            errors.Add(AuthErrors.Underage);
+            errors.Add(DomainErrorFactory.Forbidden("Auth.Underage", "User wass found to be underage"));
 
         return errors.Count != 0
         ? Result.Fail<User>(errors)

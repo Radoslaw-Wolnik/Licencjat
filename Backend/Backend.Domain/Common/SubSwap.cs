@@ -25,9 +25,9 @@ public sealed record SubSwap(
     {
         var errors = new List<IError>();
         
-        if (pageAt < 0) errors.Add(SwapErrors.NegativePageNumber);
-        if (userId == Guid.Empty) errors.Add(UserErrors.NotFound);
-        if (userBookReadingId == Guid.Empty) errors.Add(BookErrors.NotFound);
+        if (pageAt < 0) errors.Add(DomainErrorFactory.Invalid("SubSwap", "Page must be above 0"));
+        if (userId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("User", userId));
+        if (userBookReadingId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("UserBook", userBookReadingId));
 
         return errors.Count != 0
         ? Result.Fail<SubSwap>(errors)

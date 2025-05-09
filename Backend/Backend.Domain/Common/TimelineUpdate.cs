@@ -15,13 +15,13 @@ public sealed record TimelineUpdate(Guid Id, Guid UserId, TimelineStatus Status,
             errors.Add(new Error("Description too long"));
 
         if (!Enum.IsDefined(typeof(TimelineStatus), status))
-            return Result.Fail(TimelineErrors.InvalidStatus);
+            return Result.Fail(DomainErrorFactory.Invalid("Status", "Invalid status of the timalineUpdate"));
 
         if (string.IsNullOrWhiteSpace(description)) 
-            errors.Add(TimelineErrors.EmptyDescription);
+            errors.Add(DomainErrorFactory.Invalid("Description", "Description of timelineUpdate was empty"));
 
         if (userId == Guid.Empty) 
-            errors.Add(UserErrors.NotFound);
+            errors.Add(DomainErrorFactory.NotFound("User", userId));
 
         return errors.Count != 0
             ? Result.Fail<TimelineUpdate>(errors) 

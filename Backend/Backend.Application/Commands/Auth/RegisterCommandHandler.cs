@@ -35,12 +35,12 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
 
         // Check uniqueness
         var emailExists = await _userRead.ExistsAsync(u => u.Email == command.Email);
-        if (emailExists) return Result.Fail<Guid>(AuthErrors.EmailAlreadyExists);
+        if (emailExists) return Result.Fail<Guid>(DomainErrorFactory.AlreadyExists("User", "User with this email adress already exsists"));
 
         Console.WriteLine($"[Register command handler] checked the email for colisions");
 
         var usernameExists = await _userRead.ExistsAsync(u => u.Username == command.Username);
-        if (usernameExists) return Result.Fail<Guid>(AuthErrors.UsernameTaken);
+        if (usernameExists) return Result.Fail<Guid>(DomainErrorFactory.AlreadyExists("User", "User with this username already exsists"));
 
         Console.WriteLine($"[Register command handler] checked the username for colisions");
         
@@ -48,11 +48,11 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         // Create domain entity
 
         var code = CountryCode.Create(command.Country);
-        if (code.IsFailed) return Result.Fail<Guid>(AuthErrors.InvalidCountryCode);
+        if (code.IsFailed) return Result.Fail<Guid>(DomainErrorFactory.Invalid("CountryCode", "Country with this code is not registered"));
         
 
         var loc = Location.Create(city: command.City, country: code.Value);
-        if (loc.IsFailed) return Result.Fail<Guid>(LocationErrors.WrongLocation);
+        if (loc.IsFailed) return Result.Fail<Guid>(DomainErrorFactory.Invalid("Location", "Given Location is invalid"));
 
         var userResult = User.Create(
             command.Email,

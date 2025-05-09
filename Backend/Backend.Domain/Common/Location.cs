@@ -1,3 +1,4 @@
+using Backend.Domain.Errors;
 using FluentResults;
 
 namespace Backend.Domain.Common;
@@ -19,10 +20,10 @@ public sealed record Location
         var errors = new List<IError>();
 
         if (string.IsNullOrWhiteSpace(city))
-            errors.Add(new Error("City cannot be empty"));
+            errors.Add(DomainErrorFactory.Invalid("Location", "City name empty"));
         
         if (city.Length > 100)
-            errors.Add(new Error("City name too long"));
+            errors.Add(DomainErrorFactory.Invalid("Location", "City name too long"));
 
         return errors.Count != 0
             ? Result.Fail<Location>(errors) 

@@ -12,7 +12,7 @@ public class SocialMediaCollection
     public Result Add(SocialMediaLink link)
     {
         if (_links.Count >= 10)
-            return Result.Fail(UserErrors.MaxSocialMediaLinks);
+            return Result.Fail(DomainErrorFactory.LimitReached("SocialMediaLink", "Linmit of 10 links reached"));
         
         if (_links.Contains(link))
             return Result.Fail("Already in social media - duplicate");
@@ -29,7 +29,7 @@ public class SocialMediaCollection
     {
         var existing = _links.SingleOrDefault(l => l.Id == linkId);
         if (existing == null)
-            return Result.Fail(SocialMediaErrors.NotFound);
+            return Result.Fail(DomainErrorFactory.NotFound("SocialMediaLink", linkId));
         
         _links.Remove(existing);
         return Result.Ok();
@@ -44,10 +44,10 @@ public class SocialMediaCollection
         var others = _links.Where(sm => sm.Id != updatedLink.Id);
 
         if (others.Any(sml => sml.Platform == updatedLink.Platform))
-            return Result.Fail(SocialMediaErrors.PlatformAlreadyExists);
+            return Result.Fail(DomainErrorFactory.AlreadyExists("Platform", "Given platform already taken by different link"));
 
         if (others.Any(sml => sml.Url == updatedLink.Url))
-            return Result.Fail(SocialMediaErrors.UrlAlreadyExists);
+            return Result.Fail(DomainErrorFactory.AlreadyExists("Url", "Url already taken by different link"));
         
         // replace
         _links.Remove(oldLink);

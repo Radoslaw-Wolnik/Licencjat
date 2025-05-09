@@ -17,9 +17,9 @@ public sealed record Bookmark(Guid Id, Guid UserBookId, BookmarkColours Colour, 
     {
         var errors = new List<IError>();
         
-        if (userBookId == Guid.Empty) errors.Add(UserErrors.NotFound); // diff error
-        if (!Enum.IsDefined(typeof(BookmarkColours), colour)) errors.Add(UserErrors.NotFound); // diff error
-        if ( page <= 0 ) errors.Add(UserErrors.NotFound); // diff error
+        if (userBookId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("UserBook", userBookId));
+        if (!Enum.IsDefined(typeof(BookmarkColours), colour)) errors.Add(DomainErrorFactory.Invalid("Bookmark", "Wrong colour"));
+        if ( page <= 0 ) errors.Add(DomainErrorFactory.Invalid("Bookmark", "Page must be above 0"));
 
         if (errors.Count != 0) return Result.Fail<Bookmark>(errors);
 

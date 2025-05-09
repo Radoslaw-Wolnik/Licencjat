@@ -1,3 +1,4 @@
+using Backend.Domain.Errors;
 using FluentResults;
 using System.Text.RegularExpressions;
 
@@ -26,13 +27,13 @@ public sealed record CountryCode
         var normalized = code.Trim().ToUpper();
 
         if (string.IsNullOrWhiteSpace(normalized))
-            errors.Add(new Error("Country code cannot be empty"));
+            errors.Add(DomainErrorFactory.Invalid("CountryCode", "Country code was empty"));
         
         if (!ValidationRegex.IsMatch(normalized))
-            errors.Add(new Error("Invalid country code format (must be 2-3 uppercase letters)"));
+            errors.Add(DomainErrorFactory.Invalid("Country Code", "Invalid country code format (must be 2-3 uppercase letters)"));
             
         if (!ValidCodes.Contains(normalized))
-            errors.Add(new Error("Unrecognized country code"));
+            errors.Add(DomainErrorFactory.NotFound("CountryCode", normalized));
 
         return errors.Count != 0
             ? Result.Fail(errors) 

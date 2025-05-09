@@ -11,13 +11,13 @@ public sealed record Issue(Guid Id, Guid UserId, Guid SubSwapId, string Descript
         var errors = new List<IError>();
         
         if (string.IsNullOrWhiteSpace(description)) 
-            errors.Add(IssueErrors.EmptyDescription);
+            errors.Add(DomainErrorFactory.Invalid("Issue", "Description empty"));
         if (description.Length > 1000) 
-            errors.Add(IssueErrors.DescriptionTooLong);
+            errors.Add(DomainErrorFactory.Invalid("Issue", "Description too long (above 1000 characters)"));
         if (userId == Guid.Empty) 
-            errors.Add(UserErrors.NotFound);
+            errors.Add(DomainErrorFactory.NotFound("User", userId));
         if (subSwapId == Guid.Empty) 
-            errors.Add(SwapErrors.NotFound);
+            errors.Add(DomainErrorFactory.NotFound("SubSwap", subSwapId));
 
         return errors.Count != 0 
         ? Result.Fail<Issue>(errors)

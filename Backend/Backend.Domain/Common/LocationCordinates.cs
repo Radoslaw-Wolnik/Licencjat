@@ -1,3 +1,4 @@
+using Backend.Domain.Errors;
 using FluentResults;
 
 namespace Backend.Domain.Common;
@@ -9,7 +10,7 @@ public sealed record LocationCoordinates(double Latitude, double Longitude)
     public static Result<LocationCoordinates> Create(double latitude, double longitude)
     {
         if (Math.Abs(latitude) > 90 || Math.Abs(longitude) > 180)
-            return Result.Fail("Invalid coordinates");
+            return Result.Fail(DomainErrorFactory.Invalid("LocationCoordinates", "Invalid coordinates"));
             
         return new LocationCoordinates(latitude, longitude);
     }
