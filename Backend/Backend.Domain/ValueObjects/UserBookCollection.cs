@@ -4,7 +4,7 @@ using FluentResults;
 
 namespace Backend.Domain.ValueObjects;
 
-public class USerBookCollection
+public class UserBookCollection
 {
     private readonly List<UserBook> _userBooks = new();
     public IReadOnlyCollection<UserBook> UserBooks => _userBooks.AsReadOnly();

@@ -16,7 +16,7 @@ public sealed class UserBook : Entity<Guid>
     public int PageCount { get; }
     public Photo CoverPhoto { get; private set; }
 
-    private BookmarksCollection _bookmarks = new();
+    private readonly BookmarksCollection _bookmarks = new();
     public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.Bookmarks;
 
     private UserBook(

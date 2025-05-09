@@ -77,7 +77,7 @@ public class GeneralBookProfile : Profile
             .ForMember(dest => dest.Author,        opt => opt.MapFrom(src => src.Author))
             .ForMember(dest => dest.Published,     opt => opt.MapFrom(src => src.Published))
             .ForMember(dest => dest.Language,      opt => opt.MapFrom(src => src.OriginalLanguage.Code))
-            .ForMember(dest => dest.CoverPhoto,    opt => opt.MapFrom(src => src.CoverPhoto))
+            .ForMember(dest => dest.CoverPhoto,    opt => opt.MapFrom(src => src.CoverPhoto.Link))
             .ForMember(dest => dest.Genres,        opt => opt.MapFrom(src => src.Genres))
 
             // ignore the RatingAvg *source* property so MemberList.Source is happy
