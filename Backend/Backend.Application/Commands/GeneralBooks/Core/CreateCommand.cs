@@ -9,6 +9,6 @@ public sealed record CreateCommand(
     string Title,
     string Author,
     DateOnly Published,
-    LanguageCode OryginalLanguage,
-    Photo CoverPhoto
-    ) : IRequest<Result<GeneralBook>>;
+    string OryginalLanguage,
+    string CoverFileName
+    ) : IRequest<Result<(Guid, string)>>;
