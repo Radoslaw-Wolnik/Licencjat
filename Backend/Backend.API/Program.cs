@@ -6,6 +6,9 @@ using MediatR;
 using AutoMapper.Extensions.ExpressionMapping;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using Minio;
+using Microsoft.Extensions.Options;
+using System.Threading.Channels;
 
 using Backend.API.Middleware;
 
@@ -35,6 +38,11 @@ using Backend.Infrastructure.Repositories.Users;
 using Backend.Application.Interfaces.DbReads;
 using Backend.Infrastructure.Services.DbReads;
 using Backend.Infrastructure.Services;
+
+using Backend.Infrastructure.Configuration;
+using Backend.Infrastructure.BackgroundTasks;
+using Backend.Domain.Events;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +76,26 @@ builder.Services.AddIdentity<UserEntity, IdentityRole<Guid>>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// ========== MINIO IMAGE SERVICE ========== //
+builder.Services.Configure<MinioSettings>(
+    builder.Configuration.GetSection("Minio"));
+
+builder.Services.AddSingleton<IMinioClient>(sp =>
+{
+    var opts = sp.GetRequiredService<IOptions<MinioSettings>>().Value;
+    return new MinioClient()
+        .WithEndpoint(opts.Endpoint)
+        .WithCredentials(opts.AccessKey, opts.SecretKey)
+        .Build();
+})
+.AddTransient<IImageResizerService, ImageResizerService>() // adds imageresizing service
+.AddTransient<IImageStorageService, MinioImageStorageService>(); // adds image storage service
+
+// Thumbanil background worker
+var channel = Channel.CreateUnbounded<ThumbnailRequest>();
+builder.Services.AddSingleton(channel);
+builder.Services.AddHostedService<ThumbnailBackgroundService>();
+
 // ========== INFRASTRUCTURE SERVICES ========== //
 
 // repositories
@@ -98,7 +126,6 @@ builder.Services.AddScoped<IWriteUserRepository, WriteUserRepository>();
 builder.Services.AddScoped<ISignInService, SignInService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
-builder.Services.AddTransient<IImageStorageService, MinioImageStorageService>();
 
 // read services
 builder.Services.AddTransient<IGeneralBookReadService, GeneralBookReadService>();
@@ -145,6 +172,7 @@ builder.Services.AddMediatR(cfg =>
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<Backend.Application.Validators.Commands.GeneralBook.CreateValidator>();
 
 // - optional - command validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));

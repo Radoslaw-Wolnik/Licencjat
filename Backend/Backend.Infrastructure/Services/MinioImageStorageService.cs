@@ -3,80 +3,98 @@ using Minio.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Backend.Application.Interfaces;
 using Minio.DataModel.Args;
+using Microsoft.Extensions.Options;
+using Backend.Infrastructure.Configuration;
+using Backend.Domain.Enums;
 
 namespace Backend.Infrastructure.Services;
 
 public class MinioImageStorageService : IImageStorageService
 {
-    private readonly IMinioClient _minioClient;
-    private readonly string _bucketName;
+    private readonly IMinioClient _client;
+    private readonly MinioSettings _settings;
     
-    public MinioImageStorageService(IConfiguration configuration)
+    public MinioImageStorageService(IMinioClient client, IOptions<MinioSettings> options)
     {
-        var endpoint = configuration["Minio:Endpoint"];
-        var accessKey = configuration["Minio:AccessKey"];
-        var secretKey = configuration["Minio:SecretKey"];
-        _bucketName = configuration["Minio:BucketName"] ?? "app-images";
+        _client   = client;
+        _settings = options.Value;
+    }
 
-        _minioClient = new MinioClient()
-                         .WithEndpoint(endpoint)
-                         .WithCredentials(accessKey, secretKey)
-                         .Build(); // Build() returns IMinioClient
+    public string GenerateObjectKey(StorageDestination dest, Guid id, string originalName)
+    {
+        if (dest == StorageDestination.UserBooks) throw new Exception("Used wrong function! Use GenerateUserBookObjectKey ");
+        
+        var ext = Path.GetExtension(originalName);
+        if (string.IsNullOrWhiteSpace(ext)) ext = ".jpg";
+        
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        return $"{dest.ToPath()}/{id}/{fileName}";
+    }
+
+    public string GenerateUserBookObjectKey(Guid userId, Guid userBookId, string originalName)
+    {
+        var ext = Path.GetExtension(originalName);
+            if (string.IsNullOrWhiteSpace(ext)) ext = ".jpg";
+        
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        return $"{StorageDestination.UserBooks.ToPath()}/{userId}/{userBookId}/{fileName}";
     }
     
-    private async Task CreateBucketIfNotExistsAsync(string bucketName)
+    public async Task<string> GenerateUploadUrlAsync(string objectKey)
+    {
+        var presignedUrl = await _client.PresignedPutObjectAsync(
+            new PresignedPutObjectArgs()
+                .WithBucket(_settings.BucketName)
+                .WithObject(objectKey)
+                .WithExpiry(_settings.ExpiryMinutes * 60));
+        
+        return presignedUrl;
+    }
+    
+    public async Task<string> GenerateSignedDownloadUrlAsync(string objectKey, TimeSpan expiration)
+    {
+        var presignedUrl = await _client.PresignedGetObjectAsync(
+            new PresignedGetObjectArgs()
+                .WithBucket(_settings.BucketName)
+                .WithObject(objectKey)
+                .WithExpiry((int)expiration.TotalSeconds));
+        return presignedUrl;
+    }
+
+    public string GetPublicUrl(string objectKey)
+        => $"{_settings.PublicBaseUrl.TrimEnd('/')}/{objectKey}";
+    
+    public string GetThumbnailUrl(string objectKey)
+    {
+        var thumbKey = Path.ChangeExtension(objectKey, null) + "-thumb.jpg";
+        return $"{_settings.PublicBaseUrl.TrimEnd('/')}/{thumbKey}";
+    }
+
+
+    public async Task<bool> ExistsAsync(
+        string objectKey,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            bool found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName));
-            if (!found)
-            {
-                await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName));
-            }
+            await _client.StatObjectAsync(
+                new StatObjectArgs()
+                    .WithBucket(_settings.BucketName)
+                    .WithObject(objectKey),
+                cancellationToken);
+            return true;    // object was found
+        }
+        catch (ObjectNotFoundException)
+        {
+            return false;   // 404 from MinIO
         }
         catch (MinioException ex)
         {
-            throw new Exception("Error creating or checking bucket", ex);
+            // some other MinIO error (e.g. connectivity)
+            // you can choose to rethrow or wrap in your own exception
+            throw new Exception(
+                $"Could not check existence of '{objectKey}': {ex.Message}", ex);
         }
     }
     
-    public async Task<string> GenerateProfilePictureUploadUrlAsync(Guid userId, string fileName, TimeSpan expiration)
-    {
-        var objectKey = $"users/{userId}/profile/{fileName}";
-        var presignedUrl = await _minioClient.PresignedPutObjectAsync(
-            new PresignedPutObjectArgs() // Correct namespace
-                .WithBucket(_bucketName)
-                .WithObject(objectKey)
-                .WithExpiry((int)expiration.TotalSeconds));
-        return presignedUrl;
-    }
-    
-    public async Task<string> GenerateUserBookCoverUploadUrlAsync(Guid userId, string fileName, TimeSpan expiration)
-    {
-        var objectKey = $"users/{userId}/bookcovers/{fileName}";
-        var presignedUrl = await _minioClient.PresignedPutObjectAsync(
-            new PresignedPutObjectArgs()
-                .WithBucket(_bucketName)
-                .WithObject(objectKey)
-                .WithExpiry((int)expiration.TotalSeconds));
-        return presignedUrl;
-    }
-    
-    public async Task<string> GenerateDownloadUrlAsync(string objectKey, TimeSpan expiration)
-    {
-        var presignedUrl = await _minioClient.PresignedGetObjectAsync(
-            new PresignedGetObjectArgs()
-                .WithBucket(_bucketName)
-                .WithObject(objectKey)
-                .WithExpiry((int)expiration.TotalSeconds));
-        return presignedUrl;
-    }
 }
-
-/*
-user bucket
-users/{userId}/profile/
-users/{userId}/bookcovers/
-admin bucket
-books/{bookId}/covers/
-*/

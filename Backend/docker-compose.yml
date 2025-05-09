@@ -17,6 +17,9 @@ services:
       - Minio__Endpoint=minio:9000
       - Minio__AccessKey=minioadmin
       - Minio__SecretKey=minioadmin
+      - Minio__PublicBaseUrl=http://localhost:9000/minio/app-images
+      - Minio__BucketName=app-images
+      # Minio__BucketName, Minio__ExpiryMinutes
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,7 +46,9 @@ services:
       retries: 5
   
   minio:
-    image: minio/minio
+    build:
+      context: .
+      dockerfile: MinIO/Dockerfile
     container_name: minio
     ports:
       - "9000:9000"
@@ -51,6 +56,7 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_BUCKET: app‑images
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
