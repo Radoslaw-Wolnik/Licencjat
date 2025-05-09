@@ -5,6 +5,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.UserBooks;
 
@@ -28,28 +30,31 @@ public class UserBookBookmarkRepository : IUserBookBookmarkRepository
         return _mapper.Map<List<Bookmark>>(entities);
     }
 
-    public async Task AddAsync(Bookmark bookmark)
+    public async Task<Result<Guid>> AddAsync(Bookmark bookmark, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<BookmarkEntity>(bookmark);
         _db.Bookmarks.Add(entity);
-        await _db.SaveChangesAsync();
+        var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add Bookmark");
+        return result.IsSuccess
+            ? Result.Ok(entity.Id)
+            : Result.Fail<Guid>(result.Errors);
     }
 
-    public async Task UpdateAsync(Bookmark bookmark)
+    public async Task<Result> UpdateAsync(Bookmark bookmark, CancellationToken cancellationToken)
     {
         var existing = await _db.Bookmarks.FindAsync(bookmark.Id);
         _mapper.Map(bookmark, existing);
-        await _db.SaveChangesAsync();
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update Bookmark");
     }
 
-    public async Task RemoveAsync(Guid bookamrkId)
+    public async Task<Result> RemoveAsync(Guid bookamrkId, CancellationToken cancellationToken)
     {
         var existing = await _db.Bookmarks.FindAsync(bookamrkId);
         if (existing is null)
-            throw new KeyNotFoundException($"Bookmark with Id = {bookamrkId} was not found.");
+            return Result.Fail(DomainErrorFactory.NotFound("Bookmark", bookamrkId));
 
         _db.Bookmarks.Remove(existing);
-        await _db.SaveChangesAsync();  
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to delete Bookmark");  
     }
     
 }

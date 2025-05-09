@@ -5,6 +5,8 @@ using Backend.Infrastructure.Entities;
 using AutoMapper;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using Backend.Infrastructure.Extensions;
+using FluentResults;
 
 namespace Backend.Infrastructure.Repositories.GeneralBooks;
 
@@ -19,30 +21,35 @@ public class WriteGeneralBookRepository : IWriteGeneralBookRepository
         _mapper = mapper;
     }
 
-    public async Task AddAsync(GeneralBook book)
+    public async Task<Result<Guid>> AddAsync(GeneralBook book, CancellationToken cancellationToken)
     {
         var dbBook = _mapper.Map<GeneralBookEntity>(book);
         _context.GeneralBooks.Add(dbBook);
 
-        await _context.SaveChangesAsync();
-        // return Result.Ok(dbBook.Id);
-
+        // await _context.SaveChangesAsync(cancellationToken);
+        var result = await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to add book");
+        
+        return result.IsSuccess
+            ? Result.Ok(dbBook.Id)
+            : Result.Fail<Guid>(result.Errors);
     }
 
-    public async Task UpdateAsync(GeneralBook book)
+    public async Task<Result> UpdateAsync(GeneralBook book, CancellationToken cancellationToken)
     {
-        var existing = await _context.GeneralBooks.FindAsync(book.Id);
+        var existing = await _context.GeneralBooks.FindAsync(book.Id, cancellationToken);
         _mapper.Map(book, existing);
-        await _context.SaveChangesAsync();
-
+        // await _context.SaveChangesAsync(cancellationToken);
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to update book");
     }
 
-    public async Task DeleteAsync(Guid bookId)
+    public async Task<Result> DeleteAsync(Guid bookId, CancellationToken cancellationToken)
     {
-        var existing = await _context.GeneralBooks.FindAsync(bookId);
+        var existing = await _context.GeneralBooks.FindAsync(bookId, cancellationToken);
         if (existing is null)
-            throw new KeyNotFoundException($"GeneralBook with Id = {bookId} was not found.");
+            return Result.Fail(DomainErrorFactory.NotFound("GeneralBook", bookId));
             
-        _context.GeneralBooks.Remove(existing);    
+        _context.GeneralBooks.Remove(existing);
+
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to delete book");
     }
 }

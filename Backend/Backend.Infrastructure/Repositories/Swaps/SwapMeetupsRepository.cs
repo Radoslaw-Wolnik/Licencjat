@@ -5,6 +5,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
 
@@ -28,27 +30,31 @@ public class SwapMeetupRepository : ISwapMeetupRepository
         return _mapper.Map<List<Meetup>>(entities);
     }
 
-    public async Task AddAsync(Meetup meetup)
+    public async Task<Result<Guid>> AddAsync(Meetup meetup, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<MeetupEntity>(meetup);
         _db.Meetups.Add(entity);
-        await _db.SaveChangesAsync();
+        var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add Meetup");
+        return result.IsSuccess
+            ? Result.Ok(entity.Id)
+            : Result.Fail<Guid>(result.Errors);
     }
 
-    public async Task RemoveAsync(Guid meetupId)
-    {
-        var existing = await _db.Meetups.FindAsync(meetupId);
-        if (existing is null)
-            throw new KeyNotFoundException($"Meetup with Id = {meetupId} was not found.");
-
-        _db.Meetups.Remove(existing);
-    }
-
-    public async Task UpdateAsync(Meetup meetup)
+    public async Task<Result> UpdateAsync(Meetup meetup, CancellationToken cancellationToken)
     {
         var existing = await _db.Meetups.FindAsync(meetup.Id);
         _mapper.Map(existing, meetup);
-        await _db.SaveChangesAsync();
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update Meetup");
+    }
+
+    public async Task<Result> RemoveAsync(Guid meetupId, CancellationToken cancellationToken)
+    {
+        var existing = await _db.Meetups.FindAsync(meetupId);
+        if (existing is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Meetup", meetupId));
+
+        _db.Meetups.Remove(existing);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove Meetup");
     }
     
 }

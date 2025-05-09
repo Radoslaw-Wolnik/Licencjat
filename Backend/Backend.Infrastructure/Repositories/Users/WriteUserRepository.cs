@@ -4,6 +4,8 @@ using Backend.Infrastructure.Entities;
 using AutoMapper;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
@@ -18,29 +20,32 @@ public class WriteUserRepository : IWriteUserRepository
         _mapper = mapper;
     }
 
-    public async Task AddAsync(User user)
+    public async Task<Result<Guid>> AddAsync(User user, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<UserEntity>(user);
         _db.Users.Add(entity);
-        await _db.SaveChangesAsync();
+        var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to save user");
         
+        return result.IsSuccess
+            ? Result.Ok(entity.Id)
+            : Result.Fail<Guid>(result.Errors);
         // user.SetId(entity.Id); 
     }
 
-    public async Task UpdateAsync(User user)
+    public async Task<Result> UpdateAsync(User user, CancellationToken cancellationToken)
     {
         var existing = await _db.Users.FindAsync(user.Id);
         _mapper.Map(user, existing);
-        await _db.SaveChangesAsync();
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update User");
     }
 
-    public async Task DeleteAsync(Guid userId)
+    public async Task<Result> DeleteAsync(Guid userId, CancellationToken cancellationToken)
     {
         var existing = await _db.Users.FindAsync(userId);
         if (existing is null)
-            throw new KeyNotFoundException($"User with Id = {userId} was not found.");
+            return Result.Fail(DomainErrorFactory.NotFound("User", userId));
 
         _db.Users.Remove(existing);
-        await _db.SaveChangesAsync();  
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to delete User");
     }
 }

@@ -3,6 +3,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
@@ -24,21 +26,23 @@ public class UserFollowingRepository : IUserFollowingRepository
             .ToListAsync();
     }
 
-    public async Task AddToFollowingAsync(Guid userId, Guid newFollowingId)
+    public async Task<Result> AddAsync(Guid userId, Guid newFollowingId, CancellationToken cancellationToken)
     {
         // add
         // var entity = new UserFollowingEntity {FollowerId = userId, FollowedId = newFollowingId};
         // _context.UserFollowings.Add(entity);
-        _context.UserFollowings.Add(new UserFollowingEntity {
+        var link = new UserFollowingEntity {
             Id         = Guid.NewGuid(),
             FollowerId = userId,
             FollowedId = newFollowingId
-        });
-        await _context.SaveChangesAsync();
+        };
+        _context.UserFollowings.Add(link);
+
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "failed to add FollowedUser");
     }
 
 
-    public async Task RemoveFromFollowingAsync(Guid userId, Guid unfollowingId)
+    public async Task<Result> RemoveAsync(Guid userId, Guid unfollowingId, CancellationToken cancellationToken)
     {
         // find the single join‐row
         var link = await _context.UserFollowings
@@ -47,10 +51,10 @@ public class UserFollowingRepository : IUserFollowingRepository
              && f.FollowedId == unfollowingId);
 
         if (link is null)
-            throw new KeyNotFoundException($"User {userId} doesnt follow {unfollowingId}");
+            return Result.Fail(DomainErrorFactory.NotFound("Following", $"{userId} unfollowing {unfollowingId}"));
 
         _context.UserFollowings.Remove(link);
-        await _context.SaveChangesAsync();
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Filed to remove Followeduser");
     }
 
 }

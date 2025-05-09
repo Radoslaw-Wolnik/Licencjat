@@ -1,9 +1,11 @@
+using FluentResults;
+
 namespace Backend.Application.Interfaces.Repositories;
 
 public interface IUserFollowingRepository
 {
     Task<IReadOnlyCollection<Guid>> GetFollowingAsync(Guid userId);
 
-    Task AddToFollowingAsync(Guid userId, Guid newFollowingId);
-    Task RemoveFromFollowingAsync(Guid userId, Guid unfollowingId);
+    Task<Result> AddAsync(Guid userId, Guid newFollowingId, CancellationToken cancellationToken);
+    Task<Result> RemoveAsync(Guid userId, Guid unfollowingId, CancellationToken cancellationToken);
 }

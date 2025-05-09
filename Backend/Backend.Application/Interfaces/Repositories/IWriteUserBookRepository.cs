@@ -1,11 +1,12 @@
 using Backend.Domain.Entities;
+using FluentResults;
 
 namespace Backend.Application.Interfaces.Repositories;
 
 public interface IWriteUserBookRepository
 {
-    Task AddAsync(UserBook book);
+    Task<Result<Guid>> AddAsync(UserBook book, CancellationToken cancellationToken);
 
-    Task UpdateAsync(UserBook book);
-    Task DeleteAsync(Guid bookId);
+    Task<Result> UpdateAsync(UserBook book, CancellationToken cancellationToken);
+    Task<Result> DeleteAsync(Guid bookId, CancellationToken cancellationToken);
 }

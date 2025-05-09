@@ -5,6 +5,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using Backend.Infrastructure.Extensions;
+using FluentResults;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
 
@@ -28,27 +30,32 @@ public class SwapFeedbackRepository : ISwapFeedbackRepository
         return _mapper.Map<Feedback>(entities);
     }
 
-    public async Task AddAsync(Feedback feedback)
+    public async Task<Result<Guid>> AddAsync(Feedback feedback, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<FeedbackEntity>(feedback);
         _db.Feedbacks.Add(entity);
-        await _db.SaveChangesAsync();
+
+        var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add feedback to swap");
+        return result.IsSuccess
+            ? Result.Ok(entity.Id)
+            : Result.Fail<Guid>(result.Errors);
     }
 
-    public async Task RemoveAsync(Guid feedbackId)
-    {
-        var existing = await _db.Feedbacks.FindAsync(feedbackId);
-        if (existing is null)
-            throw new KeyNotFoundException($"Feedback with Id = {feedbackId} was not found.");
-
-        _db.Feedbacks.Remove(existing);
-    }
-
-    public async Task UpdateAsync(Feedback feedback)
+    public async Task<Result> UpdateAsync(Feedback feedback, CancellationToken cancellationToken)
     {
         var existing = await _db.Feedbacks.FindAsync(feedback.Id);
         _mapper.Map(existing, feedback);
-        await _db.SaveChangesAsync();
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update feedback");
     }
-    
+
+    public async Task<Result> RemoveAsync(Guid feedbackId, CancellationToken cancellationToken)
+    {
+        var existing = await _db.Feedbacks.FindAsync(feedbackId);
+        if (existing is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Feedback", feedbackId));
+
+        _db.Feedbacks.Remove(existing);
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to delete feedback");
+    }
 }

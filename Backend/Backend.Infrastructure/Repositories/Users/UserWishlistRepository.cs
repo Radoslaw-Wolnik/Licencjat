@@ -3,6 +3,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
@@ -22,21 +24,22 @@ public class UserWishlistRepository : IUserWishlistRepository
             .ToListAsync();
     }
 
-    public async Task AddAsync(Guid userId, Guid bookId)
+    public async Task<Result> AddAsync(Guid userId, Guid bookId, CancellationToken cancellationToken)
     {
         _db.UserWishlists.Add(new UserWishlistEntity {
             UserId = userId,
             GeneralBookId = bookId
         });
-        await _db.SaveChangesAsync();
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to Wishlist book");
     }
 
-    public async Task RemoveAsync(Guid userId, Guid bookId)
+    public async Task<Result> RemoveAsync(Guid userId, Guid bookId, CancellationToken cancellationToken)
     {
         var existing = await _db.UserWishlists.FindAsync(userId, bookId);
         if (existing is null)
-            throw new KeyNotFoundException($"Wishlist of user {userId} of generalbook {bookId} was not found.");
+            return Result.Fail(DomainErrorFactory.NotFound("Wishlist", $"{userId} wishing {bookId}"));
 
         _db.UserWishlists.Remove(existing);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove Wishlisted book");
     }
 }

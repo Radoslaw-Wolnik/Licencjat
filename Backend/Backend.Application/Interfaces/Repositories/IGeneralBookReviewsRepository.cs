@@ -1,12 +1,13 @@
 using Backend.Domain.Common;
+using FluentResults;
 
 namespace Backend.Application.Interfaces.Repositories;
 
 public interface IGeneralBookReviewsRepository
 {
-    Task<IReadOnlyCollection<Bookmark>> GetByBookIdAsync(Guid bookId);
+    Task<IReadOnlyCollection<Review>> GetByBookIdAsync(Guid bookId);
 
-    Task AddAsync(Review review);
-    Task RemoveAsync(Guid reviewId);
-    Task UpdateAsync(Review review);
+    Task<Result<Guid>> AddAsync(Review review, CancellationToken cancellationToken);
+    Task<Result> RemoveAsync(Guid reviewId, CancellationToken cancellationToken);
+    Task<Result> UpdateAsync(Review review, CancellationToken cancellationToken);
 }

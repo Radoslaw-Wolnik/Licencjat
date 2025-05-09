@@ -5,6 +5,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
@@ -28,27 +30,32 @@ public class UserSocialMediaRepository : IUserSocialMediaRepository
         return _mapper.Map<List<SocialMediaLink>>(entities);
     }
 
-    public async Task AddAsync(SocialMediaLink link)
+    public async Task<Result<Guid>> AddAsync(SocialMediaLink link, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<SocialMediaLinkEntity>(link);
         _db.SocialMediaLinks.Add(entity);
-        await _db.SaveChangesAsync();
+        var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add SocialMediaLink");
+        
+        return result.IsSuccess
+            ? Result.Ok(entity.Id)
+            : Result.Fail<Guid>(result.Errors);
     }
 
-    public async Task RemoveAsync(Guid linkId)
-    {
-        var existing = await _db.SocialMediaLinks.FindAsync(linkId);
-        if (existing is null)
-            throw new KeyNotFoundException($"SocialMediaLink with Id = {linkId} was not found.");
-
-        _db.SocialMediaLinks.Remove(existing);
-    }
-
-    public async Task UpdateAsync(SocialMediaLink link)
+    public async Task<Result> UpdateAsync(SocialMediaLink link, CancellationToken cancellationToken)
     {
         var existing = await _db.SocialMediaLinks.FindAsync(link.Id);
         _mapper.Map(existing, link);
-        await _db.SaveChangesAsync();
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to updte SocialMediaLink");
     }
-    
+
+    public async Task<Result> RemoveAsync(Guid linkId, CancellationToken cancellationToken)
+    {
+        var existing = await _db.SocialMediaLinks.FindAsync(linkId);
+        if (existing is null)
+            return Result.Fail(DomainErrorFactory.NotFound("SocialMedaiLink", linkId));
+
+        _db.SocialMediaLinks.Remove(existing);
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove SocialMediaLink");
+    }
 }

@@ -82,7 +82,10 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         Console.WriteLine($"[Register command handler] Created identity service response success");
 
         // Persist domain user
-        await _userWrite.AddAsync(userResult.Value);
+        var saveResult = await _userWrite.AddAsync(userResult.Value, cancellationToken);
+        if (saveResult.IsFailed)
+            return Result.Fail(saveResult.Errors);
+        
         Console.WriteLine($"[Register command handler] repo added");
         return userResult.Value.Id;
     }

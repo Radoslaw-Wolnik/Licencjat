@@ -1,10 +1,11 @@
 using Backend.Domain.Entities;
+using FluentResults;
 
 namespace Backend.Application.Interfaces.Repositories;
 
 public interface IWriteUserRepository
 {
-    Task AddAsync(User user);
-    Task UpdateAsync(User user);
-    Task DeleteAsync(Guid id);
+    Task<Result<Guid>> AddAsync(User user, CancellationToken cancellationToken);
+    Task<Result> UpdateAsync(User user, CancellationToken cancellationToken);
+    Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken);
 }

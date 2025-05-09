@@ -5,6 +5,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
 
@@ -28,11 +30,15 @@ public class SwapTimelineRepository : ISwapTimelineRepository
         return _mapper.Map<List<TimelineUpdate>>(entities);
     }
 
-    public async Task AddAsync(TimelineUpdate timelineUpdate)
+    public async Task<Result<Guid>> AddAsync(TimelineUpdate timelineUpdate, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<TimelineEntity>(timelineUpdate);
         _db.Timelines.Add(entity);
-        await _db.SaveChangesAsync();
+        
+        var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add TimelineUpdate");
+        return result.IsSuccess
+            ? Result.Ok(entity.Id)
+            : Result.Fail<Guid>(result.Errors);
     }
     
 }

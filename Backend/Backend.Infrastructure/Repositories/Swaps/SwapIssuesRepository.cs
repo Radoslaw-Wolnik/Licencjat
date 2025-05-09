@@ -5,6 +5,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
 
@@ -28,27 +30,34 @@ public class SwapIssueRepository : ISwapIssueRepository
         return _mapper.Map<Issue>(entities);
     }
 
-    public async Task AddAsync(Issue issue)
+    public async Task<Result<Guid>> AddAsync(Issue issue, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<IssueEntity>(issue);
         _db.Issues.Add(entity);
-        await _db.SaveChangesAsync();
+        
+        var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add Issue");
+        return result.IsSuccess
+            ? Result.Ok(entity.Id)
+            : Result.Fail<Guid>(result.Errors);
     }
 
-    public async Task RemoveAsync(Guid issueId)
-    {
-        var existing = await _db.Issues.FindAsync(issueId);
-        if (existing is null)
-            throw new KeyNotFoundException($"Issue with Id = {issueId} was not found.");
-
-        _db.Issues.Remove(existing);
-    }
-
-    public async Task UpdateAsync(Issue issue)
+    public async Task<Result> UpdateAsync(Issue issue, CancellationToken cancellationToken)
     {
         var existing = await _db.Issues.FindAsync(issue.Id);
         _mapper.Map(existing, issue);
-        await _db.SaveChangesAsync();
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update Issue");
     }
+
+    public async Task<Result> RemoveAsync(Guid issueId, CancellationToken cancellationToken)
+    {
+        var existing = await _db.Issues.FindAsync(issueId);
+        if (existing is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Issue", issueId));
+
+        _db.Issues.Remove(existing);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to delete issue");
+    }
+
+    
     
 }

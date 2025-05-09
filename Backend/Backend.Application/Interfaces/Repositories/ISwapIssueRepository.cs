@@ -1,4 +1,5 @@
 using Backend.Domain.Common;
+using FluentResults;
 
 namespace Backend.Application.Interfaces.Repositories;
 
@@ -6,7 +7,7 @@ public interface ISwapIssueRepository
 {
     Task<Issue> GetByIdAsync(Guid subSwapId);
 
-    Task AddAsync(Issue issue);
-    Task RemoveAsync(Guid issueId);
-    Task UpdateAsync(Issue issue);
+    Task<Result<Guid>> AddAsync(Issue issue, CancellationToken cancellationToken);
+    Task<Result> RemoveAsync(Guid issueId, CancellationToken cancellationToken);
+    Task<Result> UpdateAsync(Issue issue, CancellationToken cancellationToken);
 }

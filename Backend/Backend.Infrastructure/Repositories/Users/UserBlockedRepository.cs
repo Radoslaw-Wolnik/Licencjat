@@ -3,6 +3,8 @@ using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
+using FluentResults;
+using Backend.Infrastructure.Extensions;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
@@ -24,24 +26,28 @@ public class UserBlockedRepository : IUserBlockedRepository
             .ToListAsync();
     }
 
-    public async Task AddAsync(Guid userId, Guid blockedId)
+    public async Task<Result> AddAsync(Guid userId, Guid blockedId, CancellationToken cancellationToken)
     {
         var entity = new UserBlockedEntity {BlockedId = blockedId, BlockerId = userId};
         _context.UserBlockeds.Add(entity);
-        await _context.SaveChangesAsync();
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to add BlockedUser");
+        // return result.IsSuccess
+        //    ? Result.Ok(entity.Id)
+        //    : Result.Fail<Guid>(result.Errors);
     }
 
-    public async Task RemoveAsync(Guid userId, Guid unblockedId)
+    public async Task<Result> RemoveAsync(Guid userId, Guid unblockedId, CancellationToken cancellationToken)
     {
         // var entity = new UserBlockedEntity { BlockerId = userId, BlockedId = unblockedId };
         // _context.UserBlockeds.Attach(entity);
         // _context.UserBlockeds.Remove(entity);
         var existing = await _context.UserBlockeds.FirstOrDefaultAsync(b => b.BlockerId == userId && b.BlockedId == unblockedId);
         if (existing is null)
-            throw new KeyNotFoundException($"User with Id = {userId} that blocked Id = {unblockedId} was not found.");
+            return Result.Fail(DomainErrorFactory.NotFound("UserBlocked", $"{userId} blocking {unblockedId}"));
 
         _context.UserBlockeds.Remove(existing);
-        await _context.SaveChangesAsync();  
+
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to remove BlockedUser");  
     }
     
 
