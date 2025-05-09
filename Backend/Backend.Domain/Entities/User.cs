@@ -36,7 +36,7 @@ public sealed class User : Entity<Guid>
 
     private readonly SocialMediaCollection _socialMedia = new();
     public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks => _socialMedia.Links;
-    private readonly USerBookCollection _ownedBooks = new();
+    private readonly UserBookCollection _ownedBooks = new();
     public IReadOnlyCollection<UserBook> OwnedBooks => _ownedBooks.UserBooks;
 
 
