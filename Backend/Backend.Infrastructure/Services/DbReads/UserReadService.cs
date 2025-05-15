@@ -9,6 +9,7 @@ using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
 using Backend.Domain.Errors;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Application.DTOs.Commands.Auth;
 
 namespace Backend.Infrastructure.Services.DbReads;
 
@@ -65,5 +66,23 @@ public class UserReadService : IUserReadService
             return null;
 
         return _mapper.Map<User>(entity);
+    }
+
+    public async Task<LoginUserInfo?> GetLoginInfoAsync(
+        Expression<Func<UserProjection,bool>> predicate
+    ){
+        var entityPredicate = 
+            _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
+
+        return await _db.Users
+            .Where(entityPredicate)
+            .Select(u => new LoginUserInfo {
+            Id           = u.Id,
+            Email        = u.Email,
+            UserName     = u.UserName,
+            // PasswordHash = u.PasswordHash,
+            // …
+            })
+            .FirstOrDefaultAsync();
     }
 }
