@@ -40,18 +40,12 @@ public class UserBookReadService : IUserBookReadService
         return _mapper.Map<UserBook>(entity);
     }
 
-    public async Task<UserBook> GetBookWithIncludes(
-        Guid bookId, 
-        params Expression<Func<BookProjection, object>>[] includes
+    public async Task<UserBook> GetFullByIdAsync(
+        Guid id
     ){
-        IQueryable<UserBookEntity> query = _context.UserBooks;
-        foreach (var inc in includes){
-            var entityInclude = 
-                _mapper.MapExpression<Expression<Func<UserBookEntity, bool>>>(inc); // not sure if this will work
-            query = query.Include(entityInclude);
-        }
-
-        var entity = await query.FirstOrDefaultAsync(b => b.Id == bookId);
+        var entity = await _context.UserBooks
+            .Include(ub => ub.Bookmarks)
+            .FirstAsync(ub => ub.Id == id);
 
         return _mapper.Map<UserBook>(entity);
     }

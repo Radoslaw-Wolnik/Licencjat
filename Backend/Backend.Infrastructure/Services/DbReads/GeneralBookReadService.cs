@@ -54,19 +54,13 @@ public class GeneralBookReadService : IGeneralBookReadService
 
     }
 
-    public async Task<GeneralBook> GetBookWithIncludes(
-        Guid bookId, 
-        params Expression<Func<BookProjection, object>>[] includes
+    public async Task<GeneralBook> GetFullByIdAsync(
+        Guid bookId
     ){
 
-        IQueryable<GeneralBookEntity> query = _context.GeneralBooks;
-        foreach (var inc in includes){
-            var entityInclude = 
-                _mapper.MapExpression<Expression<Func<GeneralBookEntity, bool>>>(inc); // not sure if this will work
-            query = query.Include(entityInclude);
-        }
-
-        var entity = await query.FirstOrDefaultAsync(b => b.Id == bookId);
+        var entity = await _context.GeneralBooks
+            .Include(b => b.Reviews)
+            .FirstAsync(b => b.Id == bookId);
 
         return _mapper.Map<GeneralBook>(entity);
     }
