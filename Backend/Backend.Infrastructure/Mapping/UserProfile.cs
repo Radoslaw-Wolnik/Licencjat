@@ -104,7 +104,12 @@ public class UserProfile : Profile
             .ForMember(dest => dest.Followers,        opt => opt.Ignore())
             .ForMember(dest => dest.BlockedUsers,     opt => opt.Ignore())
             .ForMember(dest => dest.UserBooks,        opt => opt.Ignore())
-            .ForMember(dest => dest.SocialMediaLinks, opt => opt.Ignore());
+            .ForMember(dest => dest.SocialMediaLinks, opt => opt.Ignore())
+            .AfterMap((src, dest) => 
+            {
+                // EF Core will handle collection updates via change tracking
+                // Don't overwrite collections, just map scalar values
+            });
         
     }
 

@@ -5,8 +5,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class BlockedCollection
 {
-    private readonly List<Guid> _blockedUsers = new();
+    private readonly List<Guid> _blockedUsers;
     public IReadOnlyCollection<Guid> BlockedUsers => _blockedUsers.AsReadOnly();
+
+    public BlockedCollection(IEnumerable<Guid> ids)
+    {
+        _blockedUsers = ids == null
+            ? []
+            : [.. ids.Distinct()];
+    }
 
     public Result Add(Guid blockId)
     {

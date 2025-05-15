@@ -14,9 +14,9 @@ public sealed class User : Entity<Guid>
     public string LastName { get; }
     public DateOnly BirthDate { get; }
     public Location Location { get; private set; }
-    public Reputation Reputation { get; private set; }
+    public Reputation Reputation { get; private set; } = Reputation.Initial();
     public Photo? ProfilePicture { get; private set; }
-    public BioString Bio { get; private set; }
+    public BioString Bio { get; private set; } = BioString.Initial();
 
     // Relationships
     // the strategy is - if the relaction is simple eg wishilist is just ids of geenral books that user wants to read then the list is just <Guid> in this case of general book ids
@@ -24,22 +24,42 @@ public sealed class User : Entity<Guid>
     // then the list is of that records in this case <SocialMediaLinks> to represent user owning them and have better mappings and controll over them
     
     
-    private readonly WishlistCollection _wishlist = new();
+    private readonly WishlistCollection _wishlist;
     public IReadOnlyCollection<Guid> Wishlist => _wishlist.Items;
-    private readonly FollowedCollection _followed = new();
+    private readonly FollowedCollection _followed;
     public IReadOnlyCollection<Guid> Followed => _followed.FollowedUsers;
-    private readonly List<Guid> _followers = new();
+    private readonly List<Guid> _followers;
     public IReadOnlyCollection<Guid> Followers => _followers.AsReadOnly();
-    private readonly BlockedCollection _blocked = new();
+    private readonly BlockedCollection _blocked;
     public IReadOnlyCollection<Guid> Blocked => _blocked.BlockedUsers;
 
 
-    private readonly SocialMediaCollection _socialMedia = new();
+    private readonly SocialMediaCollection _socialMedia;
     public IReadOnlyCollection<SocialMediaLink> SocialMediaLinks => _socialMedia.Links;
-    private readonly UserBookCollection _ownedBooks = new();
+    private readonly UserBookCollection _ownedBooks;
     public IReadOnlyCollection<UserBook> OwnedBooks => _ownedBooks.UserBooks;
 
+    // constructor for Create — empty collections
+    private User(
+        Guid id,
+        string email,
+        string username,
+        string firstName,
+        string lastName,
+        DateOnly birthDate,
+        Location location
+    ) : this(
+        id, email, username, firstName, lastName, birthDate, 
+        location, 
+        initialWishlist: Enumerable.Empty<Guid>(),
+        initialFollowing: [],
+        initialFollowers: [],
+        initialBlocked: [],
+        initialBooks: [],
+        initialSocial: []
+    ) { }
 
+    // reconstitution constructor — bulk‑load from persistence
     private User(
         Guid id,
         string email,
@@ -48,8 +68,13 @@ public sealed class User : Entity<Guid>
         string lastName,
         DateOnly birthDate,
         Location location,
-        Reputation reputation,
-        BioString bio)
+        IEnumerable<Guid> initialWishlist,
+        IEnumerable<Guid> initialFollowing,
+        IEnumerable<Guid> initialFollowers,
+        IEnumerable<Guid> initialBlocked,
+        IEnumerable<UserBook> initialBooks,
+        IEnumerable<SocialMediaLink> initialSocial
+    )
     {
         Id = id;
         Email = email;
@@ -58,8 +83,14 @@ public sealed class User : Entity<Guid>
         LastName = lastName;
         BirthDate = birthDate;
         Location = location;
-        Reputation = reputation;
-        Bio = bio;
+
+        // now we can assign readonly fields once, here in constructor:
+        _wishlist   = new WishlistCollection(initialWishlist);
+        _followed   = new FollowedCollection(initialFollowing);
+        _followers  = new List<Guid>(initialFollowers);
+        _blocked    = new BlockedCollection(initialBlocked);
+        _ownedBooks = new UserBookCollection(initialBooks);
+        _socialMedia= new SocialMediaCollection(initialSocial); 
     }
 
     public static Result<User> Create(
@@ -77,17 +108,16 @@ public sealed class User : Entity<Guid>
 
         return errors.Count != 0
         ? Result.Fail<User>(errors)
-        : new User(
-            Guid.NewGuid(),
-            email,
-            username,
-            firstName,
-            lastName,
-            birthDate,
-            location,
-            Reputation.Initial(),
-            BioString.Initial()
-        );
+        : Result.Ok( 
+            new User(
+                Guid.NewGuid(),
+                email,
+                username,
+                firstName,
+                lastName,
+                birthDate,
+                location
+            ));
     }
 
     // Reconstitution method (for loading from DB)
@@ -109,18 +139,18 @@ public sealed class User : Entity<Guid>
         IEnumerable<UserBook> ownedBooks,
         IEnumerable<SocialMediaLink> socialMediaLinks
     ) {
-        var user = new User(id, email, username, firstName, lastName, birthDate, location, reputation, bio)
+        var user = new User(id, email, username, firstName, lastName, birthDate, location,
+            initialWishlist:   wishlist,
+            initialFollowing:  following,
+            initialFollowers:  followers,
+            initialBlocked:    blockedUsers,
+            initialBooks:      ownedBooks,
+            initialSocial:     socialMediaLinks)
         {
             ProfilePicture = profilePicture,
+            Reputation     = reputation,
+            Bio            = bio,
         };
-        
-        foreach(var w in wishlist) user._wishlist.Add(w);
-        foreach(var fing in following) user._followed.Add(fing);
-        foreach(var flers in followers) user._followers.Add(flers);
-        foreach(var bu in blockedUsers) user._blocked.Add(bu);
-
-        foreach(var ob in ownedBooks) user._ownedBooks.Add(ob);
-        foreach (var sml in socialMediaLinks) user._socialMedia.Add(sml);
 
         return user;
     }

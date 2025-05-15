@@ -6,8 +6,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class SocialMediaCollection
 {
-    private readonly List<SocialMediaLink> _links = new();
+    private readonly List<SocialMediaLink> _links;
     public IReadOnlyCollection<SocialMediaLink> Links => _links.AsReadOnly();
+
+    public SocialMediaCollection(IEnumerable<SocialMediaLink> socialMediaLinks)
+    {
+        _links = socialMediaLinks == null
+            ? []
+            : [.. socialMediaLinks.Distinct()];
+    }
 
     public Result Add(SocialMediaLink link)
     {

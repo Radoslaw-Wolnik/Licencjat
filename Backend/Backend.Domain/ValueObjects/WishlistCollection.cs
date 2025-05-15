@@ -5,8 +5,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class WishlistCollection
 {
-    private readonly List<Guid> _items = new();
+    private readonly List<Guid> _items;
     public IReadOnlyCollection<Guid> Items => _items.AsReadOnly();
+
+    public WishlistCollection(IEnumerable<Guid> ids)
+    {
+        _items = ids == null
+            ? new List<Guid>()
+            : [.. ids.Distinct()];
+    }
 
     public Result Add(Guid bookId)
     {

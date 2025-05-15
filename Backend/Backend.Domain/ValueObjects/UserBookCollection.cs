@@ -9,6 +9,13 @@ public class UserBookCollection
     private readonly List<UserBook> _userBooks = new();
     public IReadOnlyCollection<UserBook> UserBooks => _userBooks.AsReadOnly();
 
+    public UserBookCollection(IEnumerable<UserBook> userbooks)
+    {
+        _userBooks = userbooks == null
+            ? []
+            : [.. userbooks.Distinct()];
+    }
+
     public Result Add(UserBook book)
     {
         if (_userBooks.Contains(book))

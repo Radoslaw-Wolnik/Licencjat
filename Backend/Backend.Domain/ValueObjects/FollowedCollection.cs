@@ -5,8 +5,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class FollowedCollection
 {
-    private readonly List<Guid> _followedUsers = new();
+    private readonly List<Guid> _followedUsers;
     public IReadOnlyCollection<Guid> FollowedUsers => _followedUsers.AsReadOnly();
+
+    public FollowedCollection(IEnumerable<Guid> ids)
+    {
+        _followedUsers = ids == null
+            ? []
+            : [.. ids.Distinct()];
+    }
 
     public Result Add(Guid followId)
     {
