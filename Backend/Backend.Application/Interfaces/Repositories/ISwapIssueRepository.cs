@@ -5,8 +5,6 @@ namespace Backend.Application.Interfaces.Repositories;
 
 public interface ISwapIssueRepository
 {
-    Task<Issue> GetByIdAsync(Guid subSwapId);
-
     Task<Result<Guid>> AddAsync(Issue issue, CancellationToken cancellationToken);
     Task<Result> RemoveAsync(Guid issueId, CancellationToken cancellationToken);
     Task<Result> UpdateAsync(Issue issue, CancellationToken cancellationToken);

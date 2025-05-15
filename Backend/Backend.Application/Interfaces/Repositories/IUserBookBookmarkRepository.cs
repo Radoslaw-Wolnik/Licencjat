@@ -5,8 +5,6 @@ namespace Backend.Application.Interfaces.Repositories;
 
 public interface IUserBookBookmarkRepository
 {
-    Task<IReadOnlyCollection<Bookmark>> GetByUserBookIdAsync(Guid userBookId);
-
     Task<Result<Guid>> AddAsync(Bookmark bookmark, CancellationToken cancellationToken);
     Task<Result> RemoveAsync(Guid bookmarkId, CancellationToken cancellationToken);
     Task<Result> UpdateAsync(Bookmark bookmark, CancellationToken cancellationToken);

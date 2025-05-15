@@ -21,15 +21,6 @@ public class UserBookBookmarkRepository : IUserBookBookmarkRepository
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyCollection<Bookmark>> GetByUserBookIdAsync(Guid userBookId)
-    {
-        var entities = await _db.Bookmarks
-            .AsNoTracking()
-            .Where(x => x.UserBookId == userBookId)
-            .ToListAsync();
-        return _mapper.Map<List<Bookmark>>(entities);
-    }
-
     public async Task<Result<Guid>> AddAsync(Bookmark bookmark, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<BookmarkEntity>(bookmark);

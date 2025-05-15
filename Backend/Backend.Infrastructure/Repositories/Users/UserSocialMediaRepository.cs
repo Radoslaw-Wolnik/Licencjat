@@ -21,15 +21,6 @@ public class UserSocialMediaRepository : IUserSocialMediaRepository
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyCollection<SocialMediaLink>> GetByUserIdAsync(Guid userId)
-    {
-        var entities = await _db.SocialMediaLinks
-            .AsNoTracking()
-            .Where(x => x.UserId == userId)
-            .ToListAsync();
-        return _mapper.Map<List<SocialMediaLink>>(entities);
-    }
-
     public async Task<Result<Guid>> AddAsync(SocialMediaLink link, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<SocialMediaLinkEntity>(link);

@@ -21,15 +21,6 @@ public class SwapTimelineRepository : ISwapTimelineRepository
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyCollection<TimelineUpdate>> GetByIdAsync(Guid swapId)
-    {
-        var entities = await _db.Timelines
-            .AsNoTracking()
-            .Where(x => x.SwapId == swapId)
-            .ToListAsync();
-        return _mapper.Map<List<TimelineUpdate>>(entities);
-    }
-
     public async Task<Result<Guid>> AddAsync(TimelineUpdate timelineUpdate, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<TimelineEntity>(timelineUpdate);

@@ -8,6 +8,5 @@ public interface IUserBookReadService
 {
     Task<UserBook> GetByIdAsync(Guid id);
     Task<UserBook> GetByAsync(Expression<Func<BookProjection, bool>> predicate);
-    Task<UserBook> GetBookWithIncludes(Guid bookId, 
-        params Expression<Func<BookProjection, object>>[] includes);
+    Task<UserBook> GetFullByIdAsync(Guid id);
 }

@@ -21,15 +21,6 @@ public class SwapFeedbackRepository : ISwapFeedbackRepository
         _mapper = mapper;
     }
 
-    public async Task<Feedback> GetByIdAsync(Guid subSwapId)
-    {
-        var entities = await _db.Feedbacks
-            .AsNoTracking()
-            .Where(x => x.SubSwapId == subSwapId)
-            .FirstOrDefaultAsync();
-        return _mapper.Map<Feedback>(entities);
-    }
-
     public async Task<Result<Guid>> AddAsync(Feedback feedback, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<FeedbackEntity>(feedback);

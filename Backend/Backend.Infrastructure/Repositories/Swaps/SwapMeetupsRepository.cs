@@ -21,15 +21,6 @@ public class SwapMeetupRepository : ISwapMeetupRepository
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyCollection<Meetup>> GetByIdAsync(Guid swapId)
-    {
-        var entities = await _db.Meetups
-            .AsNoTracking()
-            .Where(x => x.SwapId == swapId)
-            .ToListAsync();
-        return _mapper.Map<List<Meetup>>(entities);
-    }
-
     public async Task<Result<Guid>> AddAsync(Meetup meetup, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<MeetupEntity>(meetup);

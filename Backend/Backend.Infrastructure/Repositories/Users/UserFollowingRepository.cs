@@ -17,15 +17,6 @@ public class UserFollowingRepository : IUserFollowingRepository
         _context = context;
     }
 
-    public async Task<IReadOnlyCollection<Guid>> GetFollowingAsync(Guid userId)
-    {
-        return await _context.UserFollowings
-            .AsNoTracking()
-            .Where(uf => uf.FollowerId == userId)
-            .Select(uf => uf.FollowedId)
-            .ToListAsync();
-    }
-
     public async Task<Result> AddAsync(Guid userId, Guid newFollowingId, CancellationToken cancellationToken)
     {
         // add

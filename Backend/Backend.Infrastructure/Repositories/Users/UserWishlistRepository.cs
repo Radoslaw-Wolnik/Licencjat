@@ -15,15 +15,6 @@ public class UserWishlistRepository : IUserWishlistRepository
     public UserWishlistRepository(ApplicationDbContext db)
         => _db = db;
 
-    public async Task<IReadOnlyCollection<Guid>> GetByUserIdAsync(Guid userId)
-    {   
-        return await _db.UserWishlists
-            .AsNoTracking()
-            .Where(x => x.UserId == userId)
-            .Select(x => x.GeneralBookId)
-            .ToListAsync();
-    }
-
     public async Task<Result> AddAsync(Guid userId, Guid bookId, CancellationToken cancellationToken)
     {
         _db.UserWishlists.Add(new UserWishlistEntity {

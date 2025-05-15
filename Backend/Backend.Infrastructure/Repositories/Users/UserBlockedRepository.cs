@@ -17,15 +17,6 @@ public class UserBlockedRepository : IUserBlockedRepository
         _context = context;
     }
 
-    public async Task<IReadOnlyCollection<Guid>> GetByUserIdAsync(Guid userId)
-    {
-        return await _context.UserBlockeds
-            .AsNoTracking()
-            .Where(x => x.BlockerId == userId)
-            .Select(x => x.BlockedId)
-            .ToListAsync();
-    }
-
     public async Task<Result> AddAsync(Guid userId, Guid blockedId, CancellationToken cancellationToken)
     {
         var entity = new UserBlockedEntity {BlockedId = blockedId, BlockerId = userId};

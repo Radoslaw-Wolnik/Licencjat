@@ -21,15 +21,6 @@ public class GeneralBookReviewsRepository : IGeneralBookReviewsRepository
         _mapper = mapper;
     }
 
-    public async Task<IReadOnlyCollection<Review>> GetByBookIdAsync(Guid bookId)
-    {
-        var entities = await _db.Reviews
-            .AsNoTracking()
-            .Where(x => x.BookId == bookId)
-            .ToListAsync();
-        return _mapper.Map<List<Review>>(entities);
-    }
-
     public async Task<Result<Guid>> AddAsync(Review review, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<ReviewEntity>(review);

@@ -5,8 +5,6 @@ namespace Backend.Application.Interfaces.Repositories;
 
 public interface IUserSocialMediaRepository
 {
-    Task<IReadOnlyCollection<SocialMediaLink>> GetByUserIdAsync(Guid userId);
-
     Task<Result<Guid>> AddAsync(SocialMediaLink link, CancellationToken cancellationToken);
     Task<Result> RemoveAsync(Guid linkId, CancellationToken cancellationToken);
     Task<Result> UpdateAsync(SocialMediaLink link, CancellationToken cancellationToken);

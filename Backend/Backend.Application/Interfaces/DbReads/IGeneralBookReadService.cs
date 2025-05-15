@@ -9,6 +9,5 @@ public interface IGeneralBookReadService
     Task<bool> ExistsAsync(Expression<Func<BookProjection, bool>> predicate);
     Task<GeneralBook> GetByIdAsync(Guid id);
     Task<GeneralBook> GetByAsync(Expression<Func<BookProjection, bool>> predicate);
-    Task<GeneralBook> GetBookWithIncludes(Guid bookId, 
-        params Expression<Func<BookProjection, object>>[] includes);
+    Task<GeneralBook> GetFullByIdAsync(Guid bookId);
 }

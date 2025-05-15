@@ -21,15 +21,6 @@ public class SwapIssueRepository : ISwapIssueRepository
         _mapper = mapper;
     }
 
-    public async Task<Issue> GetByIdAsync(Guid subSwapId)
-    {
-        var entities = await _db.Issues
-            .AsNoTracking()
-            .Where(x => x.SubSwapId == subSwapId)
-            .FirstOrDefaultAsync();
-        return _mapper.Map<Issue>(entities);
-    }
-
     public async Task<Result<Guid>> AddAsync(Issue issue, CancellationToken cancellationToken)
     {
         var entity = _mapper.Map<IssueEntity>(issue);
