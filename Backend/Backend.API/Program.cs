@@ -100,26 +100,15 @@ builder.Services.AddHostedService<ThumbnailBackgroundService>();
 
 // repositories
 // general book
-builder.Services.AddScoped<IGeneralBookReviewsRepository, GeneralBookReviewsRepository>();
 builder.Services.AddScoped<IWriteGeneralBookRepository, WriteGeneralBookRepository>();
 
 // swap
-builder.Services.AddScoped<ISwapFeedbackRepository, SwapFeedbackRepository>();
-builder.Services.AddScoped<ISwapIssueRepository, SwapIssueRepository>();
-builder.Services.AddScoped<ISwapMeetupRepository, SwapMeetupRepository>();
-builder.Services.AddScoped<ISwapTimelineRepository, SwapTimelineRepository>();
 builder.Services.AddScoped<IWriteSwapRepository, WriteSwapRepository>();
 
 // user book
-builder.Services.AddScoped<IUserBookBookmarkRepository, UserBookBookmarkRepository>();
 builder.Services.AddScoped<IWriteUserBookRepository, WriteUserBookRepository>();
 
 // user
-builder.Services.AddScoped<IAuthUserRepository, AuthUserRepository>();
-builder.Services.AddScoped<IUserBlockedRepository, UserBlockedRepository>();
-builder.Services.AddScoped<IUserFollowingRepository, UserFollowingRepository>();
-builder.Services.AddScoped<IUserSocialMediaRepository, UserSocialMediaRepository>();
-builder.Services.AddScoped<IUserWishlistRepository, UserWishlistRepository>();
 builder.Services.AddScoped<IWriteUserRepository, WriteUserRepository>();
 
 // services

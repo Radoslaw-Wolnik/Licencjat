@@ -47,127 +47,170 @@ public class WriteUserRepository : IWriteUserRepository
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to delete User");
     }
 
-    public async Task<Result> UpdateAsync(
-        User user, 
-        CancellationToken cancellationToken,
-        params Expression<Func<UserProjection, object>>[] includes)
+    // Scalar-only update (profile, settings, etc.)
+    public async Task<Result> UpdateProfileAsync(User domainUser, CancellationToken cancellationToken)
     {
-        var query = _db.Users.AsQueryable();
+        // Attach stub entity with only key
+        var stub = new UserEntity { Id = domainUser.Id };
+        _db.Users.Attach(stub);
 
-        foreach (var include in includes)
-        {
-            var entityInclude = _mapper.MapExpression<Expression<Func<UserEntity, object>>>(include);
-            query = query.Include(entityInclude);
-        }
-
-
-        var existing = await query.FirstOrDefaultAsync(u => u.Id == user.Id);
-        if (existing == null) return Result.Fail(DomainErrorFactory.NotFound("User", user.Id));
-
-        // Map only scalar properties (EF Core will track relationship changes)
-        _mapper.Map(user, existing);
-
-        // Explicitly handle collections
-        await HandleCollectionUpdates(user, existing); // can we await not sync function? 
+        // Map scalar properties manually
+        stub.UserName = domainUser.Username;
+        stub.Email = domainUser.Email;
+        stub.ProfilePicture = domainUser.ProfilePicture?.Link;
+        // other ones
         
-        return await _db.SaveChangesWithResultAsync(cancellationToken);
+        // mark only these as modified
+        _db.Entry(stub).Property(e => e.UserName).IsModified = true;
+        _db.Entry(stub).Property(e => e.Email).IsModified = true;
+        _db.Entry(stub).Property(e => e.ProfilePicture).IsModified = true;
+        // other ones
+
+        // as we marked the scalar fields as modified the EFCore will check if they changed and if so then it will be overwritten/updaten
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update User Profile"); // domainUser.Id
     }
 
-    private Task HandleCollectionUpdates(User domainUser, UserEntity entity)
-    {   
-        HandleBlockedUsers(domainUser, entity);
-        HandleFollowingUsers(domainUser, entity);
-        HandleSocialMedias(domainUser, entity);
-        HandleWishlist(domainUser, entity);
-
-        return Task.CompletedTask;
-    }
-
-    
-
-    private Task HandleBlockedUsers(User domainUser, UserEntity entity)
+    // Blocked-users collection
+    public async Task<Result> UpdateBlockedUsersAsync(
+        Guid userId,
+        IEnumerable<Guid> allBlockedUserIds,
+        CancellationToken cancellationToken)
     {
-        var currentBlockedIds = domainUser.Blocked.ToHashSet();
-        var existingBlockedIds = entity.BlockedUsers.Select(ub => ub.BlockedId).ToHashSet();
+        var entity = await _db.Users
+            .Include(u => u.BlockedUsers)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
-        // Add new entries
-        foreach (var blockedId in currentBlockedIds.Except(existingBlockedIds))
+        if (entity == null)
+            return Result.Fail(DomainErrorFactory.NotFound("User", userId));
+
+        var current = allBlockedUserIds.ToHashSet();
+        var existing = entity.BlockedUsers.Select(b => b.BlockedId).ToHashSet();
+
+        // Add new
+        foreach (var id in current.Except(existing))
+            entity.BlockedUsers.Add(new UserBlockedEntity { BlockerId = userId, BlockedId = id });
+
+        // Remove missing
+        var toRemove = entity.BlockedUsers.Where(b => !current.Contains(b.BlockedId)).ToList();
+        toRemove.ForEach(b => entity.BlockedUsers.Remove(b));
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "failed to update the users that are blocked"); // userId
+    }
+    public async Task<Result> AddBlockedUserAsync(Guid userId, Guid blockedId, CancellationToken cancellationToken)
+    {
+        // var stub = new UserEntity { Id = userId };
+        // _db.Users.Attach(stub);
+        // then
+        // stub.UserBlocked.Add(...);
+        _db.UserBlockeds.Add(new UserBlockedEntity {
+            BlockerId = userId,
+            BlockedId = blockedId
+        });
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add User to blocked users"); // userId
+    }
+
+    // Following-users collection
+    public async Task<Result> UpdateFollowingUsersAsync(
+        Guid userId,
+        IEnumerable<Guid> allFollowedUserIds,
+        CancellationToken cancellationToken)
+    {
+        var entity = await _db.Users
+            .Include(u => u.Following)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+        if (entity == null)
+            return Result.Fail(DomainErrorFactory.NotFound("User", userId));
+
+        var current = allFollowedUserIds.ToHashSet();
+        var existing = entity.Following.Select(f => f.FollowedId).ToHashSet();
+
+        foreach (var id in current.Except(existing))
+            entity.Following.Add(new UserFollowingEntity { FollowerId = userId, FollowedId = id });
+
+        var toRemove = entity.Following.Where(f => !current.Contains(f.FollowedId)).ToList();
+        toRemove.ForEach(f => entity.Following.Remove(f));
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update the list of followed users"); // userId
+    }
+
+    public async Task<Result> AddFollowingUserAsync(Guid userId, Guid followingId, CancellationToken cancellationToken)
+    {
+        _db.UserFollowings.Add(new UserFollowingEntity {
+            FollowerId = userId,
+            FollowedId = followingId
+        });
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add User to followed users"); // userId
+    }
+
+    // Social media links collection
+    public async Task<Result> UpdateSocialMediasAsync(
+        Guid userId,
+        IEnumerable<SocialMediaLink> links,
+        CancellationToken cancellationToken)
+    {
+        var entity = await _db.Users
+            .Include(u => u.SocialMediaLinks)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+        if (entity == null)
+            return Result.Fail(DomainErrorFactory.NotFound("User", userId));
+
+        var currentIds = links.Select(l => l.Id).ToHashSet();
+        var existingIds = entity.SocialMediaLinks.Select(e => e.Id).ToHashSet();
+
+        // Add new
+        foreach (var id in currentIds.Except(existingIds))
         {
-            entity.BlockedUsers.Add(new UserBlockedEntity { BlockerId = entity.Id, BlockedId = blockedId });
+            var link = links.Single(l => l.Id == id);
+            entity.SocialMediaLinks.Add(_mapper.Map<SocialMediaLinkEntity>(link));
         }
 
-        // Remove deleted entries
-        var toRemove = entity
-            .BlockedUsers
-            .Where(ub => !currentBlockedIds.Contains(ub.BlockedId))
-            .ToList();
+        // Remove missing
+        var toRemove = entity.SocialMediaLinks.Where(e => !currentIds.Contains(e.Id)).ToList();
+        toRemove.ForEach(e => entity.SocialMediaLinks.Remove(e));
 
-        foreach (var item in toRemove)
-            entity.BlockedUsers.Remove(item);
-
-        return Task.CompletedTask;        
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update Social Media Link of the User"); // userId
     }
 
-    private Task HandleFollowingUsers(User domainUser, UserEntity entity)
+    public async Task<Result> AddSocialMediaAsync(Guid userId, SocialMediaLink socialMediaLink, CancellationToken cancellationToken)
     {
-        var currentFollowingIds = domainUser.Followed.ToHashSet();
-        var existingFollowingIds = entity.Following.Select(uf => uf.FollowedId).ToHashSet();
-
-        // Add new entries
-        foreach (var followingId in currentFollowingIds.Except(existingFollowingIds))
-        {
-            entity.Following.Add(new UserFollowingEntity { FollowerId = entity.Id, FollowedId = followingId });
-        }
-
-        // Remove deleted entries
-        var toRemove = entity.Following.Where(uf => !currentFollowingIds.Contains(uf.FollowedId)).ToList();
-        foreach (var item in toRemove)
-            entity.Following.Remove(item);
-
-        return Task.CompletedTask;
+        var socialEntity = _mapper.Map<SocialMediaLinkEntity>(socialMediaLink);
+        _db.SocialMediaLinks.Add(socialEntity);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add SocialMediaLink"); // userId
     }
 
-    private Task HandleSocialMedias(User domainUser, UserEntity entity)
+    // Wishlist collection
+    public async Task<Result> UpdateWishlistAsync(
+        Guid userId,
+        IEnumerable<Guid> allWishlistedBookIds,
+        CancellationToken cancellationToken)
     {
-        var currentIds = domainUser.SocialMediaLinks.Select(sml => sml.Id).ToHashSet();
-        var existingIds = entity.SocialMediaLinks.Select(sml => sml.Id).ToHashSet();
+        var entity = await _db.Users
+            .Include(u => u.Wishlist)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
-        // Add new entries
-        foreach (var linkId in currentIds.Except(existingIds))
-        {
-            var link = domainUser.SocialMediaLinks.Single(sml => sml.Id == linkId);
-            var entityLink = _mapper.Map<SocialMediaLink, SocialMediaLinkEntity>(link);
-            entity.SocialMediaLinks.Add(entityLink);
-        }
+        if (entity == null)
+            return Result.Fail(DomainErrorFactory.NotFound("User", userId));
 
-        // Remove deleted entries
-        var toRemove = entity
-            .SocialMediaLinks
-            .Where(e => !currentIds.Contains(e.Id))
-            .ToList();
+        var current = allWishlistedBookIds.ToHashSet();
+        var existing = entity.Wishlist.Select(w => w.GeneralBookId).ToHashSet();
 
-        foreach (var e in toRemove)
-            entity.SocialMediaLinks.Remove(e);
+        foreach (var id in current.Except(existing))
+            entity.Wishlist.Add(new UserWishlistEntity { UserId = userId, GeneralBookId = id });
 
-        return Task.CompletedTask;
+        var toRemove = entity.Wishlist.Where(w => !current.Contains(w.GeneralBookId)).ToList();
+        toRemove.ForEach(w => entity.Wishlist.Remove(w));
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update Wishlist of the User"); // userId
     }
 
-    private Task HandleWishlist(User domainUser, UserEntity entity)
+    public async Task<Result> AddWishlistBookAsync(Guid userId, Guid wishlistBookId, CancellationToken cancellationToken)
     {
-        var currentBookIds = domainUser.Wishlist.ToHashSet();
-        var existingBookIds = entity.Wishlist.Select(uw => uw.GeneralBookId).ToHashSet();
-
-        // Add new entries
-        foreach (var bookId in currentBookIds.Except(existingBookIds))
-        {
-            entity.Wishlist.Add(new UserWishlistEntity { UserId = entity.Id, GeneralBookId = bookId });
-        }
-
-        // Remove deleted entries
-        var toRemove = entity.Wishlist.Where(uw => !currentBookIds.Contains(uw.GeneralBookId)).ToList();
-        foreach (var item in toRemove)
-            entity.Wishlist.Remove(item);
-        
-        return Task.CompletedTask;
+        _db.UserWishlists.Add(new UserWishlistEntity {
+            UserId        = userId,
+            GeneralBookId = wishlistBookId
+        });
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add book to wishlist for the user"); // userId
     }
 }
