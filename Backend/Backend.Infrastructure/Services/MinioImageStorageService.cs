@@ -97,4 +97,30 @@ public class MinioImageStorageService : IImageStorageService
         }
     }
     
+    public async Task DeleteAsync(string objectKey, CancellationToken ct = default)
+    {
+        var bucket = _settings.BucketName;
+        // delete the main object
+        await _client.RemoveObjectAsync(
+            new RemoveObjectArgs()
+                .WithBucket(bucket)
+                .WithObject(objectKey),
+            ct);
+
+        // also attempt to delete thumbnail if exists
+        var thumbKey = Path.ChangeExtension(objectKey, null) + "-thumb.jpg";
+        try
+        {
+            await _client.RemoveObjectAsync(
+                new RemoveObjectArgs()
+                    .WithBucket(bucket)
+                    .WithObject(thumbKey),
+                ct);
+        }
+        catch (ObjectNotFoundException)
+        {
+            // thumbnail wasn’t there; ignore
+        }
+    }
+
 }

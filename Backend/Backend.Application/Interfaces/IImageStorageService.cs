@@ -19,4 +19,6 @@ public interface IImageStorageService
     Task<bool> ExistsAsync(
         string objectKey,
         CancellationToken cancellationToken = default);
+    
+    Task DeleteAsync(string objectKey, CancellationToken ct = default);
 }
