@@ -55,16 +55,26 @@ public class WriteUserRepository : IWriteUserRepository
         _db.Users.Attach(stub);
 
         // Map scalar properties manually
-        stub.UserName = domainUser.Username;
-        stub.Email = domainUser.Email;
+        // stub.UserName = domainUser.Username;
+        // stub.Email = domainUser.Email;
+        stub.FirstName = domainUser.FirstName;
+        stub.LastName = domainUser.LastName;
+        stub.City = domainUser.Location.City;
+        stub.Country = domainUser.Location.Country.Code;
         stub.ProfilePicture = domainUser.ProfilePicture?.Link;
-        // other ones
+        stub.Bio = domainUser.Bio.Value;
+        stub.Reputation = domainUser.Reputation.Value;
         
         // mark only these as modified
-        _db.Entry(stub).Property(e => e.UserName).IsModified = true;
-        _db.Entry(stub).Property(e => e.Email).IsModified = true;
+        //_db.Entry(stub).Property(e => e.UserName).IsModified = true;
+        //_db.Entry(stub).Property(e => e.Email).IsModified = true;
+        _db.Entry(stub).Property(e => e.FirstName).IsModified = true;
+        _db.Entry(stub).Property(e => e.LastName).IsModified = true;
+        _db.Entry(stub).Property(e => e.City).IsModified = true;
+        _db.Entry(stub).Property(e => e.Country).IsModified = true;
         _db.Entry(stub).Property(e => e.ProfilePicture).IsModified = true;
-        // other ones
+        _db.Entry(stub).Property(e => e.Bio).IsModified = true;
+        _db.Entry(stub).Property(e => e.Reputation).IsModified = true;
 
         // as we marked the scalar fields as modified the EFCore will check if they changed and if so then it will be overwritten/updaten
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update User Profile"); // domainUser.Id
