@@ -41,7 +41,6 @@ public sealed class User : Entity<Guid>
 
     // constructor for Create — empty collections
     private User(
-        Guid id,
         string email,
         string username,
         string firstName,
@@ -49,8 +48,8 @@ public sealed class User : Entity<Guid>
         DateOnly birthDate,
         Location location
     ) : this(
-        id, email, username, firstName, lastName, birthDate, 
-        location, 
+        Guid.NewGuid(),
+        email, username, firstName, lastName, birthDate, location, 
         initialWishlist: Enumerable.Empty<Guid>(),
         initialFollowing: [],
         initialFollowers: [],
@@ -74,8 +73,7 @@ public sealed class User : Entity<Guid>
         IEnumerable<Guid> initialBlocked,
         IEnumerable<UserBook> initialBooks,
         IEnumerable<SocialMediaLink> initialSocial
-    )
-    {
+    ) {
         Id = id;
         Email = email;
         Username = username;
@@ -110,7 +108,6 @@ public sealed class User : Entity<Guid>
         ? Result.Fail<User>(errors)
         : Result.Ok( 
             new User(
-                Guid.NewGuid(),
                 email,
                 username,
                 firstName,

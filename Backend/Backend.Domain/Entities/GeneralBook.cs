@@ -12,38 +12,59 @@ public sealed class GeneralBook : Entity<Guid>
     public string Author { get; }
     public DateOnly Published { get; }
     public LanguageCode OriginalLanguage { get; }
-    public Rating RatingAvg { get; private set; } // 1-10 
+    public Rating RatingAvg { get; private set; } = Rating.Initial();
     public Photo CoverPhoto { get; }
     
-    private readonly GenresCollection _genres = new();
+    private readonly GenresCollection _genres;
     public IReadOnlyCollection<BookGenre> Genres => _genres.Genres;
     
-    private readonly UserCopiesCollection _userCopies = new();
+    private readonly UserCopiesCollection _userCopies;
     public IReadOnlyCollection<UserBook> UserCopies => _userCopies.UserBooks;
 
-    private readonly ReviewsCollection _reviews = new();
+    private readonly ReviewsCollection _reviews;
     public IReadOnlyCollection<Review> UserReviews => _reviews.Reviews;
 
+    // constructor for Create — empty collections
+    private GeneralBook(
+        Guid? id,
+        string title,
+        string author,
+        DateOnly published,
+        LanguageCode originalLanguage,
+        Photo coverPhoto)
+     : this (
+        id?? Guid.NewGuid(), 
+        title, author, published, originalLanguage, coverPhoto,
+        initialGenres: Enumerable.Empty<BookGenre>(),
+        initialUserCopies: [],
+        initialReviews: []
+    ) {}
+
+    // reconstitution constructor — bulk‑load from persistence
     private GeneralBook(
         Guid id,
         string title,
         string author,
         DateOnly published,
         LanguageCode originalLanguage,
-        Rating ratingAvg,
-        Photo coverPhoto)
+        Photo coverPhoto,
+        IEnumerable<BookGenre> initialGenres,
+        IEnumerable<UserBook> initialUserCopies,
+        IEnumerable<Review> initialReviews)
     {
         Id = id;
         Title = title;
         Author = author;
         Published = published;
         OriginalLanguage = originalLanguage;
-        RatingAvg = ratingAvg;
         CoverPhoto = coverPhoto;
+        _genres = new GenresCollection(initialGenres);
+        _userCopies = new UserCopiesCollection(initialUserCopies); 
+        _reviews = new ReviewsCollection (initialReviews);
     }
 
     public static Result<GeneralBook> Create(
-        Guid id,
+        Guid? id,
         string title,
         string author,
         DateOnly published,
@@ -61,7 +82,6 @@ public sealed class GeneralBook : Entity<Guid>
             author,
             published,
             originalLanguage,
-            Rating.Initial(),
             coverPhoto
         );
     }
@@ -79,11 +99,10 @@ public sealed class GeneralBook : Entity<Guid>
         IEnumerable<Review> userReviews
     )
     {
-        var book =  new GeneralBook(id, title, author, published, originalLanguage, ratingAvg, coverPhoto);
-
-        foreach (var g in genres)      book._genres.Add(g);
-        foreach (var c in userCopies)  book._userCopies.Add(c);
-        foreach (var r in userReviews) book._reviews.Add(r);
+        var book =  new GeneralBook(id, title, author, published, originalLanguage, coverPhoto, genres, userCopies, userReviews)
+        {
+            RatingAvg = ratingAvg,
+        };
 
         return book;
     }

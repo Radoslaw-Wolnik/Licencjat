@@ -16,9 +16,32 @@ public sealed class UserBook : Entity<Guid>
     public int PageCount { get; }
     public Photo CoverPhoto { get; private set; }
 
-    private readonly BookmarksCollection _bookmarks = new();
+    private readonly BookmarksCollection _bookmarks;
     public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.Bookmarks;
 
+    // create 
+    private UserBook(
+        Guid? id,
+        Guid ownerId,
+        Guid generalBookId,
+        BookStatus status,
+        BookState state,
+        LanguageCode language,
+        int pageCount,
+        Photo coverPhoto
+    ) : this (
+        id?? Guid.NewGuid(), 
+        ownerId, 
+        generalBookId, 
+        status, 
+        state, 
+        language, 
+        pageCount, 
+        coverPhoto, 
+        initialBookmarks: Enumerable.Empty<Bookmark>()
+    ) {}
+    
+    // reconstituate
     private UserBook(
         Guid id,
         Guid ownerId,
@@ -27,7 +50,8 @@ public sealed class UserBook : Entity<Guid>
         BookState state,
         LanguageCode language,
         int pageCount,
-        Photo coverPhoto)
+        Photo coverPhoto,
+        IEnumerable<Bookmark> initialBookmarks)
     {
         Id = id;
         OwnerId = ownerId;
@@ -37,10 +61,11 @@ public sealed class UserBook : Entity<Guid>
         Language = language;
         PageCount = pageCount;
         CoverPhoto = coverPhoto;
+        _bookmarks = new BookmarksCollection(initialBookmarks);
     }
 
     public static Result<UserBook> Create(
-        Guid id,
+        Guid? id,
         Guid ownerId,
         Guid generalBookId,
         BookStatus status,
@@ -101,10 +126,9 @@ public sealed class UserBook : Entity<Guid>
             state,
             language,
             pageCount,
-            coverPhoto
+            coverPhoto,
+            bookmarks
         );
-
-        foreach (var b in bookmarks) userBook._bookmarks.Add(b);
         
         return userBook;
     }
