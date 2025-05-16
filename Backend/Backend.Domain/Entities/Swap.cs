@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
@@ -11,35 +12,58 @@ public sealed class Swap : Entity<Guid>
     public SubSwap SubSwapRequesting { get; }
     public SubSwap SubSwapAccepting { get; }
 
-    private readonly MeetupsCollection _meetups = new(); // only two are allowed - one at begging and one at the end
-    private readonly TimelineUpdatesCollection _timelineUpdates = new();
+    private readonly MeetupsCollection _meetups;
+    private readonly TimelineUpdatesCollection _timelineUpdates;
 
     public IReadOnlyCollection<Meetup> Meetups => _meetups.Meetups;
     public IReadOnlyCollection<TimelineUpdate> TimelineUpdates => _timelineUpdates.TimelineUpdates;
 
-    private Swap(SubSwap subSwapRequesitng, SubSwap subSwapAccepting) // mby we actually need id in all entites as they are made based on the dbEntities? Although alternatively wehn we first make domain entity and then the dbentity we dont care about ids
-    {
-        SubSwapRequesting = subSwapRequesitng;
+    // initial creation
+    private Swap(
+        Guid requestingUserId, 
+        UserBook requestingBook, 
+        Guid acceptingUserId
+    ) : this (
+        Guid.NewGuid(), 
+        SubSwap.Initial(requestingUserId, requestingBook), 
+        SubSwap.Initial(acceptingUserId, null),
+        initialMeetups: Enumerable.Empty<Meetup>(),
+        InitialTimelineUpdates: []
+    ) { }
+
+    // reconstruction
+    private Swap(
+        Guid id, 
+        SubSwap subSwapRequesting, 
+        SubSwap subSwapAccepting, 
+        IEnumerable<Meetup> initialMeetups, 
+        IEnumerable<TimelineUpdate> InitialTimelineUpdates
+    ) {
+        Id = id;
         SubSwapAccepting = subSwapAccepting;
+        SubSwapRequesting = subSwapRequesting;
+        _meetups = new MeetupsCollection(initialMeetups);
+        _timelineUpdates = new TimelineUpdatesCollection(InitialTimelineUpdates);
     }
 
-    public static Result<Swap> Create(SubSwap subSwapRequesitng, SubSwap subSwapAccepting)
+    public static Result<Swap> Create(Guid requestingUserId, UserBook requestingBook, Guid acceptingUserId)
     {
-        // if (subSwapAId == subSwapBId)
-        //     return Result.Fail(SwapErrors.SameSubSwapError);
+        if (requestingUserId == Guid.Empty)
+            return Result.Fail(DomainErrorFactory.NotFound("swap.userRequesting", requestingUserId));
+        if (acceptingUserId == Guid.Empty)
+            return Result.Fail(DomainErrorFactory.NotFound("swap.userAccepting", acceptingUserId));
 
-        return Result.Ok(new Swap(subSwapRequesitng, subSwapAccepting));
+        return Result.Ok(new Swap(requestingUserId, requestingBook, acceptingUserId));
     }
 
     public static Swap Reconstitute(
+        Guid id,
         SubSwap subSwapRequesitng,
         SubSwap subSwapAccepting,
-        IEnumerable<Meetup>? meetups,
-        IEnumerable<TimelineUpdate>? timelineUpdates
+        IEnumerable<Meetup> meetups,
+        IEnumerable<TimelineUpdate> timelineUpdates
     ) {
-        var swap = new Swap(subSwapRequesitng, subSwapAccepting);
-        foreach(var m in meetups?? []) swap._meetups.Add(m);
-        foreach(var tu in timelineUpdates?? []) swap._timelineUpdates.Add(tu);
+        var swap = new Swap(id, subSwapRequesitng, subSwapAccepting, meetups, timelineUpdates);
 
         return swap;
     }

@@ -1,4 +1,5 @@
 using Backend.Domain.Common;
+using Backend.Domain.Entities;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
 using FluentResults;
@@ -9,25 +10,24 @@ public sealed record SubSwap(
         Guid Id,
         Guid UserId, 
         int PageAt,
-        Guid? UserBookReadingId,
-        Guid? FeedbackId,
-        Guid? IssueId
+        UserBook? UserBookReading,
+        Feedback? Feedback,
+        Issue? Issue
         )
 {
     public static Result<SubSwap> Create(
         Guid id,
         Guid userId, 
         int pageAt,
-        Guid? userBookReadingId,
-        Guid? feedbackId,
-        Guid? issueId
+        UserBook? userBookReading,
+        Feedback? feedback,
+        Issue? issue
         )
     {
         var errors = new List<IError>();
         
-        if (pageAt < 0) errors.Add(DomainErrorFactory.Invalid("SubSwap", "Page must be above 0"));
+        if (pageAt <= 0) errors.Add(DomainErrorFactory.Invalid("SubSwap", "Page must be above 0 or equal 0"));
         if (userId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("User", userId));
-        if (userBookReadingId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("UserBook", userBookReadingId));
 
         return errors.Count != 0
         ? Result.Fail<SubSwap>(errors)
@@ -35,13 +35,13 @@ public sealed record SubSwap(
             id,
             userId,
             pageAt,
-            userBookReadingId,
-            feedbackId,
-            issueId
+            userBookReading,
+            feedback,
+            issue
         );
     }
 
-    public static SubSwap Initial(Guid userId, Guid? userBookReadingId){
-        return new SubSwap(Guid.NewGuid(), userId, 0, userBookReadingId, null, null);
+    public static SubSwap Initial(Guid userId, UserBook? userBookReading){
+        return new SubSwap(Guid.NewGuid(), userId, 0, userBookReading, null, null);
     }
 }
