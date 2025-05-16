@@ -7,8 +7,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class GenresCollection
 {
-    private readonly List<BookGenre> _genres = new();
+    private readonly List<BookGenre> _genres;
     public IReadOnlyCollection<BookGenre> Genres => _genres.AsReadOnly();
+
+    public GenresCollection(IEnumerable<BookGenre> genres)
+    {
+        _genres = genres == null
+            ? []
+            : [.. genres.Distinct()];
+    }
 
     public Result Add(BookGenre genre)
     {

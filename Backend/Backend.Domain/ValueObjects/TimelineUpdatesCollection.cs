@@ -7,8 +7,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class TimelineUpdatesCollection
 {
-    private readonly List<TimelineUpdate> _timelineUpdates = new();
+    private readonly List<TimelineUpdate> _timelineUpdates;
     public IReadOnlyCollection<TimelineUpdate> TimelineUpdates => _timelineUpdates.AsReadOnly();
+
+    public TimelineUpdatesCollection(IEnumerable<TimelineUpdate> updates)
+    {
+        _timelineUpdates = updates == null
+            ? []
+            : [.. updates.Distinct()];
+    }
 
     public Result Add(TimelineUpdate timelineUpdate)
     {

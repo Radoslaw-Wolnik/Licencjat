@@ -6,8 +6,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class ReviewsCollection
 {
-    private readonly List<Review> _reviews = new();
+    private readonly List<Review> _reviews;
     public IReadOnlyCollection<Review> Reviews => _reviews.AsReadOnly();
+
+    public ReviewsCollection(IEnumerable<Review> reviews)
+    {
+        _reviews = reviews == null
+            ? []
+            : [.. reviews.Distinct()];
+    }
 
     public Result Add(Review review)
     {

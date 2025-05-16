@@ -6,8 +6,15 @@ namespace Backend.Domain.ValueObjects;
 
 public class MeetupsCollection
 {
-    private readonly List<Meetup> _meetups = new();
+    private readonly List<Meetup> _meetups; // idk if allow only two or not - like one at begging one at the end
     public IReadOnlyCollection<Meetup> Meetups => _meetups.AsReadOnly();
+
+    public MeetupsCollection(IEnumerable<Meetup> meetups)
+    {
+        _meetups = meetups == null
+            ? []
+            : [.. meetups.Distinct()];
+    }
 
     public Result Add(Meetup meetup)
     {

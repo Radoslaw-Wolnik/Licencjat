@@ -9,6 +9,13 @@ public class BookmarksCollection
     private readonly List<Bookmark> _bookmarks = new();
     public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.AsReadOnly();
 
+    public BookmarksCollection(IEnumerable<Bookmark> bookmarks)
+    {
+        _bookmarks = bookmarks == null
+            ? []
+            : [.. bookmarks.Distinct()];
+    }
+
     public Result Add(Bookmark bookmark)
     {
         if (_bookmarks.Contains(bookmark))

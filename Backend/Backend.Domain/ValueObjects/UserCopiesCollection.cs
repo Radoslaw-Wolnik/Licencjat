@@ -10,6 +10,13 @@ public class UserCopiesCollection
     private readonly List<UserBook> _userBooks = new();
     public IReadOnlyCollection<UserBook> UserBooks => _userBooks.AsReadOnly();
 
+    public UserCopiesCollection(IEnumerable<UserBook> userbooks)
+    {
+        _userBooks = userbooks == null
+            ? []
+            : [.. userbooks.Distinct()];
+    }
+
     public Result Add(UserBook userBook)
     {
         if (_userBooks.Contains(userBook))
