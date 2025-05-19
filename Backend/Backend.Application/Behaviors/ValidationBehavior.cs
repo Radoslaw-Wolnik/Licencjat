@@ -1,4 +1,3 @@
-// Application/Behaviors/ValidationBehavior.cs
 using FluentValidation;
 using MediatR;
 

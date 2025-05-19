@@ -1,4 +1,3 @@
-using Backend.Domain.Common;
 using Backend.Domain.Errors;
 using FluentResults;
 

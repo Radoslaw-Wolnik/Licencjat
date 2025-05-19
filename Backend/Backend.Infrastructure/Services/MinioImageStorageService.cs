@@ -1,6 +1,5 @@
 using Minio;
 using Minio.Exceptions;
-using Microsoft.Extensions.Configuration;
 using Backend.Application.Interfaces;
 using Minio.DataModel.Args;
 using Microsoft.Extensions.Options;

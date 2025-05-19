@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using Backend.Domain.Enums;
-using Backend.Domain.Errors;
 
 namespace Backend.Infrastructure.Entities;
 

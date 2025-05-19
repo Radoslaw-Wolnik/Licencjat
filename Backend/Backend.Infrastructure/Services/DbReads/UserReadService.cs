@@ -7,7 +7,6 @@ using AutoMapper.QueryableExtensions;
 using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
-using Backend.Domain.Errors;
 using Backend.Application.Interfaces.DbReads;
 using Backend.Application.DTOs.Commands.Auth;
 

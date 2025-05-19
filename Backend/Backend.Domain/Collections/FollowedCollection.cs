@@ -1,7 +1,7 @@
 using Backend.Domain.Errors;
 using FluentResults;
 
-namespace Backend.Domain.ValueObjects;
+namespace Backend.Domain.Collections;
 
 public class FollowedCollection
 {

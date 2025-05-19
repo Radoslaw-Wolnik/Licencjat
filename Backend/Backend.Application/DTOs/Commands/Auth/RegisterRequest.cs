@@ -1,5 +1,3 @@
-// Backend.Application/DTOs/Auth/RegisterRequest.cs
-using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Application.DTOs.Commands.Auth;
 

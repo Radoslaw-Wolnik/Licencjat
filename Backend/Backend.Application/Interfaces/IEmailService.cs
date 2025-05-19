@@ -1,5 +1,3 @@
-// Backend.Application/Interfaces/IEmailService.cs
-
 namespace Backend.Application.Interfaces;
 
 public interface IEmailService

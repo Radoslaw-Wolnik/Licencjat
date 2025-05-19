@@ -1,6 +1,3 @@
-// Domain/Errors/DomainErrorFactory.cs
-using Backend.Domain.Common;
-
 namespace Backend.Domain.Errors;
 
 public static class DomainErrorFactory

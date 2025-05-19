@@ -1,12 +1,11 @@
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Backend.Application.Interfaces;
 using Backend.Domain.Events;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Minio.Exceptions;
-
+using System.Threading.Tasks;
+using System.Threading;
 namespace Backend.Infrastructure.BackgroundTasks;
 
 public class ThumbnailBackgroundService : BackgroundService

@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Backend.Application.DTOs;
-using Backend.Application.Interfaces.Repositories;
 using Backend.Application.Interfaces.DbReads;
 using Backend.Domain.Entities;
 using Backend.Domain.Errors;

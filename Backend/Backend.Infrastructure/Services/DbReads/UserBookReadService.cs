@@ -6,7 +6,6 @@ using AutoMapper;
 using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
-using Backend.Domain.Errors;
 using Backend.Application.Interfaces.DbReads;
 
 namespace Backend.Infrastructure.Services.DbReads;

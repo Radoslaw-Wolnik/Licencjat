@@ -2,7 +2,6 @@ using Backend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Infrastructure.Data;
 using AutoMapper;
-using Backend.Domain.Errors;
 using Backend.Application.Interfaces.DbReads;
 
 namespace Backend.Infrastructure.Services.DbReads;

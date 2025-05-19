@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Infrastructure.Data.Attributes;
 using Microsoft.AspNetCore.Identity;
-using Backend.Domain.Errors;
 
 namespace Backend.Infrastructure.Entities;
 

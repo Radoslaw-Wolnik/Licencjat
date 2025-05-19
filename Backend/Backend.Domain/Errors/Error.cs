@@ -1,6 +1,6 @@
 using FluentResults;
 
-namespace Backend.Domain.Common;
+namespace Backend.Domain.Errors;
 
 public record DomainError(
     string Code, 

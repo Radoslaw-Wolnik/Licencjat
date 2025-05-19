@@ -1,5 +1,5 @@
 using Backend.Application.Interfaces;
-using Backend.Domain.Common;
+using Backend.Domain.Errors;
 using Backend.Infrastructure.Entities;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;

@@ -1,6 +1,5 @@
-// Extensions/ResultExtensions.cs
 using System.Net;
-using Backend.Domain.Common;
+using Backend.Domain.Errors;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 

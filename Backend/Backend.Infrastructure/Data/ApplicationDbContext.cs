@@ -39,40 +39,154 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
     // views
     public DbSet<GeneralBookWithAverageRating> GeneralBooksWithAverageRatings { get; set; }
     
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
         ConfigureShadowProperties(builder);
-
-        // Configurate Single tables
-        ConfigureApplicationUser(builder);
-        ConfigureUserBook(builder);
-        ConfigureSocialMediaLinks(builder);
-        ConfigureReview(builder);
-        ConfigureSwap(builder);
-        ConfigureSubSwap(builder);
-        ConfigureMeetup(builder);
-        ConfigureFeedback(builder);
-        ConfigureIssue(builder);
-        ConfigureTimeline(builder);
-        ConfigureBookmark(builder);
-
-        // Many-to-Many Configurations
-        ConfigureUserFollowing(builder);
-        ConfigureUserBlocked(builder);
-        ConfigureUserWishlists(builder);
-
-        // Constrains
         ConfigureDataTypesAndConstraints(builder);
+
+        // ApplicationUser and Owned collections
+        builder.Entity<UserEntity>(b =>
+        {
+            b.OwnsMany(u => u.SocialMediaLinks, sm =>
+            {
+                sm.WithOwner().HasForeignKey(s => s.UserId);
+                sm.Property<Guid>("Id");
+                sm.HasKey("Id");
+            });
+            b.HasMany(u => u.UserBooks)
+             .WithOne(ub => ub.User)
+             .HasForeignKey(ub => ub.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(u => u.Reviews)
+             .WithOne(r => r.User)
+             .HasForeignKey(r => r.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(u => u.Followers)
+             .WithOne(f => f.Followed)
+             .HasForeignKey(f => f.FollowedId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.Following)
+             .WithOne(f => f.Follower)
+             .HasForeignKey(f => f.FollowerId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.BlockedUsers)
+             .WithOne(ub => ub.Blocker)
+             .HasForeignKey(ub => ub.BlockerId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.SubSwaps)
+             .WithOne(s => s.User)
+             .HasForeignKey(s => s.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.SwapsFeedbacks)
+             .WithOne(f => f.User)
+             .HasForeignKey(f => f.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.SwapsIssues)
+             .WithOne(i => i.User)
+             .HasForeignKey(i => i.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.SwapsTimelineupdates)
+             .WithOne(t => t.User)
+             .HasForeignKey(t => t.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.Meetups)
+             .WithOne(m => m.User)
+             .HasForeignKey(m => m.SuggestedUserId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(u => u.Wishlist)
+             .WithOne(w => w.User)
+             .HasForeignKey(w => w.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // GeneralBook & Reviews
+        builder.Entity<GeneralBookEntity>(b =>
+        {
+            b.HasMany(g => g.Reviews)
+             .WithOne(r => r.Book)
+             .HasForeignKey(r => r.BookId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(g => g.UserBooks)
+             .WithOne(ub => ub.Book)
+             .HasForeignKey(ub => ub.BookId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // UserBook -> Bookmarks, SubSwaps
+        builder.Entity<UserBookEntity>(b =>
+        {
+            b.HasMany(ub => ub.Bookmarks)
+             .WithOne(bk => bk.UserBook)
+             .HasForeignKey(bk => bk.UserBookId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(ub => ub.SubSwaps)
+             .WithOne(sub => sub.UserBookReading)
+             .HasForeignKey(sub => sub.UserBookReadingId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Swap and related
+        builder.Entity<SwapEntity>(b =>
+        {
+            b.HasOne(s => s.SubSwapRequesting)
+             .WithOne()
+             .HasForeignKey<SwapEntity>(s => s.SubSwapRequestingId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(s => s.SubSwapAccepting)
+             .WithOne()
+             .HasForeignKey<SwapEntity>(s => s.SubSwapAcceptingId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(s => s.SubSwaps)
+             .WithOne(sub => sub.Swap)
+             .HasForeignKey(sub => sub.SwapId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasMany(s => s.Meetups)
+             .WithOne(m => m.Swap)
+             .HasForeignKey(m => m.SwapId);
+
+            b.HasMany(s => s.TimelineUpdates)
+             .WithOne(t => t.Swap)
+             .HasForeignKey(t => t.SwapId);
+        });
+
+        // SubSwap -> Feedback & Issue
+        builder.Entity<SubSwapEntity>(b =>
+        {
+            b.HasOne(s => s.Feedback)
+             .WithOne(f => f.SubSwap)
+             .HasForeignKey<FeedbackEntity>(f => f.SubSwapId);
+
+            b.HasOne(s => s.Issue)
+             .WithOne(i => i.SubSwap)
+             .HasForeignKey<IssueEntity>(i => i.SubSwapId);
+        });
 
         // Views
         builder.Entity<GeneralBookWithAverageRating>(entity =>
         {
-            entity.HasNoKey(); // Views typically don't have keys
-            entity.ToView("GeneralBooksWithAverageRatings"); // Name of the view
+            entity.HasNoKey();
+            entity.ToView("GeneralBooksWithAverageRatings");
         });
     }
+
 
     private void ConfigureShadowProperties(ModelBuilder builder)
     {
@@ -115,214 +229,6 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
         }
 
         return base.SaveChanges();
-    }
-
-    private void ConfigureApplicationUser(ModelBuilder builder)
-    {
-
-    }
-
-    private void ConfigureUserBook(ModelBuilder builder)
-    {
-        builder.Entity<UserBookEntity>()
-            .HasOne(ub => ub.User)
-            .WithMany(u => u.UserBooks)
-            .HasForeignKey(ub => ub.UserId);
-
-        builder.Entity<UserBookEntity>()
-            .HasOne(ub => ub.Book)
-            .WithMany(b => b.UserBooks)
-            .HasForeignKey(ub => ub.BookId);
-        
-        builder.Entity<UserBookEntity>()
-            .HasMany(ub => ub.SubSwaps)
-            .WithOne(s => s.UserBookReading)
-            .HasForeignKey(s => s.UserBookReadingId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureSocialMediaLinks(ModelBuilder builder)
-    {
-        builder.Entity<SocialMediaLinkEntity>()
-            .HasOne(s => s.User)
-            .WithMany(u => u.SocialMediaLinks)
-            .HasForeignKey(s => s.UserId);
-    }
-
-    private void ConfigureReview(ModelBuilder builder)
-    {
-        // Reviews
-        builder.Entity<ReviewEntity>()
-            .HasOne(r => r.User)
-            .WithMany(u => u.Reviews)
-            .HasForeignKey(r => r.UserId);
-
-        builder.Entity<ReviewEntity>()
-            .HasOne(r => r.Book)
-            .WithMany(b => b.Reviews)
-            .HasForeignKey(r => r.BookId);
-    }
-
-    private void ConfigureSwap(ModelBuilder builder)
-    {
-        builder.Entity<SwapEntity>()
-            .HasOne(s => s.SubSwapRequesting)
-            .WithOne()
-            .HasForeignKey<SwapEntity>(s => s.SubSwapRequestingId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<SwapEntity>()
-            .HasOne(s => s.SubSwapAccepting)
-            .WithOne()
-            .HasForeignKey<SwapEntity>(s => s.SubSwapAcceptingId)
-            .OnDelete(DeleteBehavior.Restrict);
-        
-        builder.Entity<SwapEntity>()
-            .HasMany(s => s.SubSwaps)
-            .WithOne(sub => sub.Swap)
-            .HasForeignKey(sub => sub.SwapId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<SwapEntity>()
-            .HasMany(s => s.Meetups)
-            .WithOne(m => m.Swap)
-            .HasForeignKey(m => m.SwapId);
-
-        builder.Entity<SwapEntity>()
-            .HasMany(s => s.TimelineUpdates)
-            .WithOne(t => t.Swap)
-            .HasForeignKey(t => t.SwapId);
-    }
-
-    private void ConfigureSubSwap(ModelBuilder builder)
-    {
-        builder.Entity<SubSwapEntity>()
-            .HasOne(s => s.User)
-            .WithMany(u => u.SubSwaps)
-            .HasForeignKey(s => s.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<SubSwapEntity>()
-            .HasOne(s => s.UserBookReading)
-            .WithMany(ub => ub.SubSwaps)
-            .HasForeignKey(s => s.UserBookReadingId)
-            .OnDelete(DeleteBehavior.Restrict);
-        
-        builder.Entity<SubSwapEntity>()
-            .HasOne(s => s.Swap)
-            .WithMany(s => s.SubSwaps)
-            .HasForeignKey(s => s.SwapId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<SubSwapEntity>()
-            .HasOne(s => s.Feedback)
-            .WithOne(f => f.SubSwap)
-            .HasForeignKey<FeedbackEntity>(f => f.SubSwapId);
-
-        builder.Entity<SubSwapEntity>()
-            .HasOne(s => s.Issue)
-            .WithOne(i => i.SubSwap)
-            .HasForeignKey<IssueEntity>(i => i.SubSwapId);
-    }
-
-
-    private void ConfigureMeetup(ModelBuilder builder)
-    {
-        builder.Entity<MeetupEntity>()
-            .HasOne(m => m.User)
-            .WithMany(u => u.Meetups)
-            .HasForeignKey(m => m.SuggestedUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureFeedback(ModelBuilder builder)
-    {
-        builder.Entity<FeedbackEntity>()
-            .HasOne(f => f.User)
-            .WithMany(u => u.SwapsFeedbacks)
-            .HasForeignKey(f => f.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureIssue(ModelBuilder builder)
-    {
-        builder.Entity<IssueEntity>()
-            .HasOne(i => i.User)
-            .WithMany(u => u.SwapsIssues)
-            .HasForeignKey(i => i.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureTimeline(ModelBuilder builder)
-    {
-        builder.Entity<TimelineEntity>()
-            .HasOne(t => t.User)
-            .WithMany(u => u.SwapsTimelineupdates)
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureUserFollowing(ModelBuilder builder)
-    {
-        builder.Entity<UserFollowingEntity>()
-            .HasKey(uf => new { uf.FollowerId, uf.FollowedId });
-
-        builder.Entity<UserFollowingEntity>()
-            .HasOne(uf => uf.Follower)
-            .WithMany(u => u.Following)
-            .HasForeignKey(uf => uf.FollowerId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<UserFollowingEntity>()
-            .HasOne(uf => uf.Followed)
-            .WithMany(u => u.Followers)
-            .HasForeignKey(uf => uf.FollowedId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureUserBlocked(ModelBuilder builder)
-    {
-        builder.Entity<UserBlockedEntity>()
-            .HasKey(ub => new { ub.BlockerId, ub.BlockedId });
-
-        builder.Entity<UserBlockedEntity>()
-            .HasOne(ub => ub.Blocker)
-            .WithMany(u => u.BlockedUsers)
-            .HasForeignKey(ub => ub.BlockerId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<UserBlockedEntity>()
-            .HasOne(ub => ub.Blocked)
-            .WithMany()
-            .HasForeignKey(ub => ub.BlockedId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureUserWishlists(ModelBuilder builder)
-    {
-        builder.Entity<UserWishlistEntity>()
-            .HasKey(x => new { x.UserId, x.GeneralBookId });
-
-        builder.Entity<UserWishlistEntity>()
-            .HasOne(x => x.User)
-            .WithMany(u => u.Wishlist)
-            .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<UserWishlistEntity>()
-            .HasOne(x => x.GeneralBook)
-            .WithMany(/* g => g.WishlistedBy, if you add that nav */)
-            .HasForeignKey(x => x.GeneralBookId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-
-    private void ConfigureBookmark(ModelBuilder builder)
-    {
-        builder.Entity<BookmarkEntity>()
-            .HasOne(b => b.UserBook)
-            .WithMany(ub => ub.Bookmarks)
-            .HasForeignKey(b => b.UserBookId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private void ConfigureDataTypesAndConstraints(ModelBuilder builder)

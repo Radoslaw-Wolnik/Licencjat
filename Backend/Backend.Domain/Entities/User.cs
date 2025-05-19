@@ -1,7 +1,7 @@
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
-using Backend.Domain.ValueObjects;
+using Backend.Domain.Collections;
 using FluentResults;
 
 namespace Backend.Domain.Entities;

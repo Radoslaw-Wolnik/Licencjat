@@ -1,5 +1,5 @@
-// Application/Interfaces/IIdentityService.cs (Abstraction)
 using FluentResults;
+
 namespace Backend.Application.Interfaces;
 
 public interface IIdentityService

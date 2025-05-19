@@ -1,4 +1,3 @@
-// Backend.Application/DTOs/Auth/ForgotPasswordRequest.cs
 
 namespace Backend.Application.DTOs.Commands.Auth;
 
