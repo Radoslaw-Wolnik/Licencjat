@@ -8,12 +8,12 @@ namespace Backend.Domain.Entities;
 
 public sealed class GeneralBook : Entity<Guid>
 {
-    public string Title { get; }
-    public string Author { get; }
-    public DateOnly Published { get; }
-    public LanguageCode OriginalLanguage { get; }
+    public string Title { get; private set; }
+    public string Author { get; private set; }
+    public DateOnly Published { get; private set; }
+    public LanguageCode OriginalLanguage { get; private set; }
     public Rating RatingAvg { get; private set; } = Rating.Initial();
-    public Photo CoverPhoto { get; }
+    public Photo CoverPhoto { get; private set; }
     
     private readonly GenresCollection _genres;
     public IReadOnlyCollection<BookGenre> Genres => _genres.Genres;
@@ -107,6 +107,27 @@ public sealed class GeneralBook : Entity<Guid>
         return book;
     }
 
+    public Result UpdateCoverPhoto(Photo photo){
+        CoverPhoto = photo;
+        return Result.Ok();
+    }
+
+    public Result UpdateScalarValues(string? title, string? author, DateOnly? published, LanguageCode? language)
+    {
+        // update not null values
+        Title = title ?? Title;
+        Author = author ?? Author;
+        Published = published ?? Published;
+        OriginalLanguage = language ?? OriginalLanguage;
+
+        return Result.Ok();
+    }
+
+    public void UpdateRating(Rating newRating)
+        => RatingAvg = newRating;
+    
+    public Result ReplaceGenres(IEnumerable<BookGenre> bookGenres)
+        => _genres.Replace(bookGenres);
 
     public Result AddGenre(BookGenre genre)
         => _genres.Add(genre);
