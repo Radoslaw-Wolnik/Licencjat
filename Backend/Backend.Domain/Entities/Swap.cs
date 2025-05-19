@@ -18,7 +18,7 @@ public sealed class Swap : Entity<Guid>
     public IReadOnlyCollection<Meetup> Meetups => _meetups.Meetups;
     public IReadOnlyCollection<TimelineUpdate> TimelineUpdates => _timelineUpdates.TimelineUpdates;
 
-    // initial creation
+    // initial creation 
     private Swap(
         Guid requestingUserId, 
         UserBook requestingBook, 
@@ -31,7 +31,7 @@ public sealed class Swap : Entity<Guid>
         InitialTimelineUpdates: []
     ) { }
 
-    // reconstruction
+    // reconstruction - main constructor
     private Swap(
         Guid id, 
         SubSwap subSwapRequesting, 
@@ -82,4 +82,78 @@ public sealed class Swap : Entity<Guid>
     
     public Result RemoveTimelineUpdate(Guid timelineUpdateId)
         => _timelineUpdates.Remove(timelineUpdateId);
+
+    // ------------------ Subswap logic ------------------
+
+    public Result InitialBookReading(Guid userId, UserBook userBook){
+        if ( SubSwapAccepting.UserId != userId)
+            return Result.Fail(DomainErrorFactory.Forbidden("Swap.SetUserBook", "Only person accepting the swap can set the book they want to read"));
+        
+        return SubSwapAccepting.InitialBook(userBook);
+    }
+
+    public Result UpdatePageReading(Guid userId, int page)
+    {
+        var subSwap = GetSubSwapByUserId(userId);
+        if (subSwap is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Swap", userId));
+
+        return subSwap.UpdatePageAt(page);
+    }
+
+    public Result AddIssue(Guid userId, Issue issue){
+        var subSwap = GetSubSwapByUserId(userId);
+        if (subSwap is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Swap.Issue", userId));
+
+        return subSwap.AddIssue(issue);
+    }
+
+    public Result UpdateIssue(Guid userId, Issue updatedIssue){
+        var subSwap = GetSubSwapByUserId(userId);
+        if (subSwap is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Swap.Issue", userId));
+
+        return subSwap.UpdateIssue(updatedIssue);
+    }
+
+    public Result RemoveIssue(Guid userId){
+        var subSwap = GetSubSwapByUserId(userId);
+        if (subSwap is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Swap.Issue", userId));
+
+        subSwap.RemoveIssue();
+        return Result.Ok();
+    }
+
+    public Result AddFeedback(Guid userId, Feedback feedback){
+        var subSwap = GetSubSwapByUserId(userId);
+        if (subSwap is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Swap.Feedback", userId));
+
+        return subSwap.AddFeedback(feedback);
+    }
+
+    public Result UpdateFeedback(Guid userId, Feedback updatedFeedback){
+        var subSwap = GetSubSwapByUserId(userId);
+        if (subSwap is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Swap.Feedback", userId));
+
+        return subSwap.UpdateFeedback(updatedFeedback);
+    }
+    
+
+    private SubSwap? GetSubSwapByUserId(Guid userId) {
+        if (SubSwapAccepting.UserId == userId)
+            return SubSwapAccepting;
+        if (SubSwapRequesting.UserId == userId)
+            return SubSwapRequesting;
+        return null;
+    }
+
+    public Guid? GetUserSubSwapId(Guid userId) {
+        var subSwap = GetSubSwapByUserId(userId);
+        return subSwap?.UserId;
+        
+    }
 }
