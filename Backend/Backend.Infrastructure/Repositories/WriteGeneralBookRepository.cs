@@ -1,4 +1,3 @@
-// Backend.Infrastructure/Repositories/UserRepository.cs
 using Backend.Domain.Entities;
 using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Entities;

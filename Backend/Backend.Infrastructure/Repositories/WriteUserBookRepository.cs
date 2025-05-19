@@ -6,9 +6,7 @@ using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
 using FluentResults;
 using Backend.Infrastructure.Extensions;
-using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata;
 using Backend.Domain.Common;
 
 namespace Backend.Infrastructure.Repositories.UserBooks;

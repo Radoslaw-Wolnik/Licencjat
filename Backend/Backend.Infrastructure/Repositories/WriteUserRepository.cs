@@ -6,11 +6,8 @@ using Backend.Domain.Errors;
 using Backend.Application.Interfaces.Repositories;
 using FluentResults;
 using Backend.Infrastructure.Extensions;
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Common;
-using Backend.Application.DTOs;
-using AutoMapper.Extensions.ExpressionMapping;
 
 namespace Backend.Infrastructure.Repositories.Users;
 
