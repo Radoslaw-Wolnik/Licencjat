@@ -27,7 +27,7 @@ namespace Backend.Infrastructure.Mapping
                         .ToList() ?? new List<TimelineUpdate>();
 
                     // Rehydrate your aggregate
-                    return Swap.Reconstitute(requesting, accepting, meetups, timeline);
+                    return Swap.Reconstitute(src.Id, requesting, accepting, meetups, timeline);
                 });
 
             // Domain → Entity

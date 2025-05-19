@@ -1,7 +1,4 @@
-using System.Linq.Expressions;
-using Backend.Application.DTOs;
 using Backend.Application.Interfaces.Repositories;
-using Backend.Application.Interfaces.DbReads;
 using Backend.Domain.Entities;
 using Backend.Domain.Errors;
 using FluentResults;
@@ -12,7 +9,7 @@ using Backend.Domain.Enums;
 
 namespace Backend.Application.Commands.GeneralBooks.Core;
 public class CreateGeneralBookCommandHandler
-    : IRequestHandler<CreateCommand, Result<(Guid, string)>>
+    : IRequestHandler<CreateGeneralBookCommand, Result<(Guid, string)>>
 {
     private readonly IWriteGeneralBookRepository _bookRepo;
     private readonly IImageStorageService _imageStorage;
@@ -26,7 +23,7 @@ public class CreateGeneralBookCommandHandler
     }
 
     public async Task<Result<(Guid, string)>> Handle(
-        CreateCommand request,
+        CreateGeneralBookCommand request,
         CancellationToken cancellationToken)
     {
         // Convert/validate the language code

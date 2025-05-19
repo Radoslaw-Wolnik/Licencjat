@@ -1,10 +1,9 @@
-// Application/Validators/Auth/RegisterRequestValidator.cs
 using Backend.Application.Commands.GeneralBooks.Core;
 using FluentValidation;
 
 namespace Backend.Application.Validators.Commands.GeneralBook;
 
-public sealed class CreateValidator : AbstractValidator<CreateCommand>
+public sealed class CreateValidator : AbstractValidator<CreateGeneralBookCommand>
 {
     public CreateValidator()
     {

@@ -3,6 +3,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.GeneralBooks.Core;
 
-public sealed record DeleteCommand(
-    Guid GeneralBookId
+public sealed record DeleteGeneralBookCommand(
+    Guid GeneralBookId,
+    string PhotoKey
     ) : IRequest<Result>;

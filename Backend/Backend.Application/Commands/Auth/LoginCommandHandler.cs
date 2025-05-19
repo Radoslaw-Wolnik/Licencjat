@@ -12,16 +12,13 @@ namespace Backend.Application.Commands.Auth;
 
 public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<User>>
 {
-    private readonly IAuthUserRepository _authRepo;
     private readonly IUserReadService _userRead;
     private readonly ISignInService _signInService;
 
     // constructor ?
     public LoginCommandHandler(
-        IAuthUserRepository authUserRepository,
         IUserReadService userReadService,
         ISignInService signInService) {
-            _authRepo = authUserRepository;
             _userRead = userReadService;
             _signInService = signInService;
         }
@@ -38,7 +35,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<U
             ? u => u.Email == command.UsernameOrEmail
             : u => u.Username == command.UsernameOrEmail;
 
-        var loginInfo = await _authRepo.GetLoginInfoAsync(predicate);
+        var loginInfo = await _userRead.GetLoginInfoAsync(predicate, cancellationToken);
         if (loginInfo == null)
             return Result.Fail<User>(DomainErrorFactory.BadRequest("Auth.Invalid", "Invalid credentials"));
 
@@ -52,7 +49,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Result<U
         Console.WriteLine($"\n\n[Login command handler] got all the way down to the user fetching\n\n");
 
         // now that they’re authenticated, load the full domain user:
-        var user = await _userRead.GetByAsync(predicate);
+        var user = await _userRead.GetByAsync(predicate, cancellationToken);
         if (user == null)
             return Result.Fail<User>(DomainErrorFactory.NotFound("User", predicate));
         

@@ -3,7 +3,6 @@ using MediatR;
 using FluentResults;
 using Backend.Application.Interfaces;
 using Backend.Domain.Common;
-using Backend.Domain.Enums;
 using Backend.Domain.Events; // for ThumbnailRequest
 using Backend.Application.Commands.GeneralBooks.Core;
 
