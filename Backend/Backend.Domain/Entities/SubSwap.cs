@@ -1,10 +1,8 @@
 using Backend.Domain.Common;
-using Backend.Domain.Entities;
-using Backend.Domain.Enums;
 using Backend.Domain.Errors;
 using FluentResults;
 
-namespace Backend.Domain.Common;
+namespace Backend.Domain.Entities;
 
 public sealed class SubSwap
 {
