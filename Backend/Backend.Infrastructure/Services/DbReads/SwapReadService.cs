@@ -18,27 +18,41 @@ public class SwapReadService : ISwapReadService
         _mapper = mapper;
     }
 
-    public async Task<Swap?> GetByIdAsync(Guid swapId)
-    {
+    public async Task<Swap?> GetByIdAsync(
+        Guid swapId, 
+        CancellationToken cancellationToken = default
+    ) {
         var swapEntity = await _db.Swaps
-            .Where(s => s.Id == swapId)
+            // --- SubSwapRequesting navigations ---
             .Include(s => s.SubSwapRequesting)
-              .ThenInclude(ss => ss.Feedback)
+                .ThenInclude(ss => ss.UserBookReading)
             .Include(s => s.SubSwapRequesting)
-              .ThenInclude(ss => ss.Issue)
+                .ThenInclude(ss => ss.Feedback)
+            .Include(s => s.SubSwapRequesting)
+                .ThenInclude(ss => ss.Issue)
+
+            // --- SubSwapAccepting navigations ---
             .Include(s => s.SubSwapAccepting)
-              .ThenInclude(ss => ss.Feedback)
+                .ThenInclude(ss => ss.UserBookReading)
             .Include(s => s.SubSwapAccepting)
-              .ThenInclude(ss => ss.Issue)
+                .ThenInclude(ss => ss.Feedback)
+            .Include(s => s.SubSwapAccepting)
+                .ThenInclude(ss => ss.Issue)
+
+            // --- Meetups ---
             .Include(s => s.Meetups)
+
+            // --- TimelineUpdates ---
             .Include(s => s.TimelineUpdates)
-            .SingleOrDefaultAsync();
-            // FIndasync is optimised for Primary keys but it doesnt work with .include's
-            // .FindAsync(swapId)
 
-        var domainSwap = _mapper.Map<Swap>(swapEntity);
+            // avoids one giant SQL with tons of JOINs
+            .AsSplitQuery()
 
-        return domainSwap;
+            // since we know it’s a PK lookup
+            .SingleOrDefaultAsync(s => s.Id == swapId, cancellationToken);
+
+        if (swapEntity == null) return null;
+
+        return _mapper.Map<Swap>(swapEntity);
     }
-
 }

@@ -5,13 +5,14 @@ using Backend.Domain.Entities;
 
 namespace Backend.Application.Interfaces.DbReads;
 
-public interface IUserReadService
+public interface IUserReadService // add cancelation tokens to make it async properly
 {
-    Task<bool> ExistsAsync(Expression<Func<UserProjection, bool>> predicate);
-    Task<User?> GetByIdAsync(Guid UserId);
-    Task<User?> GetByAsync(Expression<Func<UserProjection, bool>> predicate);
+    Task<bool> ExistsAsync(Expression<Func<UserProjection, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<User?> GetByIdAsync(Guid UserId, CancellationToken cancellationToken = default);
+    Task<User?> GetByAsync(Expression<Func<UserProjection, bool>> predicate, CancellationToken cancellationToken = default);
     Task<User?> GetUserWithIncludes(Guid userId, 
+        CancellationToken cancellationToken = default,
         params Expression<Func<UserProjection, object>>[] includes);
 
-    Task<LoginUserInfo?> GetLoginInfoAsync(Expression<Func<UserProjection,bool>> predicate);
+    Task<LoginUserInfo?> GetLoginInfoAsync(Expression<Func<UserProjection,bool>> predicate, CancellationToken cancellationToken = default);
 }

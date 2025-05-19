@@ -22,31 +22,37 @@ public class GeneralBookReadService : IGeneralBookReadService
         _mapper = mapper;
     }
 
-    public async Task<bool> ExistsAsync(Expression<Func<BookProjection, bool>> predicate)
-    {
+    public async Task<bool> ExistsAsync(
+        Expression<Func<BookProjection, bool>> predicate, 
+        CancellationToken cancellationToken = default
+    ) {
         var entityPredicate = 
                 _mapper.MapExpression<Expression<Func<GeneralBookEntity, bool>>>(predicate);
         var exists = await _context.GeneralBooks
-            .AnyAsync(entityPredicate);
+            .AnyAsync(entityPredicate, cancellationToken);
 
         return exists;
     }
 
-    public async Task<GeneralBook> GetByIdAsync(Guid bookId)
-    {
-        var dbBook = await _context.GeneralBooks.FindAsync(bookId);
+    public async Task<GeneralBook> GetByIdAsync(
+        Guid bookId, 
+        CancellationToken cancellationToken = default
+    ) {
+        var dbBook = await _context.GeneralBooks.FindAsync(bookId, cancellationToken);
+        //var dbBook = await _context.GeneralBooks.FindAsync([bookId, cancellationToken], cancellationToken: cancellationToken);
         return _mapper.Map<GeneralBook>(dbBook);
     }
 
     public async Task<GeneralBook> GetByAsync(
-        Expression<Func<BookProjection, bool>> predicate
-    ){
+        Expression<Func<BookProjection, bool>> predicate,
+        CancellationToken cancellationToken = default
+    ) {
 
         var entityPredicate = 
             _mapper.MapExpression<Expression<Func<GeneralBookEntity, bool>>>(predicate);
 
         var entity = await _context.GeneralBooks
-            .FirstOrDefaultAsync(entityPredicate);
+            .FirstOrDefaultAsync(entityPredicate, cancellationToken);
 
         // Automapper will then run your ConstructUsing(src=>MapToDomain(src))
         var book = _mapper.Map<GeneralBook>(entity);
@@ -55,14 +61,13 @@ public class GeneralBookReadService : IGeneralBookReadService
     }
 
     public async Task<GeneralBook> GetFullByIdAsync(
-        Guid bookId
-    ){
-
+        Guid bookId,
+        CancellationToken cancellationToken = default
+    ) {
         var entity = await _context.GeneralBooks
             .Include(b => b.Reviews)
-            .FirstAsync(b => b.Id == bookId);
+            .FirstAsync(b => b.Id == bookId, cancellationToken);
 
         return _mapper.Map<GeneralBook>(entity);
     }
-
 }

@@ -22,30 +22,34 @@ public class UserBookReadService : IUserBookReadService
         _mapper = mapper;
     }
 
-    public async Task<UserBook> GetByIdAsync(Guid bookId)
-    {
-        var dbBook = await _context.UserBooks.FindAsync(bookId);
+    public async Task<UserBook> GetByIdAsync(
+        Guid bookId, 
+        CancellationToken cancellationToken = default
+    ) {
+        var dbBook = await _context.UserBooks.FindAsync(bookId, cancellationToken);
         return _mapper.Map<UserBook>(dbBook);
     }
 
     public async Task<UserBook> GetByAsync(
-        Expression<Func<BookProjection, bool>> predicate
-    ){
+        Expression<Func<BookProjection, bool>> predicate,
+        CancellationToken cancellationToken = default
+    ) {
         var entityPredicate = 
             _mapper.MapExpression<Expression<Func<UserBookEntity, bool>>>(predicate);
 
         var entity = await _context.UserBooks
-            .FirstOrDefaultAsync(entityPredicate);
+            .FirstOrDefaultAsync(entityPredicate, cancellationToken);
         
         return _mapper.Map<UserBook>(entity);
     }
 
     public async Task<UserBook> GetFullByIdAsync(
-        Guid id
-    ){
+        Guid id,
+        CancellationToken cancellationToken = default
+    ) {
         var entity = await _context.UserBooks
             .Include(ub => ub.Bookmarks)
-            .FirstAsync(ub => ub.Id == id);
+            .FirstAsync(ub => ub.Id == id, cancellationToken);
 
         return _mapper.Map<UserBook>(entity);
     }

@@ -6,8 +6,8 @@ namespace Backend.Application.Interfaces.DbReads;
 
 public interface IGeneralBookReadService
 {
-    Task<bool> ExistsAsync(Expression<Func<BookProjection, bool>> predicate);
-    Task<GeneralBook> GetByIdAsync(Guid id);
-    Task<GeneralBook> GetByAsync(Expression<Func<BookProjection, bool>> predicate);
-    Task<GeneralBook> GetFullByIdAsync(Guid bookId);
+    Task<bool> ExistsAsync(Expression<Func<BookProjection, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<GeneralBook> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<GeneralBook> GetByAsync(Expression<Func<BookProjection, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<GeneralBook> GetFullByIdAsync(Guid bookId, CancellationToken cancellationToken = default);
 }

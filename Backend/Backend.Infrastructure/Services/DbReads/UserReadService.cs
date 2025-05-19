@@ -24,35 +24,42 @@ public class UserReadService : IUserReadService
         _mapper = mapper;
     }
 
-    public async Task<bool> ExistsAsync(Expression<Func<UserProjection, bool>> predicate)
-    {
+    public async Task<bool> ExistsAsync(
+        Expression<Func<UserProjection, bool>> predicate, 
+        CancellationToken cancellationToken = default
+    ) {
         return await _db.Users
             .ProjectTo<UserProjection>(_mapper.ConfigurationProvider)
-            .AnyAsync(predicate);
+            .AnyAsync(predicate, cancellationToken);
     }
 
-    public async Task<User?> GetByIdAsync(Guid userId)
-    {
+    public async Task<User?> GetByIdAsync(
+        Guid userId, 
+        CancellationToken cancellationToken = default
+    ) {
         return await _db.Users
             .Where(u => u.Id == userId)
             .ProjectTo<User>(_mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<User?> GetByAsync(Expression<Func<UserProjection, bool>> predicate)
-    {
+    public async Task<User?> GetByAsync(
+        Expression<Func<UserProjection, bool>> predicate, 
+        CancellationToken cancellationToken = default
+    ) {
         var entityPredicate = 
             _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
         var entity = await _db.Users
-            .FirstOrDefaultAsync(entityPredicate);
+            .FirstOrDefaultAsync(entityPredicate, cancellationToken);
         
         return _mapper.Map<User>(entity);
     }
 
     public async Task<User?> GetUserWithIncludes(
-        Guid userId, 
-        params Expression<Func<UserProjection, object>>[] includes)
-    {
+        Guid userId,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<UserProjection, object>>[] includes 
+    ) {
         IQueryable<UserEntity> query = _db.Users.AsNoTracking();
 
         foreach (var include in includes)
@@ -61,7 +68,7 @@ public class UserReadService : IUserReadService
             query = query.Include(entityInclude);
         }
 
-        var entity = await query.FirstOrDefaultAsync(u => u.Id == userId);
+        var entity = await query.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         if (entity == null)
             return null;
 
@@ -69,20 +76,21 @@ public class UserReadService : IUserReadService
     }
 
     public async Task<LoginUserInfo?> GetLoginInfoAsync(
-        Expression<Func<UserProjection,bool>> predicate
-    ){
+        Expression<Func<UserProjection,bool>> predicate,
+        CancellationToken cancellationToken = default
+    ) {
         var entityPredicate = 
             _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
 
         return await _db.Users
             .Where(entityPredicate)
             .Select(u => new LoginUserInfo {
-            Id           = u.Id,
-            Email        = u.Email,
-            UserName     = u.UserName,
-            // PasswordHash = u.PasswordHash,
-            // …
-            })
-            .FirstOrDefaultAsync();
+                Id           = u.Id,
+                Email        = u.Email,
+                UserName     = u.UserName,
+                // PasswordHash = u.PasswordHash,
+                // …
+                })
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }

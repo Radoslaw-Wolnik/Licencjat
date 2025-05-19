@@ -4,5 +4,5 @@ namespace Backend.Application.Interfaces.DbReads;
 
 public interface ISwapReadService
 {
-    Task<Swap?> GetByIdAsync(Guid swapId);
+    Task<Swap?> GetByIdAsync(Guid swapId, CancellationToken cancellationToken = default);
 }
