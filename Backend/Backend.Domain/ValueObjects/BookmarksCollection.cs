@@ -29,10 +29,30 @@ public class BookmarksCollection
         return Result.Ok();
     }
 
-    public Result Remove(Bookmark bookmark)
+    public Result Remove(Guid bookmarkId)
     {
-        if (!_bookmarks.Remove(bookmark))
-            return Result.Fail("Not in you book bookmarks.");
+        var existing = _bookmarks.SingleOrDefault(b => b.Id == bookmarkId);
+        if (existing == null)
+            return Result.Fail("Bookmark not found in the bookmarks of this book");
+        
+        _bookmarks.Remove(existing);
+        return Result.Ok();
+    }
+
+    public Result Update(Bookmark updatedBookmark)
+    {
+        var oldBookmark = _bookmarks.SingleOrDefault(b => b.Id == updatedBookmark.Id);
+        if (oldBookmark == null)
+            return Result.Fail("Bookmark youre trying to update doesnt exsist");
+        
+        // logic
+        if (oldBookmark.UserBookId != updatedBookmark.UserBookId)
+            return Result.Fail("cannot update the userBook of the bookmark");
+        
+        // replace
+        _bookmarks.Remove(oldBookmark);
+        _bookmarks.Add(updatedBookmark);
+        
         return Result.Ok();
     }
 }
