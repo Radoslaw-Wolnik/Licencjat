@@ -133,9 +133,21 @@ public sealed class UserBook : Entity<Guid>
         return userBook;
     }
 
-    public Result UpdateStatus(BookStatus newStatus)
-    {
-        Status = newStatus;
-        return Result.Ok();
-    }
+    public void UpdateStatus(BookStatus newStatus)
+        => Status = newStatus;
+
+    public void UpdateState(BookState newState)
+        => State = newState;
+
+    public void UpdateCover(Photo newCover)
+        => CoverPhoto = newCover;
+    
+    public Result AddBookmark(Bookmark bookmark)
+        => _bookmarks.Add(bookmark);
+    
+    public Result RemoveBookmark(Guid bookmarkId)
+        => _bookmarks.Remove(bookmarkId);
+    
+    public Result UpdateBookmark(Bookmark updatedBookmark)
+        => _bookmarks.Update(updatedBookmark);
 }

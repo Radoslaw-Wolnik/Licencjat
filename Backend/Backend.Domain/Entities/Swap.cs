@@ -154,6 +154,5 @@ public sealed class Swap : Entity<Guid>
     public Guid? GetUserSubSwapId(Guid userId) {
         var subSwap = GetSubSwapByUserId(userId);
         return subSwap?.UserId;
-        
     }
 }

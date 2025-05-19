@@ -172,8 +172,6 @@ public sealed class User : Entity<Guid>
     public Result RemoveFromBlocked(Guid userId)
         => _blocked.Remove(userId);
     
-
-
     public Result AddUserBook(UserBook book)
         => _ownedBooks.Add(book);
 
@@ -192,7 +190,7 @@ public sealed class User : Entity<Guid>
     public Result UpdateSocialMediaLink(SocialMediaLink updatedLink)
         => _socialMedia.Update(updatedLink);
     
-    
+    // Scalars 
     public void UpdateReputation(Reputation updtedReputation)
         => Reputation = updtedReputation;
     
@@ -205,6 +203,6 @@ public sealed class User : Entity<Guid>
     public void UpdateBio(BioString newBio)
         => Bio = newBio;
 
-    public void updateLocation(Location newLocation)
+    public void UpdateLocation(Location newLocation)
         => Location = newLocation;
 }
