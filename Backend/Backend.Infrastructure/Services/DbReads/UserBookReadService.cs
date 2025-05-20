@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Common;
 
 namespace Backend.Infrastructure.Services.DbReads;
 
@@ -22,7 +23,7 @@ public class UserBookReadService : IUserBookReadService
     }
 
     public async Task<UserBook> GetByIdAsync(
-        Guid bookId, 
+        Guid bookId,
         CancellationToken cancellationToken = default
     ) {
         var dbBook = await _context.UserBooks.FindAsync(bookId, cancellationToken);
@@ -33,12 +34,12 @@ public class UserBookReadService : IUserBookReadService
         Expression<Func<BookProjection, bool>> predicate,
         CancellationToken cancellationToken = default
     ) {
-        var entityPredicate = 
+        var entityPredicate =
             _mapper.MapExpression<Expression<Func<UserBookEntity, bool>>>(predicate);
 
         var entity = await _context.UserBooks
             .FirstOrDefaultAsync(entityPredicate, cancellationToken);
-        
+
         return _mapper.Map<UserBook>(entity);
     }
 
@@ -51,5 +52,16 @@ public class UserBookReadService : IUserBookReadService
             .FirstAsync(ub => ub.Id == id, cancellationToken);
 
         return _mapper.Map<UserBook>(entity);
+    }
+    
+    // only for updting a bookmark
+    public async Task<Bookmark> GetBookmarkByIdAsync(
+        Guid bookmarkId,
+        CancellationToken cancellationToken = default
+    ) {
+         var entity = await _context.Bookmarks.
+            FirstOrDefaultAsync(b => b.Id == bookmarkId, cancellationToken);
+
+        return _mapper.Map<Bookmark>(entity);
     }
 }

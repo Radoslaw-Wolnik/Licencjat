@@ -13,5 +13,7 @@ public interface IWriteUserBookRepository
     // update bookmark collection
     Task<Result> UpdateBookmarksAsync(Guid bookId, IEnumerable<Bookmark> domainBookmarks, CancellationToken cancellationToken);
     Task<Result> AddBookmarkAsync(Bookmark bookmark, CancellationToken cancellationToken);
-    
+    Task<Result> RemoveBookmarkAsync(Guid bookmarkId, CancellationToken cancellationToken);
+    Task<Result> UpdateBookmarkAsync(Bookmark updated, CancellationToken cancellationToken);
+
 }

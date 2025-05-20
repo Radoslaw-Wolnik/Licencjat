@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.UserBooks.Bookmarks;
 
-public sealed record CreateCommand(
+public sealed record CreateBookmarkCommand(
     Guid UserBookId,
     BookmarkColours Colour,
     int Page,

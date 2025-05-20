@@ -40,7 +40,7 @@ public class WriteUserBookRepository : IWriteUserBookRepository
             return Result.Fail(DomainErrorFactory.NotFound("UserBook", bookId));
 
         _context.UserBooks.Remove(existing);
-        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to delete UserBook");  
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to delete UserBook");
     }
 
     // Scalar-only update (no touching bookmarks)
@@ -50,16 +50,16 @@ public class WriteUserBookRepository : IWriteUserBookRepository
         _context.UserBooks.Attach(stub);
 
         // Map individual scalar properties
-        stub.Status     = book.Status;
-        stub.State      = book.State;
+        stub.Status = book.Status;
+        stub.State = book.State;
         // stub.Language   = book.Language.Code; // idk if this one should be able to be updated
         // stub.PageCount  = book.PageCount; // same with this one, its not liek you can change the number of pages of a book
         stub.CoverPhoto = book.CoverPhoto.Link;
 
         // Mark as modified
         var entry = _context.Entry(stub);
-        entry.Property(e => e.Status).IsModified     = true;
-        entry.Property(e => e.State).IsModified      = true;
+        entry.Property(e => e.Status).IsModified = true;
+        entry.Property(e => e.State).IsModified = true;
         // entry.Property(e => e.Language).IsModified   = true;
         // entry.Property(e => e.PageCount).IsModified  = true;
         entry.Property(e => e.CoverPhoto).IsModified = true;
@@ -106,4 +106,33 @@ public class WriteUserBookRepository : IWriteUserBookRepository
 
         return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to add the bookmark");
     }
+
+    public async Task<Result> RemoveBookmarkAsync(Guid bookmarkId, CancellationToken cancellationToken)
+    {
+        var bookmarkEntity = await _context.Bookmarks.FindAsync([bookmarkId], cancellationToken);
+        if (bookmarkEntity == null)
+            return Result.Fail(DomainErrorFactory.NotFound("Bookmark", bookmarkId));
+
+        _context.Bookmarks.Remove(bookmarkEntity);
+
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to add the bookmark");
+    }
+
+    public async Task<Result> UpdateBookmarkAsync(Bookmark updated, CancellationToken cancellationToken)
+    {
+        // attach stub for bookmark
+        var booEntity = new BookmarkEntity { Id = updated.Id };
+        _context.Bookmarks.Attach(booEntity);
+        booEntity.Colour = updated.Colour;
+        booEntity.Page = updated.Page;
+        booEntity.Description = updated.Description;
+
+        var entry = _context.Entry(booEntity);
+        entry.Property(e => e.Colour).IsModified  = true;
+        entry.Property(e => e.Page).IsModified = true;
+        entry.Property(e => e.Description).IsModified = true;
+
+        return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to update the bookmark");
+    }
+
 }

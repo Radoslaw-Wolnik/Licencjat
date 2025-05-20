@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.UserBooks.Bookmarks;
 
-public sealed record UpdateCommand(
+public sealed record UpdateBookmarkCommand(
     Guid BookmarkId,
     BookmarkColours? Colour,
     int? Page,
