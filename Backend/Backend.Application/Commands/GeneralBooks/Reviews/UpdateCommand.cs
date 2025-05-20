@@ -4,9 +4,8 @@ using MediatR;
 
 namespace Backend.Application.Commands.GeneralBooks.Reviews;
 
-public sealed record UpdateCommand(
-    // Guid BookId,
+public sealed record UpdateReviewCommand(
     Guid ReviewId,
     int? Rating,
     string? Comment
-    ) : IRequest<Result<Review>>;
+    ) : IRequest<Result>;

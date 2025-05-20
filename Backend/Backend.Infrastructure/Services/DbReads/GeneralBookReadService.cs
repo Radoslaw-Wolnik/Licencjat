@@ -7,6 +7,8 @@ using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Application.DTOs;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Common;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace Backend.Infrastructure.Services.DbReads;
 
@@ -68,5 +70,15 @@ public class GeneralBookReadService : IGeneralBookReadService
             .FirstAsync(b => b.Id == bookId, cancellationToken);
 
         return _mapper.Map<GeneralBook>(entity);
+    }
+
+    public async Task<Review> GetReviewByIdAsync(
+        Guid reviewId,
+        CancellationToken cancellationToken
+    ) {
+        var entity = await _context.Reviews.
+            FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
+
+        return _mapper.Map<Review>(entity);
     }
 }

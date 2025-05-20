@@ -4,9 +4,9 @@ using MediatR;
 
 namespace Backend.Application.Commands.GeneralBooks.Reviews;
 
-public sealed record CreateCommand(
+public sealed record CreateReviewCommand(
     Guid UserId,
     Guid BookId,
     int Rating,
     string? Comment
-    ) : IRequest<Result<Review>>;
+    ) : IRequest<Result<Guid>>;
