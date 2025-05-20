@@ -4,8 +4,9 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Meetups;
 
-public sealed record CreateCommand(
+public sealed record CreateMeetupCommand(
     Guid SwapId,
     Guid UserId,
-    LocationCoordinates Location
-    ) : IRequest<Result<Meetup>>;
+    double Latitude,
+    double Longitude
+    ) : IRequest<Result>; // or <Result<Meetup>> or <Result<Guid>>

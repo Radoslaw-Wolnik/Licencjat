@@ -5,9 +5,10 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Meetups;
 
-public sealed record UpdateCommand(
+public sealed record UpdateMeetupCommand(
     Guid MeetupId,
     Guid UserId,
     MeetupStatus Status,
-    LocationCoordinates? Location
+    double? Latitude,
+    double? Longitude
     ) : IRequest<Result<Meetup>>;

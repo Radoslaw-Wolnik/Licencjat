@@ -4,12 +4,12 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Feedbacks;
 
-public sealed record CreateCommand(
-    Guid SubSwapId, // or Swap Id
+public sealed record CreateFeedbackCommand(
+    Guid SwapId,
     Guid UserId,
     int Stars,
     bool Recommend,
     SwapLength Length,
     SwapConditionBook Condition,
     SwapCommunication Communication
-    ) : IRequest<Result>; // <Result<Feedback>> 
+    ) : IRequest<Result>; // <Result<Feedback>>  or <Result<Guid>>

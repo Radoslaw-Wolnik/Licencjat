@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Users.Core;
 
-public sealed record UpdateSensitiveCommand(
+public sealed record UpdateUserSensitiveInfoCommand(
     Guid UserId,
     string? FirstName,
     string? LastName
