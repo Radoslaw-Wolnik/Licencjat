@@ -4,15 +4,16 @@ using FluentResults;
 using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Domain.Events; // for ThumbnailRequest
-using Backend.Application.Commands.GeneralBooks.Core;
 
-public class ConfirmCoverCommandHandler
-    : IRequestHandler<ConfirmGBCoverCommand, Result>
+namespace Backend.Application.Commands.UserBooks.Core;
+
+public class ConfirmUBCoverCommandHandler
+    : IRequestHandler<ConfirmUBCoverCommand, Result>
 {
     private readonly IImageStorageService    _imageStorage;
     private readonly Channel<ThumbnailRequest> _channel;
 
-    public ConfirmCoverCommandHandler(
+    public ConfirmUBCoverCommandHandler(
         IImageStorageService imageStorage,
         Channel<ThumbnailRequest> channel)
     {
@@ -21,7 +22,7 @@ public class ConfirmCoverCommandHandler
     }
 
     public async Task<Result> Handle(
-        ConfirmGBCoverCommand request,
+        ConfirmUBCoverCommand request,
         CancellationToken cancellationToken)
     {
         // check existence

@@ -45,9 +45,7 @@ public class UpdateGeneralBookCoverCommandHandler
         var photo = new Photo(objectKey);
 
         // change the photo in generalbook
-        var updateResult = book.UpdateCoverPhoto(photo);
-        if (updateResult.IsFailed)
-            return Result.Fail(updateResult.Errors);
+        book.UpdateCoverPhoto(photo);
 
         // save the generalBook scalars
         var saveResult = await _bookRepo.UpdateScalarsAsync(book, cancellationToken);

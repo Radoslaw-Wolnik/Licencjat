@@ -1,5 +1,5 @@
 using Backend.Application.Interfaces.Repositories;
-using Backend.Domain.Entities;
+using Backend.Application.Interfaces.DbReads;
 using Backend.Domain.Errors;
 using FluentResults;
 using MediatR;
@@ -8,58 +8,47 @@ using Backend.Domain.Common;
 using Backend.Domain.Enums;
 
 namespace Backend.Application.Commands.UserBooks.Core;
-public class CreateUserBookCommandHandler
-    : IRequestHandler<CreateUserBookCommand, Result<(Guid, string)>>
+public class UpdateUserBookCoverCommandHandler
+    : IRequestHandler<UpdateUserBookCoverCommand, Result<string>>
 {
     private readonly IWriteUserBookRepository _bookRepo;
+    private readonly IUserBookReadService _bookRead;
     private readonly IImageStorageService _imageStorage;
 
-    public CreateUserBookCommandHandler(
+    public UpdateUserBookCoverCommandHandler(
         IWriteUserBookRepository bookRepo,
+        IUserBookReadService bookRead,
         IImageStorageService storage)
     {
         _bookRepo = bookRepo;
+        _bookRead = bookRead;
         _imageStorage  = storage;
     }
 
-    public async Task<Result<(Guid, string)>> Handle(
-        CreateUserBookCommand request,
+    public async Task<Result<string>> Handle(
+        UpdateUserBookCoverCommand request,
         CancellationToken cancellationToken)
     {
-        // Convert/validate the language code
-        var langResult = LanguageCode.Create(request.Language);
-        if (langResult.IsFailed)
-            return Result.Fail(langResult.Errors);
+        // get book
+        var book = await _bookRead.GetByIdAsync(request.UserBookId, cancellationToken);
         
-        var bookId = Guid.NewGuid(); 
+        if (book == null)
+            return Result.Fail(DomainErrorFactory.NotFound("UserBook", request.UserBookId));
 
         // ask the storage service for objectKey
         var objectKey = _imageStorage.GenerateObjectKey(
             StorageDestination.GeneralBooks,
-            bookId,
+            book.Id,
             request.CoverFileName);
 
         // build your Photo metadata with the objectKey
         var photo = new Photo(objectKey);
 
-        // Call the domain factory
-        var bookResult = UserBook.Create(
-            bookId,
-            request.UserId,
-            request.BookId,
-            request.Status,
-            request.State,
-            langResult.Value,
-            request.PageCount,
-            photo);
+        // change the photo in userbook
+        book.UpdateCover(photo);
 
-        if (bookResult.IsFailed)
-            return Result.Fail(bookResult.Errors);
-
-        var book = bookResult.Value;
-
-        // ask the storage to save the domain entity
-        var saveResult = await _bookRepo.AddAsync(book, cancellationToken);
+        // save the generalBook scalars
+        var saveResult = await _bookRepo.UpdateScalarsAsync(book, cancellationToken);
         if (saveResult.IsFailed)
             return Result.Fail(saveResult.Errors);
         
@@ -67,7 +56,6 @@ public class CreateUserBookCommandHandler
         var uploadUrl = await _imageStorage.GenerateUploadUrlAsync(objectKey);
 
         return Result.Ok((
-            bookId,
             uploadUrl));
     }
 }

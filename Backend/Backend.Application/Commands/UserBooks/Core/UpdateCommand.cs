@@ -6,11 +6,10 @@ using MediatR;
 
 namespace Backend.Application.Commands.UserBooks.Core;
 
-public sealed record UpdateCommand(
+public sealed record UpdateUserBookCommand(
     Guid UserBookId,
     BookStatus? Status,
-    BookState? State,
-    LanguageCode? Language,
-    int? PageCount,
-    Photo? CoverPhoto
+    BookState? State
+    // string? Language not allowed, 
+    // int? PageCount,
     ) : IRequest<Result<UserBook>>;

@@ -107,10 +107,8 @@ public sealed class GeneralBook : Entity<Guid>
         return book;
     }
 
-    public Result UpdateCoverPhoto(Photo photo){
-        CoverPhoto = photo;
-        return Result.Ok();
-    }
+    public void UpdateCoverPhoto(Photo photo)
+        => CoverPhoto = photo;
 
     public Result UpdateScalarValues(string? title, string? author, DateOnly? published, LanguageCode? language)
     {
