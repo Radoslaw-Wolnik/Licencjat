@@ -3,6 +3,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Users.Blocked;
 
-public sealed record RemoveCommand(
-    Guid BlockedLinkId
+public sealed record RemoveBlockedUserCommand(
+    Guid UserId,
+    Guid UserBlockedId
     ) : IRequest<Result>;

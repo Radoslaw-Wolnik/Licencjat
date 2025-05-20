@@ -27,7 +27,7 @@ public class WriteUserRepository : IWriteUserRepository
         var entity = _mapper.Map<UserEntity>(user);
         _db.Users.Add(entity);
         var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to save user");
-        
+
         return result.IsSuccess
             ? Result.Ok(entity.Id)
             : Result.Fail<Guid>(result.Errors);
@@ -61,7 +61,7 @@ public class WriteUserRepository : IWriteUserRepository
         stub.ProfilePicture = domainUser.ProfilePicture?.Link;
         stub.Bio = domainUser.Bio.Value;
         stub.Reputation = domainUser.Reputation.Value;
-        
+
         // mark only these as modified
         //_db.Entry(stub).Property(e => e.UserName).IsModified = true;
         //_db.Entry(stub).Property(e => e.Email).IsModified = true;
@@ -109,12 +109,26 @@ public class WriteUserRepository : IWriteUserRepository
         // _db.Users.Attach(stub);
         // then
         // stub.UserBlocked.Add(...);
-        _db.UserBlockeds.Add(new UserBlockedEntity {
+        _db.UserBlockeds.Add(new UserBlockedEntity
+        {
             BlockerId = userId,
             BlockedId = blockedId
         });
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add User to blocked users"); // userId
     }
+
+    public async Task<Result> RemoveBlockedUserAsync(Guid userId, Guid blockedId, CancellationToken cancellationToken)
+    {
+        var link = await _db.UserBlockeds
+            .FirstOrDefaultAsync(b => b.BlockerId == userId && b.BlockedId == blockedId, cancellationToken);
+
+        if (link is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Blocked relation", $"{userId}/{blockedId}"));
+
+        _db.UserBlockeds.Remove(link);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove blocked user from blocked users");
+    }
+
 
     // Following-users collection
     public async Task<Result> UpdateFollowingUsersAsync(
@@ -143,11 +157,24 @@ public class WriteUserRepository : IWriteUserRepository
 
     public async Task<Result> AddFollowingUserAsync(Guid userId, Guid followingId, CancellationToken cancellationToken)
     {
-        _db.UserFollowings.Add(new UserFollowingEntity {
+        _db.UserFollowings.Add(new UserFollowingEntity
+        {
             FollowerId = userId,
             FollowedId = followingId
         });
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add User to followed users"); // userId
+    }
+
+    public async Task<Result> RemoveFollowingUserAsync(Guid userId, Guid followingId, CancellationToken cancellationToken)
+    {
+        var link = await _db.UserFollowings
+            .FirstOrDefaultAsync(f => f.FollowerId == userId && f.FollowedId == followingId, cancellationToken);
+
+        if (link is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Following relation", $"{userId}/{followingId}"));
+
+        _db.UserFollowings.Remove(link);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove following user");
     }
 
     // Social media links collection
@@ -180,11 +207,39 @@ public class WriteUserRepository : IWriteUserRepository
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update Social Media Link of the User"); // userId
     }
 
+    public async Task<Result> UpdateSingleSocialMediaAsync(SocialMediaLink socialMedia, CancellationToken cancellationToken)
+    {
+        var entity = await _db.SocialMediaLinks
+            .FirstOrDefaultAsync(s => s.Id == socialMedia.Id, cancellationToken);
+
+        if (entity is null)
+            return Result.Fail(DomainErrorFactory.NotFound("SocialMediaLink", socialMedia.Id));
+
+        // update fields
+        entity.Platform = socialMedia.Platform;
+        entity.Url = socialMedia.Url;
+        // mark modified
+        _db.Entry(entity).Property(e => e.Platform).IsModified = true;
+        _db.Entry(entity).Property(e => e.Url).IsModified = true;
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update social media link");
+    }
+
     public async Task<Result> AddSocialMediaAsync(Guid userId, SocialMediaLink socialMediaLink, CancellationToken cancellationToken)
     {
         var socialEntity = _mapper.Map<SocialMediaLinkEntity>(socialMediaLink);
         _db.SocialMediaLinks.Add(socialEntity);
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add SocialMediaLink"); // userId
+    }
+
+    public async Task<Result> RemoveSocialMediaAsync(Guid socialMediaLinkId, CancellationToken cancellationToken)
+    {
+        var entity = await _db.SocialMediaLinks.FindAsync([socialMediaLinkId], cancellationToken);
+        if (entity is null)
+            return Result.Fail(DomainErrorFactory.NotFound("SocialMediaLink", socialMediaLinkId));
+
+        _db.SocialMediaLinks.Remove(entity);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove social media link");
     }
 
     // Wishlist collection
@@ -214,10 +269,23 @@ public class WriteUserRepository : IWriteUserRepository
 
     public async Task<Result> AddWishlistBookAsync(Guid userId, Guid wishlistBookId, CancellationToken cancellationToken)
     {
-        _db.UserWishlists.Add(new UserWishlistEntity {
-            UserId        = userId,
+        _db.UserWishlists.Add(new UserWishlistEntity
+        {
+            UserId = userId,
             GeneralBookId = wishlistBookId
         });
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add book to wishlist for the user"); // userId
+    }
+    
+    public async Task<Result> RemoveWishlistBookAsync(Guid userId, Guid wishlistBookId, CancellationToken cancellationToken)
+    {
+        var entry = await _db.UserWishlists
+            .FirstOrDefaultAsync(w => w.UserId == userId && w.GeneralBookId == wishlistBookId, cancellationToken);
+
+        if (entry is null)
+            return Result.Fail(DomainErrorFactory.NotFound("Wishlist entry", $"{userId}/{wishlistBookId}"));
+
+        _db.UserWishlists.Remove(entry);
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove book from wishlist");
     }
 }

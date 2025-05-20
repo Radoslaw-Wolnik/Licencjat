@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Users.SocialMedia;
 
-public sealed record CreateCommand(
+public sealed record AddSocialMediaCommand(
     Guid UserId,
     SocialMediaPlatform Platform,
     string Url

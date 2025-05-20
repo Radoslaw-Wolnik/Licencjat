@@ -3,6 +3,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Users.Wishlist;
 
-public sealed record RemoveCommand(
-    Guid WishlistLinkId
+public sealed record RemoveWishlistBookCommand(
+    Guid UserId,
+    Guid WishlistBookId
     ) : IRequest<Result>;

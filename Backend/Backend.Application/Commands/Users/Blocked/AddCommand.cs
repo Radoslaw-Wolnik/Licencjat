@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Users.Blocked;
 
-public sealed record AddCommand(
+public sealed record AddBlockedUserCommand(
     Guid UserId,
-    Guid BlockId
+    Guid UserBlockedId
     ) : IRequest<Result>;

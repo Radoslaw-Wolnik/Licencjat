@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Users.SocialMedia;
 
-public sealed record UpdateCommand(
+public sealed record UpdateSocialMediaCommand(
     Guid SocialMediaId,
     SocialMediaPlatform? Platform,
     string? Url

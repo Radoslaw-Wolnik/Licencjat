@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Users.Following;
 
-public sealed record AddCommand(
+public sealed record AddFollowedUserCommand(
     Guid UserId,
-    Guid FollowId
+    Guid UserFollowedId
     ) : IRequest<Result>;
