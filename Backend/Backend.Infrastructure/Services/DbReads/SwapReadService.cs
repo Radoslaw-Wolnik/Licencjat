@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Infrastructure.Data;
 using AutoMapper;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Common;
 
 namespace Backend.Infrastructure.Services.DbReads;
 
@@ -13,14 +14,15 @@ public class SwapReadService : ISwapReadService
 
     public SwapReadService(ApplicationDbContext db, IMapper mapper)
     {
-        _db     = db;
+        _db = db;
         _mapper = mapper;
     }
 
     public async Task<Swap?> GetByIdAsync(
-        Guid swapId, 
+        Guid swapId,
         CancellationToken cancellationToken = default
-    ) {
+    )
+    {
         var swapEntity = await _db.Swaps
             // --- SubSwapRequesting navigations ---
             .Include(s => s.SubSwapRequesting)
@@ -53,5 +55,25 @@ public class SwapReadService : ISwapReadService
         if (swapEntity == null) return null;
 
         return _mapper.Map<Swap>(swapEntity);
+    }
+
+    public async Task<Guid?> GetSubSwapId(
+        Guid swapId,
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var subSwapEntity = await _db.SubSwaps.FirstOrDefaultAsync(ss => ss.UserId == userId && ss.SwapId == swapId, cancellationToken);
+        if (subSwapEntity == null)
+            return null;
+        return subSwapEntity.Id;
+    }
+    public async Task<Meetup> GetMeetupById(
+        Guid meetupId,
+        CancellationToken cancellationToken = default
+    ) {
+        var meetupEntity = await _db.Meetups.
+            FirstOrDefaultAsync(m => m.Id == meetupId, cancellationToken);
+        return _mapper.Map<Meetup>(meetupEntity);
     }
 }

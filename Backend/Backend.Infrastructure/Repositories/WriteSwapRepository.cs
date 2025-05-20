@@ -26,9 +26,9 @@ public class WriteSwapRepository : IWriteSwapRepository
     {
         var entity = _mapper.Map<SwapEntity>(swap);
         _db.Swaps.Add(entity);
-        
+
         var result = await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add Swap");
-        
+
         return result.IsSuccess
             ? Result.Ok(entity.Id)
             : Result.Fail<Guid>(result.Errors);
@@ -42,7 +42,7 @@ public class WriteSwapRepository : IWriteSwapRepository
             return Result.Fail(DomainErrorFactory.NotFound("Swap", swapId));
 
         _db.Swaps.Remove(existing);
-        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to ddelete Swap");  
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to ddelete Swap");
     }
 
     public async Task<Result> UpdateAsync(Swap swap, CancellationToken cancellationToken)
@@ -113,7 +113,7 @@ public class WriteSwapRepository : IWriteSwapRepository
         }
     }
 
-     public async Task<Result> AddTimelineUpdateAsync(TimelineUpdate update, CancellationToken cancellationToken)
+    public async Task<Result> AddTimelineUpdateAsync(TimelineUpdate update, CancellationToken cancellationToken)
     {
         var timelineEntity = _mapper.Map<TimelineEntity>(update);
         _db.Timelines.Add(timelineEntity);
@@ -121,4 +121,84 @@ public class WriteSwapRepository : IWriteSwapRepository
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add a timeline update");
     }
 
+
+    public async Task<Result> AddFeedbackAsync(
+        Feedback feedback,
+        CancellationToken cancellationToken
+    ) {
+        // map and add new feedback entity
+        var feedbackEntity = _mapper.Map<FeedbackEntity>(feedback);
+        _db.Feedbacks.Add(feedbackEntity);
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add a new feedback");
+    }
+    
+    public async Task<Result> AddIssueAsync(
+        Issue issue,
+        CancellationToken cancellationToken
+    ) {
+        // map and add new issue entity
+        var issueEntity = _mapper.Map<IssueEntity>(issue);
+        _db.Issues.Add(issueEntity);
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add a new issue");
+    }
+    
+    public async Task<Result> RemoveIssueAsync(
+        Guid issueId,
+        CancellationToken cancellationToken
+    ) {
+        var iss = await _db.Issues.FindAsync([issueId], cancellationToken);
+        if (iss == null)
+            return Result.Fail(DomainErrorFactory.NotFound("Meetup", issueId));
+
+        _db.Issues.Remove(iss);
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove the issue");
+    }
+    
+    public async Task<Result> AddMeetupAsync(
+        Meetup meetup,
+        CancellationToken cancellationToken
+    ) {
+        // map and add new meetup entity
+        var meetupEntity = _mapper.Map<MeetupEntity>(meetup);
+        _db.Meetups.Add(meetupEntity);
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add a new meetup");
+    }
+    
+    public async Task<Result> RemoveMeetupAsync(
+        Guid meetupId,
+        CancellationToken cancellationToken
+    )
+    {
+        var mee = await _db.Meetups.FindAsync([meetupId], cancellationToken);
+        if (mee == null)
+            return Result.Fail(DomainErrorFactory.NotFound("Meetup", meetupId));
+
+        _db.Meetups.Remove(mee);
+
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to remove the meetup");
+    }
+
+    public async Task<Result> UpdateMeetupAsync(
+        Meetup updated,
+        CancellationToken cancellationToken
+    ) {
+        // attach stub for meetup
+        var meetupEntity = new MeetupEntity { Id = updated.Id };
+        _db.Meetups.Attach(meetupEntity);
+        
+        meetupEntity.Status = updated.Status;
+        meetupEntity.Location_X = (float)updated.Location.Latitude;
+        meetupEntity.Location_Y = (float)updated.Location.Longitude;
+        
+        var entry = _db.Entry(meetupEntity);
+        entry.Property(e => e.Status).IsModified = true;
+        entry.Property(e => e.Location_X).IsModified  = true;
+        entry.Property(e => e.Location_Y).IsModified = true;
+        return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update the meetup");
+    }
 }
+

@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Meetups;
 
-public sealed record CreateMeetupCommand(
+public sealed record AddMeetupCommand(
     Guid SwapId,
     Guid UserId,
     double Latitude,

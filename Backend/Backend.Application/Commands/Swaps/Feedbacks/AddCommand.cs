@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Feedbacks;
 
-public sealed record CreateFeedbackCommand(
+public sealed record AddFeedbackCommand(
     Guid SwapId,
     Guid UserId,
     int Stars,
