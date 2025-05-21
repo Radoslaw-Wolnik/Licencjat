@@ -35,6 +35,11 @@ public class UpdateGeneralBookCoverCommandHandler
         if (book == null)
             return Result.Fail(DomainErrorFactory.NotFound("GeneralBook", request.BookId));
 
+        // we could do it after confirming sending the new cover 
+        // but im not sure about the process
+        var oldObjectKey = book.CoverPhoto.Link;
+        await _imageStorage.DeleteAsync(oldObjectKey, cancellationToken);
+
         // ask the storage service for objectKey
         var objectKey = _imageStorage.GenerateObjectKey(
             StorageDestination.GeneralBooks,

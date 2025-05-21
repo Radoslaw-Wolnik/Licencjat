@@ -4,7 +4,8 @@ using FluentResults;
 using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Domain.Events; // for ThumbnailRequest
-using Backend.Application.Commands.GeneralBooks.Core;
+
+namespace Backend.Application.Commands.GeneralBooks.Core;
 
 public class ConfirmCoverCommandHandler
     : IRequestHandler<ConfirmGBCoverCommand, Result>
