@@ -4,8 +4,8 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Core;
 
-public sealed record AcceptCommand(
+public sealed record AcceptSwapCommand(
     Guid SwapId,
     Guid UserAcceptingId,
     Guid RequestedBookId
-    ) : IRequest<Result<Swap>>;
+    ) : IRequest<Result>;

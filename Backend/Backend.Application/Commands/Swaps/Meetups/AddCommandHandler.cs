@@ -48,8 +48,11 @@ public class AddMeetupCommandHandler
         
         // save via repository root - swap
         var persistanceResult = await _swapRepo.AddMeetupAsync(meetupResult.Value, cancellationToken);
-        if(persistanceResult.IsFailed)
+        if (persistanceResult.IsFailed)
             return Result.Fail(persistanceResult.Errors);
+
+        
+        // add timeline update
 
         return Result.Ok();
     }

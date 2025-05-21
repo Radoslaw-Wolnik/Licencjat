@@ -39,6 +39,9 @@ public class AddIssueCommandHandler
         if(persistanceResult.IsFailed)
             return Result.Fail(persistanceResult.Errors);
 
+        // add timeline update
+        // or add it in the repo function 
+
         return Result.Ok();
     }
 }

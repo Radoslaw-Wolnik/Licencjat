@@ -27,18 +27,19 @@ namespace Backend.Infrastructure.Mapping
                         .ToList() ?? new List<TimelineUpdate>();
 
                     // Rehydrate your aggregate
-                    return Swap.Reconstitute(src.Id, requesting, accepting, meetups, timeline);
+                    return Swap.Reconstitute(src.Id, src.Status, requesting, accepting, meetups, timeline);
                 });
 
             // Domain → Entity
             CreateMap<Swap, SwapEntity>()
-                .ForMember(dest => dest.Id,                   opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.SubSwapRequestingId,  opt => opt.MapFrom(src => src.SubSwapRequesting.Id ))
-                .ForMember(dest => dest.SubSwapAcceptingId,   opt => opt.MapFrom(src => src.SubSwapAccepting != null ? (Guid?) src.SubSwapAccepting.Id : null))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.SubSwapRequestingId, opt => opt.MapFrom(src => src.SubSwapRequesting.Id ))
+                .ForMember(dest => dest.SubSwapAcceptingId, opt => opt.MapFrom(src => src.SubSwapAccepting != null ? (Guid?) src.SubSwapAccepting.Id : null))
                 
                 // collections managed separately
-                .ForMember(dest => dest.Meetups,            opt => opt.Ignore())
-                .ForMember(dest => dest.TimelineUpdates,    opt => opt.Ignore());
+                .ForMember(dest => dest.Meetups, opt => opt.Ignore())
+                .ForMember(dest => dest.TimelineUpdates, opt => opt.Ignore());
         }
     }
 }

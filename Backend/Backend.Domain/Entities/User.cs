@@ -194,7 +194,7 @@ public sealed class User : Entity<Guid>
     public void UpdateReputation(Reputation updtedReputation)
         => Reputation = updtedReputation;
     
-    public void UpdateProfilePicture(Photo updatedPhoto)
+    public void UpdateProfilePicture(Photo? updatedPhoto)
         => ProfilePicture = updatedPhoto;    
 
     public void RemoveProfilePicture()

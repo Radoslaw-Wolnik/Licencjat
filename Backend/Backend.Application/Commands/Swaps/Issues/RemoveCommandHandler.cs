@@ -20,6 +20,9 @@ public class RemoveIssueCommandHandler
         RemoveIssueCommand request,
         CancellationToken cancellationToken)
     {
+        // add timeline update
+        // or add it in the repo function - here propably better to do it that way
+        // unless we make repo.AddTimelineUpdate(timelineUpdateFactory....)
         return await _swapRepo.RemoveIssueAsync(request.IssueId, cancellationToken);
     }
 }

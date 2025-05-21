@@ -68,6 +68,9 @@ public class UpdateMeetupCommandHandler
         var persistance = await _swapRepo.UpdateMeetupAsync(createResult.Value, cancellationToken);
         if (persistance.IsFailed)
             return Result.Fail(persistance.Errors);
+        
+        // add timeline update
+        // or add in in the repo function
 
         return Result.Ok(createResult.Value);
     }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Backend.Domain.Enums;
 using Backend.Infrastructure.Data.Attributes;
 
 namespace Backend.Infrastructure.Entities;
@@ -7,6 +8,7 @@ namespace Backend.Infrastructure.Entities;
 public class SwapEntity
 {
     public Guid Id { get; set; }
+    public TimelineStatus Status { get; set; }
 
     // Many To One
     public Guid SubSwapRequestingId { get; set; } // person that requests the swap

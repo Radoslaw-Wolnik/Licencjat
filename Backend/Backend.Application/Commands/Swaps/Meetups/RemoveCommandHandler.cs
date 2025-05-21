@@ -20,6 +20,7 @@ public class RemoveMeetupCommandHandler
         RemoveMeetupCommand request,
         CancellationToken cancellationToken)
     {
+        // add timeline update
         return await _swapRepo.RemoveMeetupAsync(request.MeetupId, cancellationToken);
     }
 }

@@ -4,8 +4,8 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Core;
 
-public sealed record CreateCommand(
+public sealed record CreateSwapCommand(
     Guid UserRequestingId,
     Guid UserAcceptingId,
     Guid RequestedBookId
-    ) : IRequest<Result<Swap>>;
+    ) : IRequest<Result>;

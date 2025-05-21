@@ -3,6 +3,6 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Core;
 
-public sealed record DeleteCommand(
+public sealed record DeleteSwapCommand(
     Guid SwapId
     ) : IRequest<Result>;

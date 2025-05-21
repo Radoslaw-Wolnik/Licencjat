@@ -4,8 +4,8 @@ using MediatR;
 
 namespace Backend.Application.Commands.Swaps.Core;
 
-public sealed record UpdateCommand(
+public sealed record UpdateSwapCommand(
     Guid SwapId,
     Guid UserId,
     int PageAt
-    ) : IRequest<Result<Swap>>; // or subswap
+    ) : IRequest<Result>; // or subswap

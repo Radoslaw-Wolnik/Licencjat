@@ -2,11 +2,13 @@ using Backend.Domain.Common;
 using Backend.Domain.Errors;
 using Backend.Domain.Collections;
 using FluentResults;
+using Backend.Domain.Enums;
 
 namespace Backend.Domain.Entities;
 
 public sealed class Swap : Entity<Guid>
 {
+    public TimelineStatus Status { get; private set; }
     public SubSwap SubSwapRequesting { get; }
     public SubSwap SubSwapAccepting { get; }
 
@@ -22,7 +24,8 @@ public sealed class Swap : Entity<Guid>
         UserBook requestingBook, 
         Guid acceptingUserId
     ) : this (
-        Guid.NewGuid(), 
+        Guid.NewGuid(),
+        TimelineStatus.Requested,
         SubSwap.Initial(requestingUserId, requestingBook), 
         SubSwap.Initial(acceptingUserId, null),
         initialMeetups: Enumerable.Empty<Meetup>(),
@@ -32,12 +35,14 @@ public sealed class Swap : Entity<Guid>
     // reconstruction - main constructor
     private Swap(
         Guid id, 
+        TimelineStatus status,
         SubSwap subSwapRequesting, 
         SubSwap subSwapAccepting, 
         IEnumerable<Meetup> initialMeetups, 
         IEnumerable<TimelineUpdate> InitialTimelineUpdates
     ) {
         Id = id;
+        Status = status;
         SubSwapAccepting = subSwapAccepting;
         SubSwapRequesting = subSwapRequesting;
         _meetups = new MeetupsCollection(initialMeetups);
@@ -56,12 +61,13 @@ public sealed class Swap : Entity<Guid>
 
     public static Swap Reconstitute(
         Guid id,
+        TimelineStatus status,
         SubSwap subSwapRequesitng,
         SubSwap subSwapAccepting,
         IEnumerable<Meetup> meetups,
         IEnumerable<TimelineUpdate> timelineUpdates
     ) {
-        var swap = new Swap(id, subSwapRequesitng, subSwapAccepting, meetups, timelineUpdates);
+        var swap = new Swap(id, status, subSwapRequesitng, subSwapAccepting, meetups, timelineUpdates);
 
         return swap;
     }
@@ -81,12 +87,16 @@ public sealed class Swap : Entity<Guid>
     public Result RemoveTimelineUpdate(Guid timelineUpdateId)
         => _timelineUpdates.Remove(timelineUpdateId);
 
+    public void UpdateStaus(TimelineStatus newStatus)
+        => Status = newStatus;
+
     // ------------------ Subswap logic ------------------
 
-    public Result InitialBookReading(Guid userId, UserBook userBook){
-        if ( SubSwapAccepting.UserId != userId)
+    public Result InitialBookReading(Guid userId, UserBook userBook)
+    {
+        if (SubSwapAccepting.UserId != userId)
             return Result.Fail(DomainErrorFactory.Forbidden("Swap.SetUserBook", "Only person accepting the swap can set the book they want to read"));
-        
+
         return SubSwapAccepting.InitialBook(userBook);
     }
 
