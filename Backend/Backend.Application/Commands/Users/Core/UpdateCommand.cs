@@ -7,7 +7,7 @@ namespace Backend.Application.Commands.Users.Core;
 
 public sealed record UpdateUserProfileCommand(
     Guid UserId,
-    double? Latitude,
-    double? Longitude,
-    BioString? Bio
+    string? City,
+    string? CountryCode,
+    string? Bio
     ) : IRequest<Result<User>>;

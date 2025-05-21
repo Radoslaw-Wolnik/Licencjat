@@ -4,5 +4,6 @@ using MediatR;
 namespace Backend.Application.Commands.Users.ProfilePictures;
 
 public sealed record ConfirmUserProfilePictureCommand(
-    Guid UserId
+    Guid UserId,
+    string ImageObjectKey
     ) : IRequest<Result>;
