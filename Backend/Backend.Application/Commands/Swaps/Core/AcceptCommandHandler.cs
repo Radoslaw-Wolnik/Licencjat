@@ -7,6 +7,7 @@ using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Core;
 public class AcceptSwapCommandHandler
@@ -43,14 +44,15 @@ public class AcceptSwapCommandHandler
         // accept the swap
         swap.InitialBookReading(request.UserAcceptingId, book);
 
-        // change status
-        swap.UpdateStaus(TimelineStatus.Accepted);
+        // persist changes
+        var persistanceResult = await _swapRepo.UpdateAsync(swap, cancellationToken);
 
         // add timeline update
+        var updateResult = TimelineUpdateFactory.CreateResponse(request.UserAcceptingId, swap.Id, true);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+        await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
-
-        // persist changes
-        // var persistanceResult =
-        return await _swapRepo.UpdateAsync(swap, cancellationToken);
+        return persistanceResult;
     }
 }

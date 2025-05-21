@@ -2,6 +2,7 @@ using Backend.Application.Interfaces.Repositories;
 using FluentResults;
 using MediatR;
 using Backend.Domain.Errors;
+using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Issues;
 
@@ -21,8 +22,11 @@ public class RemoveIssueCommandHandler
         CancellationToken cancellationToken)
     {
         // add timeline update
-        // or add it in the repo function - here propably better to do it that way
-        // unless we make repo.AddTimelineUpdate(timelineUpdateFactory....)
+        var updateResult = TimelineUpdateFactory.CreateResolved(request.UserId, request.SwapId, request.ResolutionDetails);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+        await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
+        
         return await _swapRepo.RemoveIssueAsync(request.IssueId, cancellationToken);
     }
 }

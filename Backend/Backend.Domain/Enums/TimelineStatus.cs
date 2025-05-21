@@ -3,7 +3,7 @@ namespace Backend.Domain.Enums;
 
 public enum TimelineStatus
 {
-    Requested,    
+    Requested,
     Accepted,
     Declined,
     Canceled,
@@ -19,4 +19,5 @@ public enum TimelineStatus
     [Display(Name = "Requested Finish ASAP")]
     RequestedFinish,
     Disputed, // if one person requests leaving bad feedback becouse some issues
+    Resolved,
 }

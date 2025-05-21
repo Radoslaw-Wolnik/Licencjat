@@ -3,6 +3,7 @@ using FluentResults;
 using MediatR;
 using Backend.Domain.Common;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Factories;
 
 
 namespace Backend.Application.Commands.Swaps.Issues;
@@ -40,7 +41,10 @@ public class AddIssueCommandHandler
             return Result.Fail(persistanceResult.Errors);
 
         // add timeline update
-        // or add it in the repo function 
+        var updateResult = TimelineUpdateFactory.CreateDispute(request.UserId, request.SwapId, issueResult.Value.Description);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+        await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
         return Result.Ok();
     }

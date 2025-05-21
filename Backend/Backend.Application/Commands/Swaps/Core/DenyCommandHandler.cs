@@ -7,6 +7,7 @@ using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Core;
 public class DenySwapCommandHandler
@@ -32,14 +33,16 @@ public class DenySwapCommandHandler
         if (swap == null)
             return Result.Fail(DomainErrorFactory.NotFound("Swap", request.SwapId));
 
-        // change status
-        swap.UpdateStaus(TimelineStatus.Declined);
+        // persist changes
+        var persistanceResult = await _swapRepo.UpdateAsync(swap, cancellationToken);
 
         // add timeline update
-        
+        var updateResult = TimelineUpdateFactory.CreateResponse(request.UserId, swap.Id, false);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+        await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
-        // persist changes
-        // var persistanceResult =
-        return await _swapRepo.UpdateAsync(swap, cancellationToken);
+        return persistanceResult;
+        
     }
 }

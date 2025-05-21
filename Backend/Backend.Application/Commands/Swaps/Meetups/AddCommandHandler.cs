@@ -4,6 +4,7 @@ using MediatR;
 using Backend.Domain.Common;
 using Backend.Application.Interfaces.DbReads;
 using Backend.Domain.Enums;
+using Backend.Domain.Factories;
 
 
 namespace Backend.Application.Commands.Swaps.Meetups;
@@ -51,8 +52,12 @@ public class AddMeetupCommandHandler
         if (persistanceResult.IsFailed)
             return Result.Fail(persistanceResult.Errors);
 
-        
+
         // add timeline update
+        var updateResult = TimelineUpdateFactory.CreateMeetingUp(request.UserId, request.SwapId);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+        await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
         return Result.Ok();
     }

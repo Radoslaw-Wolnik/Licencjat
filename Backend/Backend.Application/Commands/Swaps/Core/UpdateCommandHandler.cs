@@ -7,6 +7,7 @@ using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Core;
 public class UpdateSwapCommandHandler
@@ -35,11 +36,15 @@ public class UpdateSwapCommandHandler
         // accept the swap
         swap.UpdatePageReading(request.UserId, request.PageAt);
 
-        // add timeline update
-
-
         // persist changes
-        // var persistanceResult =
-        return await _swapRepo.UpdateAsync(swap, cancellationToken);
+        var persistanceResult = await _swapRepo.UpdateAsync(swap, cancellationToken);
+
+        // add timeline update
+        var updateResult = TimelineUpdateFactory.CreateReadingProgress(request.UserId, swap.Id, request.PageAt);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+        await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
+
+        return persistanceResult;
     }
 }

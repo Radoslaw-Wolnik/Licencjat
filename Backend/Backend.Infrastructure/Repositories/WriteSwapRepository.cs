@@ -87,7 +87,7 @@ public class WriteSwapRepository : IWriteSwapRepository
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to update Swap");
     }
 
-    
+
 
     private void SyncCollection<TDomain, TEntity>(
         IEnumerable<TDomain> domainItems,
@@ -117,8 +117,18 @@ public class WriteSwapRepository : IWriteSwapRepository
 
     public async Task<Result> AddTimelineUpdateAsync(TimelineUpdate update, CancellationToken cancellationToken)
     {
+        // add timeline entity
         var timelineEntity = _mapper.Map<TimelineEntity>(update);
         _db.Timelines.Add(timelineEntity);
+
+        // attach stub for swap to change the status to the status of last timelineUpdate
+        var tempSwap = new SwapEntity { Id = update.SwapId };
+        _db.Swaps.Attach(tempSwap);
+
+        tempSwap.Status = update.Status;
+        
+        var entry = _db.Entry(tempSwap);
+        entry.Property(e => e.Status).IsModified = true;
 
         return await _db.SaveChangesWithResultAsync(cancellationToken, "Failed to add a timeline update");
     }

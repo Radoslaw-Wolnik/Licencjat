@@ -7,6 +7,7 @@ using Backend.Application.Interfaces;
 using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Application.Interfaces.DbReads;
+using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Core;
 public class CreateSwapCommandHandler
@@ -36,13 +37,17 @@ public class CreateSwapCommandHandler
         var swapResult = Swap.Create(request.UserRequestingId, book, request.UserAcceptingId);
         if (swapResult.IsFailed)
             return Result.Fail(swapResult.Errors);
-        
-        // add timeline update
 
         // persist
         var persistanceResult = await _swapRepo.AddAsync(swapResult.Value, cancellationToken);
         if (persistanceResult.IsFailed)
             return Result.Fail(persistanceResult.Errors);
+
+        // add timeline update
+        var updateResult = TimelineUpdateFactory.CreateRequested(request.UserRequestingId, swapResult.Value.Id);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+        await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
         return Result.Ok();
     }
