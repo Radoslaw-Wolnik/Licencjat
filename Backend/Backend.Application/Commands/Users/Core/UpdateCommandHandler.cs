@@ -42,35 +42,22 @@ public class UpdateUserProfileCommandHandler
         }
 
         // update user location
-        if (request.City != null && request.CountryCode != null)
+        if (request.City != null || request.CountryCode != null)
         {
-            var countryCodeResult = CountryCode.Create(request.CountryCode);
-            if (countryCodeResult.IsFailed)
-                return Result.Fail(countryCodeResult.Errors);
+            // decide what city and country we’re going to use
+            var cityToUse = request.City ?? user.Location.City;
+            var countryCodeToUseResult = request.CountryCode != null
+                ? CountryCode.Create(request.CountryCode)
+                : Result.Ok(user.Location.Country);
 
-            var locationResult = Location.Create(request.City, countryCodeResult.Value);
+            if (countryCodeToUseResult.IsFailed)
+                return Result.Fail(countryCodeToUseResult.Errors);
+
+            // create & validate the new Location
+            var locationResult = Location.Create(cityToUse, countryCodeToUseResult.Value);
             if (locationResult.IsFailed)
                 return Result.Fail(locationResult.Errors);
-
-            user.UpdateLocation(locationResult.Value);
-        }
-        else if (request.City != null)
-        {
-            var locationResult = Location.Create(request.City, user.Location.Country);
-            if (locationResult.IsFailed)
-                return Result.Fail(locationResult.Errors);
-            user.UpdateLocation(locationResult.Value);  
-        }
-        else if (request.CountryCode != null)
-        {
-            var countryCodeResult = CountryCode.Create(request.CountryCode);
-            if (countryCodeResult.IsFailed)
-                return Result.Fail(countryCodeResult.Errors);
-
-            var locationResult = Location.Create(user.Location.City, countryCodeResult.Value);
-            if (locationResult.IsFailed)
-                return Result.Fail(locationResult.Errors);
-
+            
             user.UpdateLocation(locationResult.Value);
         }
 
