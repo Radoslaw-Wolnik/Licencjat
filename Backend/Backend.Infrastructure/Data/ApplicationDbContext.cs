@@ -38,7 +38,7 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
 
     // views
     public DbSet<GeneralBookWithAverageRating> GeneralBooksWithAverageRatings { get; set; }
-    
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -185,6 +185,10 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
             entity.HasNoKey();
             entity.ToView("GeneralBooksWithAverageRatings");
         });
+        
+        builder.Entity<ReviewEntity>()
+            .Property(r => r.CreatedAt)
+            .HasDefaultValueSql("NOW()");
     }
 
 

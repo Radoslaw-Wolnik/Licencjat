@@ -10,7 +10,7 @@ public class ReviewProfile : Profile
     public ReviewProfile()
     {
         CreateMap<ReviewEntity, Review>()
-            .ConstructUsing(src => new Review(src.Id, src.UserId, src.BookId, src.Rating, src.Comment))
+            .ConstructUsing(src => new Review(src.Id, src.UserId, src.BookId, src.Rating, src.CreatedAt, src.Comment))
             .ReverseMap();
     }
 }

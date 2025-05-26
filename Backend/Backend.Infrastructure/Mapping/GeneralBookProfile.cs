@@ -5,6 +5,7 @@ using Backend.Domain.Common;
 using Backend.Application.DTOs;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
+using Backend.Application.ReadModels.GeneralBooks;
 
 namespace Backend.Infrastructure.Mapping;
 
@@ -21,35 +22,35 @@ public class GeneralBookProfile : Profile
                 if (languageCodeResult.IsFailed)
                     throw new AutoMapperMappingException(
                         $"Invalid country code: {string.Join(", ", languageCodeResult.Errors)}");
-                
+
                 // handle cover photo creation
                 var photoResult = Photo.Create(src.CoverPhoto);
-                    if (photoResult.IsFailed)
-                        throw new AutoMapperMappingException(
-                            $"Invalid reputation: {string.Join(", ", photoResult.Errors)}");
-                
+                if (photoResult.IsFailed)
+                    throw new AutoMapperMappingException(
+                        $"Invalid reputation: {string.Join(", ", photoResult.Errors)}");
+
                 // Handle calculating the total Review Score
                 var avgScore = src.Reviews.Count != 0
                     ? src.Reviews.Average(r => r.Rating)
                     : 0.0f;
-                
-                
+
+
                 var ratingAvg = Rating.Create((float)avgScore).Value;
 
                 var userBooks = Enumerable.Empty<UserBook>();
-                if(src.UserBooks != null && src.UserBooks.Count != 0)
+                if (src.UserBooks != null && src.UserBooks.Count != 0)
                 {
                     userBooks = ctx.Mapper
                         .Map<IEnumerable<UserBook>>(src.UserBooks);
                 }
 
                 var reviews = Enumerable.Empty<Review>();
-                if(src.Reviews != null && src.Reviews.Count != 0)
+                if (src.Reviews != null && src.Reviews.Count != 0)
                 {
                     reviews = ctx.Mapper
                         .Map<IEnumerable<Review>>(src.Reviews);
                 }
-                
+
                 return GeneralBook.Reconstitute(
                     src.Id,
                     src.Title,
@@ -65,27 +66,47 @@ public class GeneralBookProfile : Profile
                 );
             });
 
-        // Query Projection for database operations
-        CreateMap<GeneralBookEntity, BookProjection>()
-            .ReverseMap();
-        
         // Domain -> Entity Mapping
         CreateMap<GeneralBook, GeneralBookEntity>(MemberList.Source)
             // map core scalar values
-            .ForMember(dest => dest.Id,            opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Title,         opt => opt.MapFrom(src => src.Title))
-            .ForMember(dest => dest.Author,        opt => opt.MapFrom(src => src.Author))
-            .ForMember(dest => dest.Published,     opt => opt.MapFrom(src => src.Published))
-            .ForMember(dest => dest.Language,      opt => opt.MapFrom(src => src.OriginalLanguage.Code))
-            .ForMember(dest => dest.CoverPhoto,    opt => opt.MapFrom(src => src.CoverPhoto.Link))
-            .ForMember(dest => dest.Genres,        opt => opt.MapFrom(src => src.Genres))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
+            .ForMember(dest => dest.Published, opt => opt.MapFrom(src => src.Published))
+            .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.OriginalLanguage.Code))
+            .ForMember(dest => dest.CoverPhoto, opt => opt.MapFrom(src => src.CoverPhoto.Link))
+            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres))
 
             // ignore the RatingAvg *source* property so MemberList.Source is happy
             .ForSourceMember(src => src.RatingAvg, opt => opt.DoNotValidate())
 
             // explicitly IGNORE relations
-            .ForMember(dest => dest.UserBooks,         opt => opt.Ignore())
-            .ForMember(dest => dest.Reviews,           opt => opt.Ignore())
-            .ForMember(dest => dest.WishlistedByUsers, opt => opt.Ignore()); 
+            .ForMember(dest => dest.UserBooks, opt => opt.Ignore())
+            .ForMember(dest => dest.Reviews, opt => opt.Ignore())
+            .ForMember(dest => dest.WishlistedByUsers, opt => opt.Ignore());
+
+
+        // Query Projection for database operations
+        CreateMap<GeneralBookEntity, GeneralBookProjection>()
+            .ForMember(dest => dest.PublicationDate, opt => opt.MapFrom(src => src.Published))
+            .ForMember(dest => dest.BookGenre, opt => opt.MapFrom(src => src.Genres.FirstOrDefault()));
+
+
+        CreateMap<GeneralBookProjection, GeneralBookEntity>()
+            .ForMember(dest => dest.Published, opt => opt.MapFrom(src => src.PublicationDate))
+            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => new[] { src.BookGenre })) // if your project allows null or default, guard here - ?? 
+            // projection doesn’t carry these so we ignore them
+            .ForMember(dest => dest.CoverPhoto, opt => opt.MapFrom(src => src.CoverPhoto))
+            .ForMember(dest => dest.UserBooks, opt => opt.Ignore())
+            .ForMember(dest => dest.Reviews, opt => opt.Ignore())
+            .ForMember(dest => dest.WishlistedByUsers, opt => opt.Ignore());
+
+
+        CreateMap<GeneralBookProjection, GeneralBookListItem>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
+            .ForMember(dest => dest.RatingAvg, opt => opt.MapFrom(src => src.RatingAvg))
+            .ForMember(dest => dest.CoverUrl, opt => opt.MapFrom(src => src.CoverPhoto));
     }
 }

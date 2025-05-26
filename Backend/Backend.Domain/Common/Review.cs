@@ -3,10 +3,10 @@ using FluentResults;
 
 namespace Backend.Domain.Common;
 
-public sealed record Review(Guid Id, Guid UserId, Guid BookId, int Rating, string? Comment)
+public sealed record Review(Guid Id, Guid UserId, Guid BookId, int Rating, DateTime CreatedAt, string? Comment)
 {
 
-    public static Result<Review> Create(Guid id, Guid userId, Guid bookId, int rating, string? comment)
+    public static Result<Review> Create(Guid id, Guid userId, Guid bookId, int rating, DateTime createdAt, string? comment)
     {
         var errors = new List<IError>();
         
@@ -23,6 +23,7 @@ public sealed record Review(Guid Id, Guid UserId, Guid BookId, int Rating, strin
             userId,
             bookId,
             rating,
+            createdAt,
             comment
         );
     }

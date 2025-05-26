@@ -7,7 +7,7 @@ namespace Backend.Infrastructure.Entities;
 public class ReviewEntity
 {
     public Guid Id { get; set; }
-    
+
     [Range(1, 10)]
 
     public int Rating { get; set; } // 1-10
@@ -19,4 +19,6 @@ public class ReviewEntity
 
     public virtual UserEntity User { get; set; } = null!;
     public virtual GeneralBookEntity Book { get; set; } = null!;
+    
+    public DateTime CreatedAt { get; set; }
 }
