@@ -46,19 +46,18 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequest request)
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request)
     {
         var command = _mapper.Map<LoginCommand>(request);
         var result = await _sender.Send(command);
 
         return result.Match(
-            onSuccess: user => Ok(_mapper.Map<LoginResponse>(user)),
-            onFailure: errors => Problem(
-                instance: "api/login",
-                title: "Login error",
-                statusCode: StatusCodes.Status401Unauthorized,
-                detail: string.Join(", ", errors.Select(e => e.Message)))
-            // onFailure: errors => errors.ToProblemDetailsResult().ToString()
+            onSuccess: user => Ok(_mapper.Map<LoginResponse>(new {
+                UserId = user.Id,
+                Username = user.Username
+            })),
+            onFailure: errors => errors.ToProblemDetailsResult()
         );
     }
 
