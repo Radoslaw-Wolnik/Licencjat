@@ -26,6 +26,45 @@ public sealed class BookmarksController : ControllerBase
         _mapper = mapper;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> List(
+        Guid userBookId,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 20)
+    {
+        var userId = User.GetUserId();
+        var query = new ListBookmarksQuerry(
+            UserBookId: userBookId,
+            Descending: descending,
+            Offset: offset,
+            Limit: limit
+        );
+        
+        // Add ownership validation in handler
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            paginated => Ok(_mapper.Map<PaginatedResponse<BookmarkResponse>>(paginated)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet("{bookmarkId:guid}")]
+    public async Task<IActionResult> Get(
+        Guid userBookId, 
+        Guid bookmarkId)
+    {
+        var query = new GetBookmarkByIdQuery(userBookId, bookmarkId);
+        var result = await _sender.Send(query);
+        
+        // Add ownership validation
+        return result.Match(
+            bookmark => Ok(_mapper.Map<BookmarkResponse>(bookmark)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         Guid userBookId,

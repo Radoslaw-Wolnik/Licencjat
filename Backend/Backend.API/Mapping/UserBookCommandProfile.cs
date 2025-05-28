@@ -36,5 +36,22 @@ public class UserBookCommandProfile : Profile
         CreateMap<UserBook, UserBookResponse>(); // insted we should return the read model object
         CreateMap<Bookmark, BookmarkResponse>(); // insted we should return the read model object
 
+        // Read models → DTOs
+        CreateMap<UserBookDetailsReadModel, UserBookDetailsResponse>()
+            .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.ToString()))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+        
+        CreateMap<UserOwnBookProfileReadModel, UserOwnBookProfileResponse>();
+        CreateMap<SwapUserBookListItem, SwapUserBookListItemResponse>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+        
+        CreateMap<UserLibraryListItem, UserLibraryItemResponse>();
+        CreateMap<UserBookListItem, UserBookListItemResponse>();
+        CreateMap<BookmarkReadModel, BookmarkResponse>();
+
+        // Pagination
+        CreateMap<PaginatedResult<UserLibraryListItem>, PaginatedResponse<UserLibraryItemResponse>>();
+        CreateMap<PaginatedResult<UserBookListItem>, PaginatedResponse<UserBookListItemResponse>>();
+        CreateMap<PaginatedResult<BookmarkReadModel>, PaginatedResponse<BookmarkResponse>>();
     }
 }

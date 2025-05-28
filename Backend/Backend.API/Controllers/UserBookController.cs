@@ -40,6 +40,74 @@ public sealed class UserBooksController : ControllerBase
         );
     }
 
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentUserLibrary(
+        [FromQuery] string? nameFilter,
+        [FromQuery] string? authorFilter,
+        [FromQuery] SortUserBookBy sortBy = SortUserBookBy.Title,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 20)
+    {
+        var userId = User.GetUserId();
+        var query = new ListLibraryQuerry(
+            UserId: userId,
+            NameFilter: nameFilter,
+            AuthorFilter: authorFilter,
+            SortBy: sortBy,
+            Descending: descending,
+            Offset: offset,
+            Limit: limit
+        );
+        
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            paginated => Ok(_mapper.Map<PaginatedResponse<UserLibraryItemResponse>>(paginated)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> ListByGeneralBook(
+        [FromQuery] Guid generalBookId,
+        [FromQuery] SortUserBookBy sortBy = SortUserBookBy.Title,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 20)
+    {
+        var query = new ListUserBooksQuerry(
+            GeneralBookId: generalBookId,
+            SortBy: sortBy,
+            Descending: descending,
+            Offset: offset,
+            Limit: limit
+        );
+        
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            paginated => Ok(_mapper.Map<PaginatedResponse<UserBookListItemResponse>>(paginated)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet("{id:guid}/profile")]
+    [Authorize]  // Only owner can access
+    public async Task<IActionResult> GetOwnBookProfile(Guid id)
+    {
+        var userId = User.GetUserId();
+        var query = new GetUserOwnBookProfileByIdQuerry(id);
+        var result = await _sender.Send(query);
+        
+        // Add ownership validation in handler or here
+        return result.Match(
+            profile => Ok(_mapper.Map<UserOwnBookProfileResponse>(profile)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
 
     [HttpPost]
     public async Task<IActionResult> Create(
