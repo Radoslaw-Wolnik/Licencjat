@@ -7,33 +7,83 @@ namespace Backend.API.Extensions;
 
 public static class ResultExtensions
 {
+    
+    // For Result<T>
     public static IActionResult Match<T>(
         this Result<T> result,
         Func<T, IActionResult> onSuccess,
         Func<List<IError>, IActionResult> onFailure)
     {
-        return result.IsSuccess 
-            ? onSuccess(result.Value) 
+        return result.IsSuccess
+            ? onSuccess(result.Value)
             : onFailure(result.Errors);
     }
 
-    public static ProblemDetails ToProblemDetails(
-        this List<IError> errors, 
-        string defaultTitle = "An error occurred")
+    // For non-generic Result
+    public static IActionResult Match(
+        this Result result,
+        Func<IActionResult> onSuccess,
+        Func<List<IError>, IActionResult> onFailure)
     {
-        var firstError = errors.FirstOrDefault();
-        var statusCode = firstError switch
+        return result.IsSuccess
+            ? onSuccess()
+            : onFailure(result.Errors);
+    }
+
+    public static IActionResult ToProblemDetailsResult(this List<IError> errors)
+    {
+        var problemDetails = new ProblemDetails
         {
-            DomainError domainError => (int)MapErrorType(domainError.Type),
-            _ => StatusCodes.Status400BadRequest
+            Type = "https://httpstatuses.io/400",
+            Title = "Request processing error",
+            Status = StatusCodes.Status400BadRequest
         };
 
-        return new ProblemDetails
+        // Initialize errors dictionary
+        var errorDetails = new Dictionary<string, object>();
+        problemDetails.Extensions["errors"] = errorDetails;
+
+        // Set status based on first domain error
+        var domainError = errors.OfType<DomainError>().FirstOrDefault();
+        if (domainError != null)
         {
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            Title = firstError?.Message ?? defaultTitle,
-            Status = statusCode,
-            Extensions = { ["errors"] = errors }
+            problemDetails.Status = (int)MapErrorType(domainError.Type);
+            problemDetails.Title = domainError.Message;
+        }
+
+        // Collect all error metadata
+        foreach (var error in errors)
+        {
+            // For DomainErrors, use their custom properties
+            if (error is DomainError dError)
+            {
+                errorDetails[dError.Code ?? "DOMAIN_ERROR"] = new
+                {
+                    dError.Message,
+                    dError.Type,
+                    dError.Code
+                };
+            }
+            // For general errors, use message and metadata
+            else
+            {
+                var key = error.Message;
+                if (error.Metadata.TryGetValue("Code", out var code) && code is string codeStr)
+                {
+                    key = codeStr;
+                }
+
+                errorDetails[key] = new
+                {
+                    error.Message,
+                    Metadata = error.Metadata
+                };
+            }
+        }
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = problemDetails.Status
         };
     }
 
@@ -42,6 +92,8 @@ public static class ResultExtensions
         ErrorType.Validation => HttpStatusCode.BadRequest,
         ErrorType.Conflict => HttpStatusCode.Conflict,
         ErrorType.NotFound => HttpStatusCode.NotFound,
+        ErrorType.Unauthorized => HttpStatusCode.Unauthorized,
+        ErrorType.Forbidden => HttpStatusCode.Forbidden,
         _ => HttpStatusCode.InternalServerError
     };
 }
