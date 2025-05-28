@@ -26,6 +26,65 @@ public sealed class SwapsController : ControllerBase
         _sender = sender;
         _mapper = mapper;
     }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var query = new GetSwapByIdQuerry(id);
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            swap => Ok(_mapper.Map<SwapDetailsResponse>(swap)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ListForCurrentUser(
+        [FromQuery] SwapStatus status,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 20)
+    {
+        var userId = User.GetUserId();
+        var query = new ListUserSwapsQuerry(
+            UserId: userId,
+            Status: status,
+            Descending: descending,
+            Offset: offset,
+            Limit: limit
+        );
+        
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            paginated => Ok(_mapper.Map<PaginatedResponse<SwapListItemResponse>>(paginated)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet("{id:guid}/timeline")]
+    public async Task<IActionResult> GetTimeline(
+        Guid id,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 20)
+    {
+        var query = new ListTimelineQuerry(
+            SwapId: id,
+            Descending: descending,
+            Offset: offset,
+            Limit: limit
+        );
+        
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            paginated => Ok(_mapper.Map<PaginatedResponse<TimelineUpdateResponse>>(paginated)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateSwapRequest request)

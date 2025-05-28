@@ -22,6 +22,19 @@ public sealed class FeedbacksController : ControllerBase
         _sender = sender;
         _mapper = mapper;
     }
+
+    [HttpGet("{feedbackId:guid}")]
+    public async Task<IActionResult> Get(Guid swapId, Guid feedbackId)
+    {
+        var query = new GetFeedbackByIdQuery(feedbackId);
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            feedback => Ok(_mapper.Map<FeedbackResponse>(feedback)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
     [HttpPost]
     public async Task<IActionResult> Add(
         Guid swapId,

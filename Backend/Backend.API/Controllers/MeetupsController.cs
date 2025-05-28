@@ -21,6 +21,20 @@ public sealed class MeetupsController : ControllerBase
         _sender = sender;
         _mapper = mapper;
     }
+
+    [HttpGet("{meetupId:guid}")]
+    public async Task<IActionResult> Get(Guid swapId, Guid meetupId)
+    {
+        var query = new GetMeetupByIdQuery(meetupId);
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            meetup => Ok(_mapper.Map<MeetupResponse>(meetup)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+    
+
     [HttpPost]
     public async Task<IActionResult> Add(
         Guid swapId,

@@ -42,5 +42,8 @@ public class UserCommandProfile : Profile
         // Responses
         CreateMap<User, UserProfileResponse>();
         CreateMap<SocialMediaLink, SocialMediaResponse>();
+
+        // Read model → DTO
+        CreateMap<UserSmallReadModel, UserSmallResponse>();
     }
 }

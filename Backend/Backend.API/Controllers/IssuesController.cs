@@ -22,6 +22,19 @@ public sealed class IssuesController : ControllerBase
         _sender = sender;
         _mapper = mapper;
     }
+
+    [HttpGet("{issueId:guid}")]
+    public async Task<IActionResult> Get(Guid swapId, Guid issueId)
+    {
+        var query = new GetIssueByIdQuery(issueId);
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            issue => Ok(_mapper.Map<IssueResponse>(issue)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
     [HttpPost]
     public async Task<IActionResult> Add(
         Guid swapId,
