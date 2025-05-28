@@ -8,11 +8,6 @@ namespace Backend.Application.Interfaces.Queries;
 
 public interface IGeneralBookQueryService
 {
-    Task<bool> ExistsAsync(
-        Expression<Func<GeneralBookProjection, bool>> predicate,
-        CancellationToken cancellationToken = default
-    );
-
     /// <summary>
     /// Returns a paged list of GeneralBookListItems for general books
     /// </summary>
@@ -35,4 +30,12 @@ public interface IGeneralBookQueryService
         int maxReviews = 10,
         CancellationToken ct = default
     );
+
+    Task<PaginatedResult<ReviewReadModel>> GetPaginatedReviewsAsync(
+        Guid bookId,
+        SortReviewsBy sortBy,
+        bool descending,
+        int offset,
+        int limit,
+        CancellationToken ct = default);
 }

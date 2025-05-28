@@ -1,7 +1,4 @@
-using System.Linq;
-using System.Linq.Expressions;
 using AutoMapper;
-using AutoMapper.Extensions.ExpressionMapping;
 using AutoMapper.QueryableExtensions;
 using Backend.Application.Interfaces.Queries;
 using Backend.Application.ReadModels.GeneralBooks;
@@ -9,7 +6,6 @@ using Backend.Domain.Common;
 using Backend.Domain.Enums;
 using Backend.Domain.Enums.SortBy;
 using Backend.Infrastructure.Data;
-using Backend.Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Infrastructure.Services.Queries;
@@ -23,114 +19,117 @@ public class GeneralBookQueryService : IGeneralBookQueryService
     {
         _context = context;
         _mapper = mapper;
-    } 
-    
-    public async Task<bool> ExistsAsync(
-        Expression<Func<GeneralBookProjection, bool>> predicate,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var entityPredicate =
-                _mapper.MapExpression<Expression<Func<GeneralBookEntity, bool>>>(predicate);
-        var exists = await _context.GeneralBooks
-            .AnyAsync(entityPredicate, cancellationToken);
-
-        return exists;
     }
-    
-    
-     public async Task<PaginatedResult<GeneralBookListItem>> ListAsync(
+
+    public async Task<PaginatedResult<GeneralBookListItem>> ListAsync(
         string? titleFilter,
         string? authorFilter,
         BookGenre? genreFilter,
         SortGeneralBookBy sortBy,
         bool descending,
-        int Offset,
-        int Limit,
-        CancellationToken ct = default
-    )
+        int offset,
+        int limit,
+        CancellationToken ct = default)
     {
-        // 1) start with projection to DTO (so you only fetch needed columns)
         var query = _context.GeneralBooks
             .AsNoTracking()
-            .ProjectTo<GeneralBookProjection>(_mapper.ConfigurationProvider)
-            .AsQueryable();
+            .Include(b => b.Reviews)
+            .Include(b => b.Genres)
+            .ProjectTo<GeneralBookListItem>(_mapper.ConfigurationProvider);
 
-        // var entityPredicate =
-        //     _mapper.MapExpression<Expression<Func<GeneralBookEntity, bool>>>(predicate);
-
-        // 2) apply optional filters (use Contains for “fuzzy” search)
+        // Apply filters
         if (!string.IsNullOrWhiteSpace(titleFilter))
             query = query.Where(b => b.Title.Contains(titleFilter));
         if (!string.IsNullOrWhiteSpace(authorFilter))
             query = query.Where(b => b.Author.Contains(authorFilter));
         if (genreFilter.HasValue)
-            query = query.Where(b => b.BookGenre == genreFilter.Value);
+            query = query.Where(b => b.PrimaryGenre == genreFilter.Value);
 
-        // 3) get total count _before_ paging
-        var totalCount = await query.CountAsync(ct);
-
-        // 4) apply sorting
-        query = (sortBy, descending) switch
+        // Apply sorting
+        query = sortBy switch
         {
-            (SortGeneralBookBy.Rating, true) => query.OrderByDescending(b => b.RatingAvg),
-            (SortGeneralBookBy.Rating, false) => query.OrderBy(b => b.RatingAvg),
-            (SortGeneralBookBy.Title, true) => query.OrderByDescending(b => b.Title),
-            (SortGeneralBookBy.Title, false) => query.OrderBy(b => b.Title),
-            (SortGeneralBookBy.Author, true) => query.OrderByDescending(b => b.Author),
-            (SortGeneralBookBy.Author, false) => query.OrderBy(b => b.Author),
-            (SortGeneralBookBy.PublicationDate, true) => query.OrderByDescending(b => b.PublicationDate),
-            (SortGeneralBookBy.PublicationDate, false) => query.OrderBy(b => b.PublicationDate),
-            _ => query.OrderBy(b => b.Title)
+            SortGeneralBookBy.Rating => descending 
+                ? query.OrderByDescending(b => b.RatingAvg)
+                : query.OrderBy(b => b.RatingAvg),
+            SortGeneralBookBy.Title => descending 
+                ? query.OrderByDescending(b => b.Title)
+                : query.OrderBy(b => b.Title),
+            SortGeneralBookBy.Author => descending 
+                ? query.OrderByDescending(b => b.Author)
+                : query.OrderBy(b => b.Author),
+            SortGeneralBookBy.PublicationDate => descending 
+                ? query.OrderByDescending(b => b.PublicationDate)
+                : query.OrderBy(b => b.PublicationDate),
+            _ => descending 
+                ? query.OrderByDescending(b => b.Title)
+                : query.OrderBy(b => b.Title)
         };
 
-        // 5) apply pagination
+        var total = await query.CountAsync(ct);
         var items = await query
-            .Skip(Offset)
-            .Take(Limit)
+            .Skip(offset)
+            .Take(limit)
             .ToListAsync(ct);
 
-        // 6) map projections into your domain/DTO if needed
-        var domainItems = items.Select(_mapper.Map<GeneralBookListItem>).ToList();
-
-        return new PaginatedResult<GeneralBookListItem>(domainItems, totalCount);
+        return new PaginatedResult<GeneralBookListItem>(items, total);
     }
 
     public async Task<GeneralBookDetailsReadModel?> GetBookDetailsAsync(
         Guid bookId,
         int maxReviews = 10,
-        CancellationToken ct = default
-    )
+        CancellationToken ct = default)
     {
-        var model = await _context.GeneralBooks
+        return await _context.GeneralBooks
             .AsNoTracking()
+            .Include(b => b.Genres)
+            .Include(b => b.Reviews)
+                .ThenInclude(r => r.User)
             .Where(b => b.Id == bookId)
-            .Select(b => new GeneralBookDetailsReadModel(
-                b.Id,
-                b.Title,
-                b.Author,
-                b.Published,
-                b.Language,
-                b.Reviews.Count != 0 ? b.Reviews.Average(r => r.Rating) : 0f,
-                b.CoverPhoto,
-                b.Genres,
-                b.Reviews
-                    .OrderByDescending(r => r.CreatedAt)
-                    .Take(maxReviews)
-                    .Select(r => new ReviewReadModel(
-                        r.Id,
-                        new UserSmallReadModel(
-                            r.User.Id,
-                            r.User.UserName??"__no__username__error__",
-                            r.User.ProfilePicture
-                        ),
-                        r.Rating,
-                        r.Comment
-                    ))
-                    .ToList()
-            ))
+            .ProjectTo<GeneralBookDetailsReadModel>(
+                _mapper.ConfigurationProvider,
+                parameters: new { MaxReviews = maxReviews }
+            )
             .FirstOrDefaultAsync(ct);
+    }
 
-        return model;
+    public async Task<PaginatedResult<ReviewReadModel>> GetPaginatedReviewsAsync(
+        Guid bookId,
+        SortReviewsBy sortBy,
+        bool descending,
+        int offset,
+        int limit,
+        CancellationToken ct = default)
+    {
+        var query = _context.Reviews
+            .AsNoTracking()
+            .Where(r => r.Book.Id == bookId)
+            .Include(r => r.User)
+            // .ProjectTo<ReviewReadModel>(_mapper.ConfigurationProvider);
+            .ProjectTo<ReviewReadModel>(
+                _mapper.ConfigurationProvider, 
+                parameters: new { IncludeDetails = false } // Explicitly disable details
+            );        
+
+        // Apply sorting
+        query = sortBy switch
+        {
+            SortReviewsBy.Rating => descending 
+                ? query.OrderByDescending(r => r.Rating)
+                : query.OrderBy(r => r.Rating),
+            SortReviewsBy.Date => descending 
+                ? query.OrderByDescending(r => r.CreatedAt)
+                : query.OrderBy(r => r.CreatedAt),
+            _ => descending 
+                ? query.OrderByDescending(r => r.CreatedAt)
+                : query.OrderBy(r => r.CreatedAt)
+        };
+
+        var total = await query.CountAsync(ct);
+        var items = await query
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync(ct);
+
+        return new PaginatedResult<ReviewReadModel>(items, total);
     }
 }
