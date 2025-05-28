@@ -26,6 +26,44 @@ public sealed class ReviewsController : ControllerBase
         _mapper = mapper;
     }
 
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> List(
+        Guid bookId,
+        [FromQuery] SortReviewsBy sortBy = SortReviewsBy.Date,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 20)
+    {
+        var query = new ListReviewsQuerry(
+            bookId,
+            sortBy,
+            descending,
+            offset,
+            limit
+        );
+        
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            paginated => Ok(_mapper.Map<PaginatedResponse<ReviewResponse>>(paginated)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet("{reviewId:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Get(Guid bookId, Guid reviewId)
+    {
+        var query = new GetReviewByIdQuery(bookId, reviewId);
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            review => Ok(_mapper.Map<ReviewResponse>(review)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create(

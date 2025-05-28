@@ -26,6 +26,48 @@ public sealed class GeneralBooksController : ControllerBase
         _mapper = mapper;
     }
 
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> List(
+        [FromQuery] string? title,
+        [FromQuery] string? author,
+        [FromQuery] BookGenre? genre,
+        [FromQuery] SortGeneralBookBy sortBy = SortGeneralBookBy.Title,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery] int limit = 20)
+    {
+        var query = new ListGeneralBooksQuerry(
+            Title: title,
+            Author: author,
+            BookGenre: genre,
+            SortBy: sortBy,
+            Descending: descending,
+            Offset: offset,
+            Limit: limit
+        );
+        
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            paginated => Ok(_mapper.Map<PaginatedResponse<GeneralBookListItemResponse>>(paginated)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var query = new GetGeneralBookByIdQuerry(id);
+        var result = await _sender.Send(query);
+        
+        return result.Match(
+            book => Ok(_mapper.Map<GeneralBookDetailsResponse>(book)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(
