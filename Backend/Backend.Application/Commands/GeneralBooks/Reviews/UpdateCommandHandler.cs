@@ -1,12 +1,7 @@
 using Backend.Application.Interfaces.Repositories;
-using Backend.Domain.Entities;
-using Backend.Domain.Errors;
 using FluentResults;
 using MediatR;
-using Backend.Application.Interfaces;
 using Backend.Domain.Common;
-using Backend.Domain.Enums;
-using System.ComponentModel;
 using Backend.Application.Interfaces.DbReads;
 
 namespace Backend.Application.Commands.GeneralBooks.Reviews;
@@ -44,6 +39,7 @@ public class UpdateReviewCommandHandler
             userId:  old.UserId,
             bookId:  old.BookId,
             rating:  newRating,
+            createdAt: old.CreatedAt,
             comment: newComment
         );
         if (createResult.IsFailed)

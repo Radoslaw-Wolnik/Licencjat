@@ -13,19 +13,30 @@ public class CreateGeneralBookCommandHandler
 {
     private readonly IWriteGeneralBookRepository _bookRepo;
     private readonly IImageStorageService _imageStorage;
+    private readonly IUserContext _userContext;
 
     public CreateGeneralBookCommandHandler(
         IWriteGeneralBookRepository bookRepo,
-        IImageStorageService storage)
+        IImageStorageService storage,
+        IUserContext userContext)
     {
         _bookRepo = bookRepo;
-        _imageStorage  = storage;
+        _imageStorage = storage;
+        _userContext = userContext;
     }
 
     public async Task<Result<(Guid, string)>> Handle(
         CreateGeneralBookCommand request,
         CancellationToken cancellationToken)
     {
+        // Security: Validate user context
+        if (!_userContext.IsAuthenticated)
+            return Result.Fail(DomainErrorFactory.Unauthorized("GeneralBook.Create", "user is not logged in"));
+
+        // check if user has admin privileges
+        if (!_userContext.IsInRole("Admin"))
+            return Result.Fail(DomainErrorFactory.Forbidden("GeneralBook.Create", "Admin role required"));
+
         // Convert/validate the language code
         var langResult = LanguageCode.Create(request.OryginalLanguage);
         if (langResult.IsFailed)

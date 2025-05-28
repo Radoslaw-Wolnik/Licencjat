@@ -5,6 +5,7 @@ using Backend.Domain.Errors;
 using FluentResults;
 using MediatR;
 using Backend.Domain.Common;
+using Backend.Application.Interfaces;
 
 namespace Backend.Application.Commands.GeneralBooks.Core;
 public class UpdateGeneralBookCommandHandler
@@ -12,19 +13,31 @@ public class UpdateGeneralBookCommandHandler
 {
     private readonly IWriteGeneralBookRepository _bookRepo;
     private readonly IGeneralBookReadService _bookRead;
+    private readonly IUserContext _userContext;
+
 
     public UpdateGeneralBookCommandHandler(
         IWriteGeneralBookRepository bookRepo,
-        IGeneralBookReadService bookRead)
+        IGeneralBookReadService bookRead,
+        IUserContext userContext)
     {
         _bookRepo = bookRepo;
         _bookRead = bookRead;
+        _userContext = userContext;
     }
 
     public async Task<Result<GeneralBook>> Handle(
         UpdateGeneralBookCommand request,
         CancellationToken cancellationToken)
     {
+        // Security: Validate user context
+        if (!_userContext.IsAuthenticated)
+            return Result.Fail(DomainErrorFactory.Unauthorized("GeneralBook.Create", "user is not logged in"));
+
+        // check if user has admin privileges
+        if (!_userContext.IsInRole("Admin"))
+            return Result.Fail(DomainErrorFactory.Forbidden("GeneralBook.Create", "Admin role required"));
+
         // get book
         var book = await _bookRead.GetByIdAsync(request.BookId, cancellationToken);
         

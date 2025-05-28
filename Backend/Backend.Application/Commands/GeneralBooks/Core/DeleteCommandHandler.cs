@@ -2,6 +2,7 @@ using Backend.Application.Interfaces.Repositories;
 using FluentResults;
 using MediatR;
 using Backend.Application.Interfaces;
+using Backend.Domain.Errors;
 
 namespace Backend.Application.Commands.GeneralBooks.Core;
 public class DeleteGeneralBookCommandHandler
@@ -9,19 +10,31 @@ public class DeleteGeneralBookCommandHandler
 {
     private readonly IWriteGeneralBookRepository _bookRepo;
     private readonly IImageStorageService _imageStorage;
+    private readonly IUserContext _userContext;
+
 
     public DeleteGeneralBookCommandHandler(
         IWriteGeneralBookRepository bookRepo,
-        IImageStorageService storage)
+        IImageStorageService storage,
+        IUserContext userContext)
     {
         _bookRepo = bookRepo;
-        _imageStorage  = storage;
+        _imageStorage = storage;
+        _userContext = userContext;
     }
 
     public async Task<Result> Handle(
         DeleteGeneralBookCommand request,
         CancellationToken cancellationToken)
     {
+        // Security: Validate user context
+        if (!_userContext.IsAuthenticated)
+            return Result.Fail(DomainErrorFactory.Unauthorized("GeneralBook.Create", "user is not logged in"));
+
+        // check if user has admin privileges
+        if (!_userContext.IsInRole("Admin"))
+            return Result.Fail(DomainErrorFactory.Forbidden("GeneralBook.Create", "Admin role required"));
+            
         var Id = request.GeneralBookId;
 
         // ask the storage to delete the book

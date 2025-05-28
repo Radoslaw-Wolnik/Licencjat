@@ -23,7 +23,7 @@ public class CreateReviewCommandHandler
         var reviewId = Guid.NewGuid();
         
         // create new review
-        var reviewResult = Review.Create(reviewId, request.BookId, request.UserId, request.Rating, request.Comment);
+        var reviewResult = Review.Create(reviewId, request.BookId, request.UserId, request.Rating, DateTime.Now, request.Comment);
         if (reviewResult.IsFailed)
             return Result.Fail(reviewResult.Errors);
         
