@@ -24,5 +24,16 @@ public sealed class GeneralBookCommandProfile : Profile
         CreateMap<ReviewRequest, CreateReviewCommand>();
         CreateMap<ReviewRequest, UpdateReviewCommand>();
         
+        // Read model → DTO
+        CreateMap<GeneralBookListItem, GeneralBookListItemResponse>()
+            .ForMember(dest => dest.PrimaryGenre, 
+                       opt => opt.MapFrom(src => src.PrimaryGenre.ToString()));
+        
+        CreateMap<GeneralBookDetailsReadModel, GeneralBookDetailsResponse>();
+        CreateMap<ReviewReadModel, ReviewResponse>();
+        
+        // Pagination wrapper
+        CreateMap<PaginatedResult<GeneralBookListItem>, PaginatedResponse<GeneralBookListItemResponse>>()
+            .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
     }
 }
