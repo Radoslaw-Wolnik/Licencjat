@@ -6,10 +6,9 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using System.Linq.Expressions;
 using AutoMapper.Extensions.ExpressionMapping;
-using Backend.Application.DTOs;
 using Backend.Application.Interfaces.DbReads;
-using Backend.Application.DTOs.Commands.Auth;
 using Backend.Domain.Common;
+using Backend.Application.ReadModels.Users;
 
 namespace Backend.Infrastructure.Services.DbReads;
 
@@ -43,18 +42,6 @@ public class UserReadService : IUserReadService
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<User?> GetByAsync(
-        Expression<Func<UserProjection, bool>> predicate,
-        CancellationToken cancellationToken = default
-    ) {
-        var entityPredicate =
-            _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
-        var entity = await _db.Users
-            .FirstOrDefaultAsync(entityPredicate, cancellationToken);
-
-        return _mapper.Map<User>(entity);
-    }
-
     public async Task<User?> GetUserWithIncludes(
         Guid userId,
         CancellationToken cancellationToken = default,
@@ -73,26 +60,6 @@ public class UserReadService : IUserReadService
             return null;
 
         return _mapper.Map<User>(entity);
-    }
-
-    public async Task<LoginUserInfo?> GetLoginInfoAsync(
-        Expression<Func<UserProjection, bool>> predicate,
-        CancellationToken cancellationToken = default
-    ) {
-        var entityPredicate =
-            _mapper.MapExpression<Expression<Func<UserEntity, bool>>>(predicate);
-
-        return await _db.Users
-            .Where(entityPredicate)
-            .Select(u => new LoginUserInfo
-            {
-                Id = u.Id,
-                Email = u.Email,
-                UserName = u.UserName,
-                // PasswordHash = u.PasswordHash,
-                // …
-            })
-            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<SocialMediaLink> GetSocialMediaByIdAsync(
