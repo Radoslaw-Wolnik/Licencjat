@@ -4,7 +4,7 @@ using FluentResults;
 
 namespace Backend.Domain.Common;
 
-public sealed record TimelineUpdate(Guid Id, Guid UserId, Guid SwapId, TimelineStatus Status, string Description)
+public sealed record TimelineUpdate(Guid Id, Guid UserId, Guid SwapId, TimelineStatus Status, string Description, DateTime CreatedAt)
 {
     public static Result<TimelineUpdate> Create(Guid id, Guid userId, Guid swapId, TimelineStatus status,  string description)
     {
@@ -25,7 +25,7 @@ public sealed record TimelineUpdate(Guid Id, Guid UserId, Guid SwapId, TimelineS
 
         return errors.Count != 0
             ? Result.Fail<TimelineUpdate>(errors) 
-            : new TimelineUpdate(id, userId, swapId, status, description.Trim());
+            : new TimelineUpdate(id, userId, swapId, status, description.Trim(), DateTime.Now);
     }
 
 }

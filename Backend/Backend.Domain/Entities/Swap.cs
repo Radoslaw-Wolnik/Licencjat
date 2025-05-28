@@ -8,7 +8,7 @@ namespace Backend.Domain.Entities;
 
 public sealed class Swap : Entity<Guid>
 {
-    public TimelineStatus Status { get; private set; }
+    public SwapStatus Status { get; private set; }
     public SubSwap SubSwapRequesting { get; }
     public SubSwap SubSwapAccepting { get; }
 
@@ -17,29 +17,34 @@ public sealed class Swap : Entity<Guid>
 
     public IReadOnlyCollection<Meetup> Meetups => _meetups.Meetups;
     public IReadOnlyCollection<TimelineUpdate> TimelineUpdates => _timelineUpdates.TimelineUpdates;
+    public DateOnly CreatedAt { get; }
 
     // initial creation 
     private Swap(
-        Guid requestingUserId, 
-        UserBook requestingBook, 
-        Guid acceptingUserId
-    ) : this (
+        Guid requestingUserId,
+        UserBook requestingBook,
+        Guid acceptingUserId,
+        DateOnly createdAt
+    ) : this(
         Guid.NewGuid(),
-        TimelineStatus.Requested,
-        SubSwap.Initial(requestingUserId, requestingBook), 
+        SwapStatus.Requested,
+        SubSwap.Initial(requestingUserId, requestingBook),
         SubSwap.Initial(acceptingUserId, null),
         initialMeetups: Enumerable.Empty<Meetup>(),
-        InitialTimelineUpdates: []
-    ) { }
+        InitialTimelineUpdates: [],
+        createdAt
+    )
+    { }
 
     // reconstruction - main constructor
     private Swap(
         Guid id, 
-        TimelineStatus status,
+        SwapStatus status,
         SubSwap subSwapRequesting, 
         SubSwap subSwapAccepting, 
         IEnumerable<Meetup> initialMeetups, 
-        IEnumerable<TimelineUpdate> InitialTimelineUpdates
+        IEnumerable<TimelineUpdate> InitialTimelineUpdates,
+        DateOnly createdAt
     ) {
         Id = id;
         Status = status;
@@ -47,27 +52,29 @@ public sealed class Swap : Entity<Guid>
         SubSwapRequesting = subSwapRequesting;
         _meetups = new MeetupsCollection(initialMeetups);
         _timelineUpdates = new TimelineUpdatesCollection(InitialTimelineUpdates);
+        CreatedAt = createdAt;
     }
 
-    public static Result<Swap> Create(Guid requestingUserId, UserBook requestingBook, Guid acceptingUserId)
+    public static Result<Swap> Create(Guid requestingUserId, UserBook requestingBook, Guid acceptingUserId, DateOnly createdAt)
     {
         if (requestingUserId == Guid.Empty)
             return Result.Fail(DomainErrorFactory.NotFound("swap.userRequesting", requestingUserId));
         if (acceptingUserId == Guid.Empty)
             return Result.Fail(DomainErrorFactory.NotFound("swap.userAccepting", acceptingUserId));
 
-        return Result.Ok(new Swap(requestingUserId, requestingBook, acceptingUserId));
+        return Result.Ok(new Swap(requestingUserId, requestingBook, acceptingUserId, createdAt));
     }
 
     public static Swap Reconstitute(
         Guid id,
-        TimelineStatus status,
+        SwapStatus status,
         SubSwap subSwapRequesitng,
         SubSwap subSwapAccepting,
         IEnumerable<Meetup> meetups,
-        IEnumerable<TimelineUpdate> timelineUpdates
+        IEnumerable<TimelineUpdate> timelineUpdates,
+        DateOnly createdAt
     ) {
-        var swap = new Swap(id, status, subSwapRequesitng, subSwapAccepting, meetups, timelineUpdates);
+        var swap = new Swap(id, status, subSwapRequesitng, subSwapAccepting, meetups, timelineUpdates, createdAt);
 
         return swap;
     }
@@ -87,7 +94,7 @@ public sealed class Swap : Entity<Guid>
     public Result RemoveTimelineUpdate(Guid timelineUpdateId)
         => _timelineUpdates.Remove(timelineUpdateId);
 
-    public void UpdateStaus(TimelineStatus newStatus)
+    public void UpdateStaus(SwapStatus newStatus)
         => Status = newStatus;
 
     // ------------------ Subswap logic ------------------

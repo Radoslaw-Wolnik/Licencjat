@@ -8,7 +8,7 @@ namespace Backend.Infrastructure.Entities;
 public class SwapEntity
 {
     public Guid Id { get; set; }
-    public TimelineStatus Status { get; set; }
+    public SwapStatus Status { get; set; }
 
     // Many To One
     public Guid SubSwapRequestingId { get; set; } // person that requests the swap
@@ -24,4 +24,6 @@ public class SwapEntity
     // two/many to One
     public virtual ICollection<MeetupEntity> Meetups { get; set; } = []; // 2
     public virtual ICollection<TimelineEntity> TimelineUpdates { get; set; } = []; // every timeline update
+
+    public DateOnly CreatedAt { get; set; }
 }

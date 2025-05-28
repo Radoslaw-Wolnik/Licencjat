@@ -8,6 +8,8 @@ using FluentResults;
 using Backend.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Common;
+using Backend.Infrastructure.Mapping;
+using Backend.Domain.Enums;
 
 namespace Backend.Infrastructure.Repositories.Swaps;
 
@@ -125,7 +127,7 @@ public class WriteSwapRepository : IWriteSwapRepository
         var tempSwap = new SwapEntity { Id = update.SwapId };
         _db.Swaps.Attach(tempSwap);
 
-        tempSwap.Status = update.Status;
+        tempSwap.Status = _mapper.Map<SwapStatus>(update.Status);
         
         var entry = _db.Entry(tempSwap);
         entry.Property(e => e.Status).IsModified = true;
