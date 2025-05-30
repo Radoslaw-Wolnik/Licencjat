@@ -48,4 +48,6 @@ public interface IUserBookQueryService
         int offset,
         int limit,
         CancellationToken ct = default);
+
+    Task<BookmarkReadModel?> GetBookmarkByIdAsync(Guid bookmarkId, CancellationToken ct = default);
 }

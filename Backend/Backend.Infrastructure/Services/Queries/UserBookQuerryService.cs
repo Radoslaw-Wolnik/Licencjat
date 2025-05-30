@@ -121,10 +121,21 @@ namespace Backend.Infrastructure.Services.Queries
 
             return new PaginatedResult<BookmarkReadModel>(items, totalCount);
         }
+        
+        public async Task<BookmarkReadModel?> GetBookmarkByIdAsync(
+            Guid bookmarkId,
+            CancellationToken ct = default)
+        {
+            return await _context.Bookmarks
+                .AsNoTracking()
+                .Where(b => b.Id == bookmarkId)
+                .ProjectTo<BookmarkReadModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(ct);
+        }
 
         private IQueryable<UserBookProjection> ApplySorting(
-            IQueryable<UserBookProjection> query, 
-            SortUserBookBy sortBy, 
+            IQueryable<UserBookProjection> query,
+            SortUserBookBy sortBy,
             bool descending)
         {
             return (sortBy, descending) switch
