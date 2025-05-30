@@ -8,4 +8,4 @@ public sealed record CreateSwapCommand(
     Guid UserRequestingId,
     Guid UserAcceptingId,
     Guid RequestedBookId
-    ) : IRequest<Result>;
+    ) : IRequest<Result<Guid>>;

@@ -8,7 +8,7 @@ using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Issues;
 public class AddIssueCommandHandler
-    : IRequestHandler<AddIssueCommand, Result>
+    : IRequestHandler<AddIssueCommand, Result<Guid>>
 {
     private readonly IWriteSwapRepository _swapRepo;
     private readonly ISwapReadService _swapRead;
@@ -21,7 +21,7 @@ public class AddIssueCommandHandler
         _swapRead = swapReadService;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<Guid>> Handle(
         AddIssueCommand request,
         CancellationToken cancellationToken)
     {
@@ -46,6 +46,6 @@ public class AddIssueCommandHandler
             return Result.Fail(updateResult.Errors);
         await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
-        return Result.Ok();
+        return Result.Ok(issueId);
     }
 }

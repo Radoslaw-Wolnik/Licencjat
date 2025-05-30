@@ -9,4 +9,4 @@ public sealed record AddMeetupCommand(
     Guid UserId,
     double Latitude,
     double Longitude
-    ) : IRequest<Result>; // or <Result<Meetup>> or <Result<Guid>>
+    ) : IRequest<Result<Guid>>;

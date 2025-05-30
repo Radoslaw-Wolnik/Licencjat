@@ -7,7 +7,7 @@ using Backend.Domain.Enums;
 
 namespace Backend.Application.Commands.UserBooks.Bookmarks;
 public class CreateBookmarkCommandHandler
-    : IRequestHandler<CreateBookmarkCommand, Result<Bookmark>>
+    : IRequestHandler<CreateBookmarkCommand, Result<Guid>>
 {
     private readonly IWriteUserBookRepository _bookRepo;
 
@@ -17,7 +17,7 @@ public class CreateBookmarkCommandHandler
         _bookRepo = bookRepo;
     }
 
-    public async Task<Result<Bookmark>> Handle(
+    public async Task<Result<Guid>> Handle(
         CreateBookmarkCommand request,
         CancellationToken cancellationToken)
     {
@@ -32,6 +32,6 @@ public class CreateBookmarkCommandHandler
         if(persistanceResult.IsFailed)
             return Result.Fail(persistanceResult.Errors);
 
-        return Result.Ok(bookmarkResult.Value);
+        return Result.Ok(bookmarkResult.Value.Id);
     }
 }

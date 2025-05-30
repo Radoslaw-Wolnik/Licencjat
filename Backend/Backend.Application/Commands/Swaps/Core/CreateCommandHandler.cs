@@ -11,7 +11,7 @@ using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Core;
 public class CreateSwapCommandHandler
-    : IRequestHandler<CreateSwapCommand, Result>
+    : IRequestHandler<CreateSwapCommand, Result<Guid>>
 {
     private readonly IWriteSwapRepository _swapRepo;
     private readonly IUserBookReadService _bookRead;
@@ -24,7 +24,7 @@ public class CreateSwapCommandHandler
         _bookRead = userBookReadService;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<Guid>> Handle(
         CreateSwapCommand request,
         CancellationToken cancellationToken)
     {
@@ -49,6 +49,6 @@ public class CreateSwapCommandHandler
             return Result.Fail(updateResult.Errors);
         await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
-        return Result.Ok();
+        return Result.Ok(swapResult.Value.Id);
     }
 }

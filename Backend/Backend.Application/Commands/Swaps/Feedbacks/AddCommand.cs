@@ -12,4 +12,4 @@ public sealed record AddFeedbackCommand(
     SwapLength Length,
     SwapConditionBook Condition,
     SwapCommunication Communication
-    ) : IRequest<Result>; // <Result<Feedback>>  or <Result<Guid>>
+    ) : IRequest<Result<Guid>>;

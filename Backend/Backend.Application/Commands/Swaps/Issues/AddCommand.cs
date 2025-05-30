@@ -7,4 +7,4 @@ public sealed record AddIssueCommand(
     Guid SwapId,
     Guid UserId,
     string Description
-    ) : IRequest<Result>; // <Result<Issue>> or <Result<Guid>>
+    ) : IRequest<Result<Guid>>;

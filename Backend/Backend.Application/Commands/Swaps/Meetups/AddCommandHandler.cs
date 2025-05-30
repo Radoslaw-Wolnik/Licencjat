@@ -9,7 +9,7 @@ using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Meetups;
 public class AddMeetupCommandHandler
-    : IRequestHandler<AddMeetupCommand, Result>
+    : IRequestHandler<AddMeetupCommand, Result<Guid>>
 {
     private readonly IWriteSwapRepository _swapRepo;
     private readonly ISwapReadService _swapRead;
@@ -22,7 +22,7 @@ public class AddMeetupCommandHandler
         _swapRead = swapReadService;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<Guid>> Handle(
         AddMeetupCommand request,
         CancellationToken cancellationToken)
     {
@@ -59,6 +59,6 @@ public class AddMeetupCommandHandler
             return Result.Fail(updateResult.Errors);
         await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
 
-        return Result.Ok();
+        return Result.Ok(meetupId);
     }
 }

@@ -8,7 +8,7 @@ using Backend.Domain.Factories;
 
 namespace Backend.Application.Commands.Swaps.Feedbacks;
 public class AddFeedbackCommandHandler
-    : IRequestHandler<AddFeedbackCommand, Result>
+    : IRequestHandler<AddFeedbackCommand, Result<Guid>>
 {
     private readonly IWriteSwapRepository _swapRepo;
     private readonly ISwapReadService _swapRead;
@@ -21,7 +21,7 @@ public class AddFeedbackCommandHandler
         _swapRead = swapReadService;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<Guid>> Handle(
         AddFeedbackCommand request,
         CancellationToken cancellationToken)
     {
@@ -45,7 +45,11 @@ public class AddFeedbackCommandHandler
         if (updateResult.IsFailed)
             return Result.Fail(updateResult.Errors);
         await _swapRepo.AddTimelineUpdateAsync(updateResult.Value, cancellationToken);
+
+        // here < -----------------
+        // update user reputation (other one mby this as well) 
+        // write code
          
-        return Result.Ok();
+        return Result.Ok(feedbackId);
     }
 }

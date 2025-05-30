@@ -10,4 +10,4 @@ public sealed record CreateBookmarkCommand(
     BookmarkColours Colour,
     int Page,
     string? Description
-    ) : IRequest<Result<Bookmark>>;
+    ) : IRequest<Result<Guid>>;
