@@ -185,9 +185,13 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, IdentityRole<G
             entity.HasNoKey();
             entity.ToView("GeneralBooksWithAverageRatings");
         });
-        
+
         builder.Entity<ReviewEntity>()
             .Property(r => r.CreatedAt)
+            .HasDefaultValueSql("NOW()");
+        
+        builder.Entity<TimelineEntity>()
+            .Property(t => t.CreatedAt)
             .HasDefaultValueSql("NOW()");
     }
 
