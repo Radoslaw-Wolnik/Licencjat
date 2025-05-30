@@ -48,19 +48,19 @@ public class GeneralBookQueryService : IGeneralBookQueryService
         // Apply sorting
         query = sortBy switch
         {
-            SortGeneralBookBy.Rating => descending 
+            SortGeneralBookBy.Rating => descending
                 ? query.OrderByDescending(b => b.RatingAvg)
                 : query.OrderBy(b => b.RatingAvg),
-            SortGeneralBookBy.Title => descending 
+            SortGeneralBookBy.Title => descending
                 ? query.OrderByDescending(b => b.Title)
                 : query.OrderBy(b => b.Title),
-            SortGeneralBookBy.Author => descending 
+            SortGeneralBookBy.Author => descending
                 ? query.OrderByDescending(b => b.Author)
                 : query.OrderBy(b => b.Author),
-            SortGeneralBookBy.PublicationDate => descending 
+            SortGeneralBookBy.PublicationDate => descending
                 ? query.OrderByDescending(b => b.PublicationDate)
                 : query.OrderBy(b => b.PublicationDate),
-            _ => descending 
+            _ => descending
                 ? query.OrderByDescending(b => b.Title)
                 : query.OrderBy(b => b.Title)
         };
@@ -106,20 +106,20 @@ public class GeneralBookQueryService : IGeneralBookQueryService
             .Include(r => r.User)
             // .ProjectTo<ReviewReadModel>(_mapper.ConfigurationProvider);
             .ProjectTo<ReviewReadModel>(
-                _mapper.ConfigurationProvider, 
+                _mapper.ConfigurationProvider,
                 parameters: new { IncludeDetails = false } // Explicitly disable details
-            );        
+            );
 
         // Apply sorting
         query = sortBy switch
         {
-            SortReviewsBy.Rating => descending 
+            SortReviewsBy.Rating => descending
                 ? query.OrderByDescending(r => r.Rating)
                 : query.OrderBy(r => r.Rating),
-            SortReviewsBy.Date => descending 
+            SortReviewsBy.Date => descending
                 ? query.OrderByDescending(r => r.CreatedAt)
                 : query.OrderBy(r => r.CreatedAt),
-            _ => descending 
+            _ => descending
                 ? query.OrderByDescending(r => r.CreatedAt)
                 : query.OrderBy(r => r.CreatedAt)
         };
@@ -131,5 +131,20 @@ public class GeneralBookQueryService : IGeneralBookQueryService
             .ToListAsync(ct);
 
         return new PaginatedResult<ReviewReadModel>(items, total);
+    }
+    
+    public async Task<ReviewReadModel?> GetReviewByIdAsync(
+        Guid reviewId,
+        CancellationToken ct = default)
+    {
+        return await _context.Reviews
+            .AsNoTracking()
+            .Include(r => r.User)
+            .Where(r => r.Id == reviewId)
+            .ProjectTo<ReviewReadModel>(
+                _mapper.ConfigurationProvider,
+                parameters: new { IncludeDetails = true } // Enable full details
+            )
+            .FirstOrDefaultAsync(ct);
     }
 }

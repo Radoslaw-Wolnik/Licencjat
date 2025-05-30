@@ -38,4 +38,6 @@ public interface IGeneralBookQueryService
         int offset,
         int limit,
         CancellationToken ct = default);
+    
+    Task<ReviewReadModel?> GetReviewByIdAsync(Guid reviewId, CancellationToken ct = default);
 }
