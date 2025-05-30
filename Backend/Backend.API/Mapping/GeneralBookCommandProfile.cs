@@ -28,6 +28,8 @@ public sealed class GeneralBookCommandProfile : Profile
         CreateMap<GeneralBookListItem, GeneralBookListItemResponse>()
             .ForMember(dest => dest.PrimaryGenre, 
                        opt => opt.MapFrom(src => src.PrimaryGenre.ToString()));
+
+        CreateMap<BookCoverItemReadModel, BookCoverItemResponse>();
         
         CreateMap<GeneralBookDetailsReadModel, GeneralBookDetailsResponse>();
         CreateMap<ReviewReadModel, ReviewResponse>();

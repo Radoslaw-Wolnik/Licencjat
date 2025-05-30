@@ -1,9 +1,13 @@
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
+using Backend.API.DTOs.Common;
 using Backend.API.DTOs.Users;
 using Backend.API.DTOs.Users.Responses;
 using Backend.API.Extensions;
 using Backend.Application.Commands.Users.Core;
 using Backend.Application.Commands.Users.ProfilePictures;
+using Backend.Application.Querries.Users;
+using Backend.Domain.Enums.SortBy;
 using Backend.Infrastructure.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -23,6 +27,61 @@ public sealed class UsersController : ControllerBase
     {
         _sender = sender;
         _mapper = mapper;
+    }
+
+    [HttpGet("{userId:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetUserProfile(Guid userId)
+    {
+        var query = new GetUserProfileQuerry(userId);
+        var result = await _sender.Send(query);
+
+        return result.Match(
+            userProfile => userProfile is null 
+                ? NotFound() 
+                : Ok(_mapper.Map<UserProfileFullResponse>(userProfile)),
+            errors => errors.ToProblemDetailsResult()
+        );
+    }
+
+    [HttpGet("search")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SearchUsers(
+        [FromQuery] string? userName = null,
+        [FromQuery] float? reputation = null,
+        [FromQuery] string? city = null,
+        [FromQuery] string? country = null,
+        [FromQuery] SortUsersBy sortBy = SortUsersBy.UserName,
+        [FromQuery] bool descending = false,
+        [FromQuery] int offset = 0,
+        [FromQuery][Range(1, 100)] int limit = 20)
+    {
+        var query = new ListUsersQuerry(
+            userName,
+            reputation,
+            city,
+            country,
+            sortBy,
+            descending,
+            offset,
+            limit
+        );
+
+        var result = await _sender.Send(query);
+
+        return result.Match(
+            paginated => 
+            {
+                var response = new PaginatedResponse<UserSmallResponse>(
+                    _mapper.Map<List<UserSmallResponse>>(paginated.Items),
+                    paginated.TotalCount,
+                    offset,
+                    limit
+                );
+                return Ok(response);
+            },
+            errors => errors.ToProblemDetailsResult()
+        );
     }
 
     [HttpPut("me")]
