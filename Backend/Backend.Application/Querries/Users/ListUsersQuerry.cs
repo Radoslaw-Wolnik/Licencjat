@@ -7,11 +7,11 @@ using MediatR;
 namespace Backend.Application.Querries.Users;
 
 public sealed record ListUsersQuerry(
-    string UserName,
-    float Reputation,
+    string? UserName,
+    float? Reputation,
 
-    string City,
-    string Country,
+    string? City,
+    string? Country,
 
     SortUsersBy SortBy,
     bool Descending,

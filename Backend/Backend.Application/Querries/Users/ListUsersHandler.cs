@@ -26,7 +26,7 @@ public class ListUsersHandler
         ListUsersQuerry request,
         CancellationToken cancellationToken)
     {
-        var query = await _userQuery.ListAsync(request.UserName, request.Reputation, request.City, request.Country, request.SortBy, request.Descending, request.Offset, request.Limit, cancellationToken);
+        var query = await _userQuery.ListAsync(request.UserName??"", request.Reputation??0, request.City??"", request.Country??"", request.SortBy, request.Descending, request.Offset, request.Limit, cancellationToken);
 
         return Result.Ok(query);
         
