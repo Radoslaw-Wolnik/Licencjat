@@ -1,3 +1,5 @@
+using Backend.API.DTOs.Common;
+
 namespace Backend.API.DTOs.Swaps.Responses;
 
 public sealed record SwapDetailsResponse(

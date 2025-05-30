@@ -9,6 +9,7 @@ using Backend.Application.Commands.Users.ProfilePictures;
 using Backend.Application.Commands.Users.SocialMedia;
 using Backend.Application.Commands.Users.Wishlist;
 using Backend.Application.ReadModels.Common;
+using Backend.Application.ReadModels.Users;
 using Backend.Domain.Common;
 using Backend.Domain.Entities;
 
@@ -41,9 +42,15 @@ public class UserCommandProfile : Profile
 
         // Responses
         CreateMap<User, UserProfileResponse>();
-        CreateMap<SocialMediaLink, SocialMediaResponse>();
+        CreateMap<SocialMediaLinkReadModel, SocialMediaLinkResponse>()
+        .ForMember(dest => dest.Platform,
+            opt => opt.MapFrom(src => src.Platform.ToString())); // or keep enum - but i would need to make it in frontend
 
         // Read model → DTO
         CreateMap<UserSmallReadModel, UserSmallResponse>();
+        
+        CreateMap<UserProfileReadModel, UserProfileFullResponse>()
+        .ForMember(dest => dest.SocialMedias, 
+            opt => opt.MapFrom(src => src.SocialMsdias)); // i will need to fix s to e typo
     }
 }
