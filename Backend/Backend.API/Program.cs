@@ -21,8 +21,7 @@ using Backend.Infrastructure.Entities;
 using Backend.Infrastructure.Mapping;
 
 // validators
-using Backend.Application.Validators;
-using Backend.Application.Validators.Commands.Auth;
+// using Backend.API.Validators;
 
 // commands
 using Backend.Application.Commands.Auth;
@@ -98,6 +97,10 @@ builder.Services.AddHostedService<ThumbnailBackgroundService>();
 
 // ========== INFRASTRUCTURE SERVICES ========== //
 
+// setting the userContext
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, HttpUserContext>();
+
 // repositories
 // general book
 builder.Services.AddScoped<IWriteGeneralBookRepository, WriteGeneralBookRepository>();
@@ -123,7 +126,6 @@ builder.Services.AddTransient<IUserBookReadService, UserBookReadService>();
 builder.Services.AddTransient<IUserReadService, UserReadService>();
 
 // mappers
-builder.Services.AddAutoMapper(typeof(AuthProfile));
 builder.Services.AddAutoMapper(typeof(BookmarkProfile));
 builder.Services.AddAutoMapper(typeof(FeedbackProfile));
 builder.Services.AddAutoMapper(typeof(GeneralBookProfile));
@@ -143,7 +145,6 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddExpressionMapping();
     cfg.AddMaps(
         typeof(UserProfile), 
-        typeof(AuthProfile),
         typeof(GeneralBookProfile),
         typeof(UserBookProfile));
 });
@@ -160,8 +161,8 @@ builder.Services.AddMediatR(cfg =>
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<Backend.Application.Validators.Commands.GeneralBook.CreateValidator>();
+// builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+// builder.Services.AddValidatorsFromAssemblyContaining<Backend.Application.Validators.Commands.GeneralBook.CreateValidator>();
 
 // - optional - command validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
