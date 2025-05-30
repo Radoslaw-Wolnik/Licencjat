@@ -32,4 +32,14 @@ public interface ISwapQueryService
         int offset,
         int limit,
         CancellationToken ct = default);
+
+    Task<FeedbackReadModel?> GetFeedbackByIdAsync(Guid feedbackId, CancellationToken ct = default);
+    Task<IssueReadModel?> GetIssueByIdAsync(Guid issueId, CancellationToken ct = default);
+    Task<MeetupReadModel?> GetMeetupByIdAsync(Guid meetupId, CancellationToken ct = default);
+
+    Task<PaginatedResult<MeetupReadModel>> ListMeetupsAsync(
+        bool descending,
+        int offset,
+        int limit,
+        CancellationToken ct = default);
 }

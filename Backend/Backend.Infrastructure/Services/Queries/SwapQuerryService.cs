@@ -37,7 +37,7 @@ public class SwapQueryService : ISwapQueryService
     {
         var query = _context.Swaps
             .AsNoTracking()
-            .Where(s => s.Status == status && 
+            .Where(s => s.Status == status &&
                 (s.SubSwapRequesting.UserId == userId || s.SubSwapAccepting.UserId == userId))
             .ProjectTo<SwapListItem>(_mapper.ConfigurationProvider, new { UserId = userId });
 
@@ -50,7 +50,7 @@ public class SwapQueryService : ISwapQueryService
         CancellationToken ct = default)
     {
         // var currentUserId = _userContext.UserId;
-        var currentUserId = _userContext.UserId 
+        var currentUserId = _userContext.UserId
             ?? throw new UnauthorizedAccessException();
 
         return await _context.Swaps
@@ -103,5 +103,58 @@ public class SwapQueryService : ISwapQueryService
             .ToListAsync(ct);
 
         return new PaginatedResult<T>(results, total);
+    }
+    
+    public async Task<FeedbackReadModel?> GetFeedbackByIdAsync(
+        Guid feedbackId, 
+        CancellationToken ct = default)
+    {
+        return await _context.Feedbacks
+            .AsNoTracking()
+            .Where(f => f.Id == feedbackId)
+            .ProjectTo<FeedbackReadModel>(_mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<IssueReadModel?> GetIssueByIdAsync(
+        Guid issueId, 
+        CancellationToken ct = default)
+    {
+        return await _context.Issues
+            .AsNoTracking()
+            .Where(i => i.Id == issueId)
+            .ProjectTo<IssueReadModel>(_mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<MeetupReadModel?> GetMeetupByIdAsync(
+        Guid meetupId, 
+        CancellationToken ct = default)
+    {
+        return await _context.Meetups
+            .AsNoTracking()
+            .Where(m => m.Id == meetupId)
+             // .Include(m => m.Swap) // Include related data as needed
+             // .Include(m => m.Location)
+            .ProjectTo<MeetupReadModel>(_mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<PaginatedResult<MeetupReadModel>> ListMeetupsAsync(
+        bool descending,
+        int offset,
+        int limit,
+        CancellationToken ct = default)
+    {
+        var currentUserId = _userContext.UserId 
+            ?? throw new UnauthorizedAccessException();
+        
+        var query = _context.Meetups
+            .AsNoTracking()
+            .Where(m => m.Swap.SubSwapRequesting.UserId == currentUserId || 
+                    m.Swap.SubSwapAccepting.UserId == currentUserId)
+            .ProjectTo<MeetupReadModel>(_mapper.ConfigurationProvider);
+
+        return await ExecutePaginatedQuery(query, descending, offset, limit, ct);
     }
 }
