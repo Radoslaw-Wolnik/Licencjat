@@ -2,8 +2,6 @@ using AutoMapper;
 using Backend.Domain.Entities;
 using Backend.Infrastructure.Entities;
 using Backend.Domain.Common;
-using Backend.Domain.Errors;
-using Backend.Application.DTOs;
 
 namespace Backend.Infrastructure.Mapping;
 
@@ -77,12 +75,6 @@ public class UserProfile : Profile
                     socialMediaLinks: domainLinks
                 );
             });
-
-        // Query Projection for database operations
-        CreateMap<UserEntity, UserProjection>()
-            .ForMember(dest => dest.LocationCity, opt => opt.MapFrom(src => src.City))
-            .ForMember(dest => dest.LocationCountry, opt => opt.MapFrom(src => src.Country))
-            .ReverseMap();
         
         // Domain -> Entity Mapping
         CreateMap<User, UserEntity>(MemberList.Source)

@@ -1,18 +1,9 @@
 using Backend.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Backend.Infrastructure.Data;
-using Backend.Infrastructure.Entities;
 using AutoMapper;
-using System.Linq.Expressions;
-using AutoMapper.Extensions.ExpressionMapping;
-using Backend.Application.DTOs;
 using Backend.Application.Interfaces.DbReads;
 using Backend.Domain.Common;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
-using Backend.Domain.Enums.SortBy;
-using Backend.Domain.Enums;
-using AutoMapper.QueryableExtensions;
-using Backend.Application.ReadModels.GeneralBooks;
 
 namespace Backend.Infrastructure.Services.DbReads;
 

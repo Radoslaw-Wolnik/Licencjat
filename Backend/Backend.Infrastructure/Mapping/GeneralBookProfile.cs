@@ -2,7 +2,6 @@ using AutoMapper;
 using Backend.Domain.Entities;
 using Backend.Infrastructure.Entities;
 using Backend.Domain.Common;
-using Backend.Application.DTOs;
 using Backend.Domain.Enums;
 using Backend.Domain.Errors;
 using Backend.Application.ReadModels.GeneralBooks;
@@ -84,29 +83,5 @@ public class GeneralBookProfile : Profile
             .ForMember(dest => dest.UserBooks, opt => opt.Ignore())
             .ForMember(dest => dest.Reviews, opt => opt.Ignore())
             .ForMember(dest => dest.WishlistedByUsers, opt => opt.Ignore());
-
-
-        // Query Projection for database operations
-        CreateMap<GeneralBookEntity, GeneralBookProjection>()
-            .ForMember(dest => dest.PublicationDate, opt => opt.MapFrom(src => src.Published))
-            .ForMember(dest => dest.BookGenre, opt => opt.MapFrom(src => src.Genres.FirstOrDefault()));
-
-
-        CreateMap<GeneralBookProjection, GeneralBookEntity>()
-            .ForMember(dest => dest.Published, opt => opt.MapFrom(src => src.PublicationDate))
-            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => new[] { src.BookGenre })) // if your project allows null or default, guard here - ?? 
-            // projection doesn’t carry these so we ignore them
-            .ForMember(dest => dest.CoverPhoto, opt => opt.MapFrom(src => src.CoverPhoto))
-            .ForMember(dest => dest.UserBooks, opt => opt.Ignore())
-            .ForMember(dest => dest.Reviews, opt => opt.Ignore())
-            .ForMember(dest => dest.WishlistedByUsers, opt => opt.Ignore());
-
-
-        CreateMap<GeneralBookProjection, GeneralBookListItem>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-            .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
-            .ForMember(dest => dest.RatingAvg, opt => opt.MapFrom(src => src.RatingAvg))
-            .ForMember(dest => dest.CoverUrl, opt => opt.MapFrom(src => src.CoverPhoto));
     }
 }
