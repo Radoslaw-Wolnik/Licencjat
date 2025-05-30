@@ -6,6 +6,8 @@ using Backend.API.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Backend.Application.Querries.Swaps;
+using Backend.API.DTOs.Swaps.Responses;
 
 namespace Backend.API.Controllers;
 
@@ -49,7 +51,7 @@ public sealed class FeedbacksController : ControllerBase
         
         var result = await _sender.Send(command);
 
-        return result.Match(
+        return result.Match<Guid>(
             onSuccess: feedbackId => CreatedAtAction(
                 nameof(Get), 
                 new { swapId, feedbackId }, 

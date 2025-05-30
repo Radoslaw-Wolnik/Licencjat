@@ -28,9 +28,9 @@ public sealed class SwapsController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id)
+    public async Task<IActionResult> Get(Guid swapId)
     {
-        var query = new GetSwapByIdQuerry(id);
+        var query = new GetSwapByIdQuerry(swapId);
         var result = await _sender.Send(query);
         
         return result.Match(
@@ -98,10 +98,9 @@ public sealed class SwapsController : ControllerBase
         var result = await _sender.Send(command);
 
         return result.Match(
-            onSuccess: () => CreatedAtAction(
+            onSuccess: swapId => CreatedAtAction(
                 nameof(Get), 
-                new { id = result.Value }, 
-                new { SwapId = result.Value }),
+                new { SwapId = swapId }),
             onFailure: errors => errors.ToProblemDetailsResult()
         );
     }
@@ -164,10 +163,7 @@ public sealed class SwapsController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var userId = User.GetUserId();
-        var command = new DeleteSwapCommand(id) 
-        { 
-            Metadata = { ["UserId"] = userId } 
-        };
+        var command = new DeleteSwapCommand(id);
         
         var result = await _sender.Send(command);
 

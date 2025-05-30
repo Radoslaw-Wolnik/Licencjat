@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Backend.API.DTOs.Swaps.Responses;
+using Backend.Application.Querries.Swaps;
 
 [ApiController]
 [Authorize]
@@ -85,10 +86,7 @@ public sealed class MeetupsController : ControllerBase
         Guid meetupId)
     {
         var userId = User.GetUserId();
-        var command = new RemoveMeetupCommand(meetupId) 
-        { 
-            Metadata = { ["UserId"] = userId } 
-        };
+        var command = new RemoveMeetupCommand(meetupId);
         
         var result = await _sender.Send(command);
 

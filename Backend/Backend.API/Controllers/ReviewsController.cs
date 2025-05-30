@@ -55,9 +55,9 @@ public sealed class ReviewsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Get(Guid bookId, Guid reviewId)
     {
-        var query = new GetReviewByIdQuery(bookId, reviewId);
+        var query = new GetReviewByIdQuery(reviewId);
         var result = await _sender.Send(query);
-        
+    
         return result.Match(
             review => Ok(_mapper.Map<ReviewResponse>(review)),
             errors => errors.ToProblemDetailsResult()
@@ -100,9 +100,6 @@ public sealed class ReviewsController : ControllerBase
         { 
             ReviewId = reviewId 
         };
-        
-        // Add user ID to command metadata for handler validation
-        command.Metadata.Add("UserId", userId);
         
         var result = await _sender.Send(command);
 

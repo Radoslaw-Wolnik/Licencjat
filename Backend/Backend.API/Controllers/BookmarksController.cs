@@ -52,10 +52,9 @@ public sealed class BookmarksController : ControllerBase
 
     [HttpGet("{bookmarkId:guid}")]
     public async Task<IActionResult> Get(
-        Guid userBookId, 
         Guid bookmarkId)
     {
-        var query = new GetBookmarkByIdQuery(userBookId, bookmarkId);
+        var query = new GetBookmarkByIdQuery(bookmarkId);
         var result = await _sender.Send(query);
         
         // Add ownership validation
@@ -71,19 +70,17 @@ public sealed class BookmarksController : ControllerBase
         [FromBody] CreateBookmarkRequest request)
     {
         var userId = User.GetUserId();
-        var command = _mapper.Map<CreateBookmarkCommand>(request) // with
+        var command = _mapper.Map<CreateBookmarkCommand>(request) with
         {
-            UserBookId = userBookId,
-            Metadata = { ["UserId"] = userId } // For ownership validation
+            UserBookId = userBookId
         };
 
         var result = await _sender.Send(command);
 
         return result.Match(
-            bookmark => CreatedAtAction(
+            bookmarkId => CreatedAtAction(
                 nameof(Get), 
-                new { userBookId, bookmarkId = bookmark.Id }, 
-                _mapper.Map<BookmarkResponse>(bookmark)),
+                new { bookmarkId }),
             errors => errors.ToProblemDetailsResult()
         );
     }
@@ -95,10 +92,9 @@ public sealed class BookmarksController : ControllerBase
         [FromBody] UpdateBookmarkRequest request)
     {
         var userId = User.GetUserId();
-        var command = _mapper.Map<UpdateBookmarkCommand>(request) // with 
+        var command = _mapper.Map<UpdateBookmarkCommand>(request) with
         {
-            BookmarkId = bookmarkId,
-            Metadata = { ["UserId"] = userId }
+            BookmarkId = bookmarkId
         };
         
         var result = await _sender.Send(command);
@@ -111,14 +107,10 @@ public sealed class BookmarksController : ControllerBase
 
     [HttpDelete("{bookmarkId:guid}")]
     public async Task<IActionResult> Delete(
-        Guid userBookId,
         Guid bookmarkId)
     {
         var userId = User.GetUserId();
-        var command = new DeleteBookmarkCommand(bookmarkId) 
-        { 
-            Metadata = { ["UserId"] = userId } 
-        };
+        var command = new DeleteBookmarkCommand(bookmarkId);
         
         var result = await _sender.Send(command);
 

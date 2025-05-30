@@ -6,6 +6,8 @@ using Backend.API.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Backend.Application.Querries.Swaps;
+using Backend.API.DTOs.Swaps.Responses;
 
 namespace Backend.API.Controllers;
 
