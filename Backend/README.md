@@ -1,84 +1,180 @@
-# Backend API (Clean Architecture)
+# BookSwap Backend - Clean Architecture Implementation  
+*A community-driven book exchange platform*
 
-## Project Structure
-``` bash
-📂 Backend
-├── 📄 docker-compose.yml # Docker compose configuration
-├── 📄 Backend.sln # Solution file
-├── 📂 Backend.API # Presentation Layer (Web API)
-│   ├── 📂 Controllers # API endpoints
-│   ├── 📄 Program.cs # Entry point & middleware config
-│   ├── 📄 appsettings.json # Configuration values
-│   └── 📄 Dockerfile # Docker build instructions
-├── 📂 Backend.Application # Application Layer
-│   ├── 📂 Services # Business logic implementations
-│   ├── 📂 DTOs # Data Transfer Objects
-│   ├── 📂 Validators # validation logic for DTOs
-│   └── 📂 Interfaces # Service contracts
-├── 📂 Backend.Infrastructure # Infrastructure Layer
-│   ├── 📂 Data # Database configuration
-│   │    └── ApplicationDbContext.cs
-│   └── 📂 Repositories # Data access implementations
-└── 📂 Backend.Domain # Domain Layer
-    ├── 📂 Entities # Core business entities
-    └── 📂 ValueObjects # Domain value objects
-```
+## 📚 Project Overview  
+BookSwap enables users to borrow/share books instead of buying new ones. Key features:  
+- Digital library management with book status tracking  
+- Book swapping with meeting coordination  
+- Reading progress updates  
+- Reputation system based on swap feedback  
+- Social media integration for user communication  
 
+**Design First Approach**:  
+The application was first designed in Figma with detailed screens before implementation began.  
+[View Figma Designs](https://www.figma.com/design/YhC9nWCKgyTJBFzh3iQDiC/main?node-id=22-14&t=SINBFbCife5wT7QQ-1)  
 
-## Layer Responsibilities
+**Architecture Decision**:  
+Adopted Clean Architecture (Onion Architecture) for maintainability, testability, and separation of concerns.  
 
-### 🎯 Domain Layer
-- **Pure business logic** - no dependencies!
-- Contains:
-  - Entities (e.g., `User`, `Order`)
-  - Value Objects
-  - Domain Events
-  - Enums
-- **Zero dependencies** on other projects
+## 🧅 Clean Architecture Overview  
+![Clean Architecture Layers](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)  
 
-### ⚙️ Application Layer
-- Orchestrates business workflows
-- Contains:
-  - CQRS handlers
-  - Validation logic
-  - Service interfaces
-  - DTOs
-- **Depends on:** Domain Layer
-
-### 🛠️ Infrastructure Layer
-- Implements technical details:
-  - Database access (EF Core)
-  - File storage
-  - External services
-  - Repositories
-- **Depends on:** Application + Domain
-
-### 🌐 API Layer
-- Handles HTTP requests/responses
-- Contains:
-  - Controllers
-  - Middleware
-  - Auth configuration
-- **Depends on:** Application + Infrastructure
+### Key Principles  
+1. **Independent of frameworks**  
+2. **Testable**  
+3. **Independent of UI**  
+4. **Independent of database**  
+5. **Independent of external agencies**  
 
 ---
 
+## 🧩 Architecture Layers  
 
-## First time setup project
-``` bash
-# From the solution root
+### 1. Domain Layer (Core)  
+*Heart of the business logic*  
+**Responsibilities**:  
+- Enterprise-wide business rules  
+- Aggregates, Entities, Value Objects  
+- Domain events and exceptions  
+- Enums and custom types  
+
+**Key Components**:  
+- **Value Objects**: Immutable objects with private fields accessed via methods  
+  (e.g., `Address`, `BookStatus`, `SwapStatus`)  
+- **Factory Pattern**: Used for object creation (e.g., `ErrorFactory`)  
+- **Core Entities**: `User`, `Book`, `UserBook`, `Swap`  
+- **Validation**: Domain objects contain their validation logic
+<!-- - Domain Events: `SwapRequestedEvent`, `SwapCompletedEvent`  
+I dont have those as i wasnt aware of them at the time -->
+
+[View Domain Layer Details ➔](./Backend.Domain/README.md)  
+
+### 2. Application Layer  
+*Orchestrates domain objects*  
+**Responsibilities**:  
+- Mediates between Presentation and Domain  
+- Implements CQRS pattern  
+- Defines interfaces for infrastructure services  
+- Contains application-specific business rules  
+
+**CQRS Implementation**:  
+| Component      | Responsibility                          | Example                     |
+|----------------|-----------------------------------------|-----------------------------|
+| **Commands**   | Create/Update/Delete operations         | `RequestSwapCommandHandler` |
+| **Queries**    | Read-only optimized data retrieval      | `GetUserBooksQueryHandler`  |
+| **Read Models**| DTOs optimized for query performance    | `BookDetailsDto`            |
+
+
+[View Application Layer Details ➔](./Backend.Application/README.md)  
+
+### 3. Infrastructure Layer  
+*Concrete implementations*  
+**Responsibilities**:  
+- Data persistence (EF Core + PostgreSQL)  
+- External service integrations (MinIO, Email)  
+- Implementation of application interfaces  
+- Background services (image processing)  
+
+**Key Components**:  
+- **EF Core**: Entity configurations and migrations  
+- **Repositories**: Bridge between domain and persistence  
+- **Query Services**: Optimized data access for queries  
+- **MinIO Integration**: Image storage and processing  
+- **Health Checks**: System monitoring endpoints  
+
+[View Infrastructure Details ➔](./Backend.Infrastructure/README.md)  
+
+### 4. Presentation Layer (API)  
+*System entry point*  
+**Responsibilities**:  
+- HTTP request handling  
+- Authentication/Authorization (Cookies)  
+- Input validation (FluentValidation)  
+- Exception handling middleware  
+- API documentation (Swagger)  
+
+**Key Components**:  
+- **Controllers**: Thin layer invoking MediatR handlers  
+- **DTOs**: Data transfer objects for API contracts  
+- **Middleware**: Centralized error handling  
+- **Dependency Registration**: Clean service configuration  
+
+[View API Documentation ➔](./Backend.API/README.md)  
+
+---
+
+## ⬇️ Layer Dependencies  
+```mermaid
+graph TD
+    Presentation --> Application
+    Application --> Domain
+    Infrastructure --> Application
+    Infrastructure -.-> Domain
+```
+
+**Dependency Rule**: Inner layers never depend on outer layers
+**Dependency Flow**:  
+1. Presentation calls Application layer commands/queries  
+2. Application uses Domain models and business rules  
+3. Infrastructure implements Application interfaces  
+4. Infrastructure may reference Domain value objects  
+
+---
+
+## 🛠️ Technology Stack  
+| Layer           | Technologies                                                                 |
+|-----------------|------------------------------------------------------------------------------|
+| **Core**        | .NET 8, C# 11, FluentResults                                                 |
+| **Application** | MediatR, AutoMapper, FluentValidation                                        |
+| **Persistence** | Entity Framework Core 8, PostgreSQL, MinIO (object storage)                  |
+| **API**         | ASP.NET Core Web API, Swagger/OpenAPI, JWT Authentication                    |
+| **Patterns**    | CQRS, Repository Pattern, Unit of Work                                       |
+| **Infra**       | Docker, SixLabors.ImageSharp (image processing), Background Services         |
+| **Health**      | Custom health checks (database, services)                                    |
+
+---
+
+## 🐳 Docker Architecture  
+```mermaid
+graph LR
+    Backend-->PostgreSQL
+    Backend-->MinIO
+    MinIO-->ImageStorage
+
+    subgraph Docker
+        Backend[ASP.NET Core]
+        PostgreSQL[(PostgreSQL)]
+        MinIO[MinIO Storage]
+    end
+```
+
+**Services**:  
+- **Backend**: ASP.NET Core API (ports 5000/5001)  
+- **PostgreSQL**: Primary data store  
+- **MinIO**: Image storage service  
+- **Image Processing**: Background thumbnail generation  
+
+---
+
+## ▶️ Getting Started  
+```bash
+# Clone repository
+git clone https://github.com/Radoslaw-Wolnik/Licencjat.git
+
+cd Backend
 
 # 1. Restore dependencies
 dotnet restore
 
-# 2. Create initial migration
-dotnet ef migrations add InitialCreate --project Backend.Infrastructure
-dotnet ef migrations script --project Backend.Infrastructure --output migrations.sql
+# 2.1 Set up database
+docker-compose up -d postgres
 
+# 2.2 Create initial migration
 dotnet ef migrations add InitialCreate --project Backend.Infrastructure
+
+# 2.2.2 In case of updating the migrations do
 dotnet ef database drop --project Backend.Infrastructure
 dotnet ef database update --project Backend.Infrastructure
-
 
 # 3. Start containers
 docker-compose up --build --d
@@ -88,8 +184,32 @@ docker-compose up --build --d
 curl https://localhost:5000/swagger
 ```
 
+---
 
-## Additional info
-to remove migrations use: 
-`ef migrations remove` - but you need to run db to do it
-`API Request → Handler (input validation) → Domain Entity (business logic) → Repository (persistence)`
+## 📂 Project Structure  
+```
+BookSwap/
+├── Domain/               # Core business models
+├── Application/          # Use cases & business logic
+├── Infrastructure/       # Database & external services
+├── API/                  # Web API layer
+└── Tests/                # Unit/integration tests
+```
+
+---
+
+## 📜 Next Steps  
+1. Explore layer-specific documentation:  
+   - [Domain Layer Details](./Backend.Domain/README.md)  
+   - [Application Layer Patterns](./Backend.Application/README.md)  
+   - [Database Implementation](./Backend.Infrastructure/README.md)  
+   - [API Endpoints](./Backend.API/README.md)  
+
+2. View [Frontend Implementation](... coming soon) 
+3. Check [Figma Designs](https://figma.com/bookswap-designs)  
+
+This architecture ensures:  
+✅ Decoupled business logic from implementation details  
+✅ Easy replacement of components (e.g., switch databases)  
+✅ Independent testability of layers  
+✅ Long-term maintainability as features evolve
