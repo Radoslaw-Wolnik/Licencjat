@@ -210,8 +210,8 @@ Access at: `https://localhost:5001/swagger`
 ---
 
 ## 📜 Next Steps
-- [Domain Layer](./Backend.Domain/README.md)
-- [Application Layer](./Backend.Application/README.md)
+- [Domain Layer](../Backend.Domain/README.md)
+- [Application Layer](../Backend.Application/README.md)
 - [Infrastructure Layer](../Infrastructure/README.md)
 
 > "The presentation layer is the face of your application - it should be welcoming to consumers while rigorously protecting the system within."

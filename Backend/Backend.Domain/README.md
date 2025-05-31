@@ -323,9 +323,9 @@ return Result.Fail(error);
 ---
 
 ## 🔍 What's Next
-- [Application Layer](./Backend.Application/README.md)
+- [Application Layer](../Backend.Application/README.md)
 - [Infrastructure Layer](../Infrastructure/README.md)
-- [API Layer](./Backend.API/README.md)
+- [API Layer](../Backend.API/README.md)
 
 > "An architect should know the domain better than anyone else"  
 > *- Robert C. Martin (Uncle Bob)*
