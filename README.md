@@ -45,10 +45,10 @@ flowchart TD
 ### Key Layers  
 | Layer | Description | Documentation |  
 |-------|-------------|---------------|  
-| **Presentation** | API endpoints, controllers, and DTOs | [View README](./=/README.md) |  
-| **Application** | Use cases, CQRS implementation | [View README](./Application/README.md) |  
-| **Domain** | Core business models and rules | [View README](./Domain/README.md) |  
-| **Infrastructure** | Database, repositories, services | [View README](./Infrastructure/README.md) |  
+| **Presentation** | API endpoints, controllers, and DTOs | [View README](./Backend/Backend.API/README.md) |  
+| **Application** | Use cases, CQRS implementation | [View README](./Backend/Backend.Application/README.md) |  
+| **Domain** | Core business models and rules | [View README](./Backend/Backend.Domain/README.md) |  
+| **Infrastructure** | Database, repositories, services | [View README](./Backend/Backend.Infrastructure/README.md) |  
 
 ## ✨ Key Features  
 - **Digital Library Management**  
