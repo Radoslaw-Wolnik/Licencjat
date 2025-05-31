@@ -28,10 +28,7 @@ using Backend.Application.Commands.Auth;
 
 // repositories
 using Backend.Application.Interfaces.Repositories;
-using Backend.Infrastructure.Repositories.UserBooks;
-using Backend.Infrastructure.Repositories.GeneralBooks;
-using Backend.Infrastructure.Repositories.Swaps;
-using Backend.Infrastructure.Repositories.Users;
+using Backend.Infrastructure.Repositories;
 
 // services
 using Backend.Application.Interfaces.DbReads;
@@ -41,6 +38,11 @@ using Backend.Infrastructure.Services;
 using Backend.Infrastructure.Configuration;
 using Backend.Infrastructure.BackgroundTasks;
 using Backend.Domain.Events;
+using Backend.Infrastructure.Services.Queries;
+using Backend.Application.Interfaces.Queries;
+using Backend.API.Mapping;
+using Backend.Application.Querries.GeneralBooks;
+using Backend.API.Validators.Auth;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -102,28 +104,30 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, HttpUserContext>();
 
 // repositories
-// general book
 builder.Services.AddScoped<IWriteGeneralBookRepository, WriteGeneralBookRepository>();
-
-// swap
 builder.Services.AddScoped<IWriteSwapRepository, WriteSwapRepository>();
-
-// user book
 builder.Services.AddScoped<IWriteUserBookRepository, WriteUserBookRepository>();
-
-// user
 builder.Services.AddScoped<IWriteUserRepository, WriteUserRepository>();
-
-// services
-builder.Services.AddScoped<ISignInService, SignInService>();
-builder.Services.AddScoped<IIdentityService, IdentityService>();
-builder.Services.AddTransient<IEmailService, EmailService>();
 
 // read services
 builder.Services.AddTransient<IGeneralBookReadService, GeneralBookReadService>();
 builder.Services.AddTransient<ISwapReadService, SwapReadService>();
 builder.Services.AddTransient<IUserBookReadService, UserBookReadService>();
 builder.Services.AddTransient<IUserReadService, UserReadService>();
+
+// query services
+builder.Services.AddTransient<IGeneralBookQueryService, GeneralBookQueryService>();
+builder.Services.AddTransient<ISwapQueryService, SwapQueryService>();
+builder.Services.AddTransient<IUserBookQueryService, UserBookQueryService>();
+builder.Services.AddTransient<IUserQueryService, UserQueryService>();
+
+// services
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<ISignInService, SignInService>();
+// miniiio and image resizer declared above
+// user context at the beginning of this section
+
 
 // mappers
 builder.Services.AddAutoMapper(typeof(BookmarkProfile));
@@ -138,31 +142,54 @@ builder.Services.AddAutoMapper(typeof(SwapProfile));
 builder.Services.AddAutoMapper(typeof(TimelineProfile));
 builder.Services.AddAutoMapper(typeof(UserBookProfile));
 builder.Services.AddAutoMapper(typeof(UserProfile)); // cfg => {cfg.AddExpressionMapping();},
+// the read models mappers
+builder.Services.AddAutoMapper(typeof(GeneralBookReadModelProfile));
+builder.Services.AddAutoMapper(typeof(SwapReadModelProfile));
+builder.Services.AddAutoMapper(typeof(UserBookReadModelProfile));
+builder.Services.AddAutoMapper(typeof(UserReadModelProfile));
+// the automappers in Presentation - Api layer - mapping to dtos
+builder.Services.AddAutoMapper(typeof(AuthCommandProfile));
+builder.Services.AddAutoMapper(typeof(GeneralBookCommandProfile));
+builder.Services.AddAutoMapper(typeof(SwapCommandProfile));
+builder.Services.AddAutoMapper(typeof(UserBookCommandProfile));
+builder.Services.AddAutoMapper(typeof(UserCommandProfile));
+
+// im not sure if this is an automapper - its a converter
+builder.Services.AddAutoMapper(typeof(TimelineStatusToSwapStatusConverter));
 
 // AutoMapper - expression mapping added to specyfic mappers
 builder.Services.AddAutoMapper(cfg => 
 {
     cfg.AddExpressionMapping();
     cfg.AddMaps(
-        typeof(UserProfile), 
-        typeof(GeneralBookProfile),
-        typeof(UserBookProfile));
+        typeof(UserProfile));
 });
 
 // health check for db
 builder.Services.AddScoped<DatabaseHealthCheck>();
 
+// validation exception middleware ? 
+builder.Services.AddScoped<ValidationExceptionMiddleware>();
+
 
 // ========== MEDIATR & VALIDATION ========== //
 
-// MediatR
-builder.Services.AddMediatR(cfg => 
-    cfg.RegisterServicesFromAssembly(typeof(RegisterCommand).Assembly));
+// MediatR commands & queries
+// This will scan the assembly that contains LoginCommand
+// and register ALL of your IRequestHandler<,> + INotificationHandler<> types.
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly);
+    cfg.RegisterServicesFromAssemblies(typeof(GetGeneralBookByIdQuerry).Assembly);
+});
 
-// FluentValidation
+// FluentValidation - should scan and find all other validators
 builder.Services.AddFluentValidationAutoValidation();
-// builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
-// builder.Services.AddValidatorsFromAssemblyContaining<Backend.Application.Validators.Commands.GeneralBook.CreateValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+// builder.Services.AddValidatorsFromAssemblyContaining<CreateGeneralBookRequestValidator>();
+// builder.Services.AddValidatorsFromAssemblyContaining<CreateSwapRequestValidator>();
+// builder.Services.AddValidatorsFromAssemblyContaining<CreateUserBookRequestValidator>();
+// builder.Services.AddValidatorsFromAssemblyContaining<AddSocialMediaRequestValidator>();
 
 // - optional - command validation pipeline
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
