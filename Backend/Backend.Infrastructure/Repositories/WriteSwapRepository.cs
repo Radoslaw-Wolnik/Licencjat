@@ -11,7 +11,7 @@ using Backend.Domain.Common;
 using Backend.Infrastructure.Mapping;
 using Backend.Domain.Enums;
 
-namespace Backend.Infrastructure.Repositories.Swaps;
+namespace Backend.Infrastructure.Repositories;
 
 public class WriteSwapRepository : IWriteSwapRepository
 {

@@ -9,7 +9,7 @@ using Backend.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Common;
 
-namespace Backend.Infrastructure.Repositories.Users;
+namespace Backend.Infrastructure.Repositories;
 
 public class WriteUserRepository : IWriteUserRepository
 {

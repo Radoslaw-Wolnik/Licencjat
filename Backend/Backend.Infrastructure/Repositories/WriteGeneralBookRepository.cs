@@ -9,7 +9,7 @@ using FluentResults;
 using Backend.Domain.Common;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Infrastructure.Repositories.GeneralBooks;
+namespace Backend.Infrastructure.Repositories;
 
 public class WriteGeneralBookRepository : IWriteGeneralBookRepository
 {
