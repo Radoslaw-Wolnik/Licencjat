@@ -286,6 +286,8 @@ erDiagram
 - [Domain Layer](../Backend.Domain/README.md)
 - [Application Layer](../Backend.Application/README.md)
 - [API Layer](../Backend.API/README.md)
+- [General backend README](../README.md)
+- [Project README](../../README.md)
 
 > "Infrastructure is the bridge between abstract business rules  
 > and the concrete reality of databases and external services."

@@ -272,8 +272,10 @@ public async Task<Result<UserProfileReadModel?>> Handle(
 
 ## 📜 Next Steps
 - [Domain Layer](../Backend.Domain/README.md)
-- [Infrastructure Layer](../Infrastructure/README.md)
+- [Infrastructure Layer](../Backend.Infrastructure/README.md)
 - [API Layer](../Backend.API/README.md)
+- [General backend README](../README.md)
+- [Project README](../../README.md)
 
 > "The application layer is where use cases come to life,  
 > coordinating domain objects without dirtying their hands with infrastructure concerns."

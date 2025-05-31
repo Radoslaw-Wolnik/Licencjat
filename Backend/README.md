@@ -141,10 +141,6 @@ graph LR
     Backend-->MinIO
     MinIO-->ImageStorage
 
-    subgraph Docker
-        Backend[ASP.NET Core]
-        PostgreSQL[(PostgreSQL)]
-        MinIO[MinIO Storage]
     end
 ```
 
@@ -200,10 +196,10 @@ BookSwap/
 
 ## 📜 Next Steps  
 1. Explore layer-specific documentation:  
-   - [Domain Layer Details](./Backend.Domain/README.md)  
-   - [Application Layer Patterns](./Backend.Application/README.md)  
-   - [Database Implementation](./Backend.Infrastructure/README.md)  
-   - [API Endpoints](./Backend.API/README.md)  
+   - [Domain Layer](./Backend.Domain/README.md)  
+   - [Application Layer](./Backend.Application/README.md)  
+   - [Infrastructrure Layer](./Backend.Infrastructure/README.md)  
+   - [Presentation Layer](./Backend.API/README.md)
 
 2. View [Frontend Implementation](... coming soon) 
 3. Check [Figma Designs](https://figma.com/bookswap-designs)  

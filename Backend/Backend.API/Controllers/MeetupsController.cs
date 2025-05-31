@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.API.DTOs.Swaps.Responses;
 using Backend.Application.Querries.Swaps;
 
+namespace Backend.API.Controllers;
+
 [ApiController]
 [Authorize]
 [Route("api/swaps/{swapId:guid}/meetups")]
