@@ -140,8 +140,6 @@ graph LR
     Backend-->PostgreSQL
     Backend-->MinIO
     MinIO-->ImageStorage
-
-    end
 ```
 
 **Services**:  
@@ -166,11 +164,15 @@ dotnet restore
 docker-compose up -d postgres
 
 # 2.2 Create initial migration
-dotnet ef migrations add InitialCreate --project Backend.Infrastructure
+dotnet ef migrations add InitialCreate --project Backend.Infrastructure --startup-project Backend.API
+# 2.3 Apply the migration to the dataabase
+dotnet ef database update --project Backend.Infrastructure --startup-project Backend.API
 
-# 2.2.2 In case of updating the migrations do
-dotnet ef database drop --project Backend.Infrastructure
-dotnet ef database update --project Backend.Infrastructure
+# In case of updating the migrations do
+dotnet ef migrations remove --project Backend.Infrastructure --startup-project Backend.API
+
+# In case you want to drop the databse:
+dotnet ef database drop --project Backend.Infrastructure --startup-project Backend.API
 
 # 3. Start containers
 docker-compose up --build --d
