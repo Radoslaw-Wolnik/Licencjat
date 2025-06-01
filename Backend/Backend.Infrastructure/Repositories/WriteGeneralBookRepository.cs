@@ -71,15 +71,15 @@ public class WriteGeneralBookRepository : IWriteGeneralBookRepository
     }
 
     // Add a single review without loading all reviews
-    public async Task<Result> AddReviewAsync(Review review, CancellationToken cancellationToken)
+    public async Task<Result> AddReviewAsync(Guid generalBookId, Review review, CancellationToken cancellationToken)
     {
-        // map and add new review entity
+        if (!await _context.GeneralBooks.AnyAsync(g => g.Id == generalBookId, cancellationToken))
+            return Result.Fail(DomainErrorFactory.NotFound("GeneralBook", generalBookId));
+
         var revEntity = _mapper.Map<ReviewEntity>(review);
+        revEntity.BookId = generalBookId;
+
         _context.Reviews.Add(revEntity);
-        
-        // var avg = await _context.Reviews
-        //    .Where(r => r.BookId == bookId)
-        //    .AverageAsync(r => r.Rating, cancellationToken);
 
         return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to add a new review");
     }
@@ -87,6 +87,10 @@ public class WriteGeneralBookRepository : IWriteGeneralBookRepository
     // Update a specific review (without loading the full collection - all reviews)
     public async Task<Result> UpdateReviewAsync(Review review, CancellationToken cancellationToken)
     {
+        var exists = await _context.Reviews.AnyAsync(r => r.Id == review.Id, cancellationToken);
+            if (!exists)
+                return Result.Fail(DomainErrorFactory.NotFound("Review", review.Id));
+
         // attach stub for review
         var revEntity = new ReviewEntity { Id = review.Id };
         _context.Reviews.Attach(revEntity);

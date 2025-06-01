@@ -22,6 +22,34 @@ namespace Backend.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Backend.Infrastructure.Entities.BookmarkEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Colour")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Page")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserBookId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserBookId");
+
+                    b.ToTable("Bookmarks");
+                });
+
             modelBuilder.Entity("Backend.Infrastructure.Entities.FeedbackEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -34,10 +62,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<int>("ConditionBook")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Lenght")
                         .HasColumnType("integer");
@@ -63,7 +89,7 @@ namespace Backend.Infrastructure.Migrations
 
                     b.ToTable("Feedbacks", t =>
                         {
-                            t.HasCheckConstraint("CK_Feedback_Stars", "\"Stars\" BETWEEN 1 AND 5");
+                            t.HasCheckConstraint("CK_Feedback_Stars", "\"Stars\" >= 1 AND \"Stars\" <= 5");
                         });
                 });
 
@@ -81,10 +107,8 @@ namespace Backend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int[]>("Genres")
                         .IsRequired()
@@ -113,10 +137,8 @@ namespace Backend.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -144,15 +166,13 @@ namespace Backend.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<double?>("Location_X")
+                    b.Property<double>("Location_X")
                         .HasColumnType("decimal(10,7)");
 
-                    b.Property<float?>("Location_Y")
+                    b.Property<float>("Location_Y")
                         .HasColumnType("decimal(10,7)");
 
                     b.Property<int>("Status")
@@ -164,14 +184,17 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<Guid>("SwapId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAtTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SuggestedUserId");
-
                     b.HasIndex("SwapId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Meetups");
                 });
@@ -189,14 +212,15 @@ namespace Backend.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAtTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
@@ -210,7 +234,7 @@ namespace Backend.Infrastructure.Migrations
 
                     b.ToTable("Reviews", t =>
                         {
-                            t.HasCheckConstraint("CK_Review_Stars", "\"Rating\" BETWEEN 1 AND 10");
+                            t.HasCheckConstraint("CK_Review_Stars", "\"Rating\" >= 1 AND \"Rating\" <= 10");
                         });
                 });
 
@@ -220,14 +244,11 @@ namespace Backend.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Platform")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -249,10 +270,8 @@ namespace Backend.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("FeedbackId")
                         .HasColumnType("uuid");
@@ -266,10 +285,10 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<Guid>("SwapId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAtTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserBookReadingId")
+                    b.Property<Guid?>("UserBookReadingId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
@@ -292,18 +311,22 @@ namespace Backend.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateOnly>("CreatedAt")
+                        .HasColumnType("date");
 
-                    b.Property<Guid?>("SubSwapAcceptingId")
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SubSwapAcceptingId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("SubSwapRequestingId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAtTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -324,9 +347,10 @@ namespace Backend.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -352,20 +376,24 @@ namespace Backend.Infrastructure.Migrations
 
             modelBuilder.Entity("Backend.Infrastructure.Entities.UserBlockedEntity", b =>
                 {
-                    b.Property<Guid>("BlockerId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("BlockedId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<Guid>("BlockerId")
+                        .HasColumnType("uuid");
 
-                    b.HasKey("BlockerId", "BlockedId");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("BlockedId");
+
+                    b.HasIndex("BlockerId");
 
                     b.ToTable("UserBlockeds");
                 });
@@ -383,10 +411,8 @@ namespace Backend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Language")
                         .IsRequired()
@@ -441,10 +467,8 @@ namespace Backend.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -457,6 +481,9 @@ namespace Backend.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<Guid?>("GeneralBookEntityId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -498,7 +525,7 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAtTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserName")
@@ -506,6 +533,8 @@ namespace Backend.Infrastructure.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GeneralBookEntityId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -516,28 +545,56 @@ namespace Backend.Infrastructure.Migrations
 
                     b.ToTable("AspNetUsers", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Reputation_Range", "\"Reputation\" BETWEEN 1 AND 5");
+                            t.HasCheckConstraint("CK_Reputation_Range", "\"Reputation\" >= 1 AND \"Reputation\" <= 5");
                         });
                 });
 
             modelBuilder.Entity("Backend.Infrastructure.Entities.UserFollowingEntity", b =>
                 {
-                    b.Property<Guid>("FollowerId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("FollowedId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<Guid>("FollowerId")
+                        .HasColumnType("uuid");
 
-                    b.HasKey("FollowerId", "FollowedId");
+                    b.HasKey("Id");
 
                     b.HasIndex("FollowedId");
 
+                    b.HasIndex("FollowerId");
+
                     b.ToTable("UserFollowings");
+                });
+
+            modelBuilder.Entity("Backend.Infrastructure.Entities.UserWishlistEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GeneralBookId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GeneralBookId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserWishlists");
                 });
 
             modelBuilder.Entity("Backend.Infrastructure.Views.GeneralBookWithAverageRating", b =>
@@ -549,9 +606,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<decimal?>("AverageRating")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -565,36 +621,6 @@ namespace Backend.Infrastructure.Migrations
                     b.ToView("GeneralBooksWithAverageRatings", (string)null);
                 });
 
-            modelBuilder.Entity("GeneralBookEntityUserEntity", b =>
-                {
-                    b.Property<Guid>("WishlistId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WishlistedByUsersId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("WishlistId", "WishlistedByUsersId");
-
-                    b.HasIndex("WishlistedByUsersId");
-
-                    b.ToTable("Wishlist", (string)null);
-                });
-
-            modelBuilder.Entity("GeneralBookEntityUserEntity1", b =>
-                {
-                    b.Property<Guid>("FollowedBooksId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FollowedByUsersId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("FollowedBooksId", "FollowedByUsersId");
-
-                    b.HasIndex("FollowedByUsersId");
-
-                    b.ToTable("BookFollowing", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -605,10 +631,8 @@ namespace Backend.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
@@ -641,10 +665,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
@@ -670,10 +692,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -693,10 +713,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<string>("ProviderKey")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
@@ -719,10 +737,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -742,10 +758,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Value")
                         .HasColumnType("text");
@@ -753,6 +767,17 @@ namespace Backend.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Backend.Infrastructure.Entities.BookmarkEntity", b =>
+                {
+                    b.HasOne("Backend.Infrastructure.Entities.UserBookEntity", "UserBook")
+                        .WithMany("Bookmarks")
+                        .HasForeignKey("UserBookId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("UserBook");
                 });
 
             modelBuilder.Entity("Backend.Infrastructure.Entities.FeedbackEntity", b =>
@@ -766,7 +791,7 @@ namespace Backend.Infrastructure.Migrations
                     b.HasOne("Backend.Infrastructure.Entities.UserEntity", "User")
                         .WithMany("SwapsFeedbacks")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("SubSwap");
@@ -785,7 +810,7 @@ namespace Backend.Infrastructure.Migrations
                     b.HasOne("Backend.Infrastructure.Entities.UserEntity", "User")
                         .WithMany("SwapsIssues")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("SubSwap");
@@ -795,15 +820,15 @@ namespace Backend.Infrastructure.Migrations
 
             modelBuilder.Entity("Backend.Infrastructure.Entities.MeetupEntity", b =>
                 {
-                    b.HasOne("Backend.Infrastructure.Entities.UserEntity", "User")
-                        .WithMany("Meetups")
-                        .HasForeignKey("SuggestedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Backend.Infrastructure.Entities.SwapEntity", "Swap")
                         .WithMany("Meetups")
                         .HasForeignKey("SwapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Infrastructure.Entities.UserEntity", "User")
+                        .WithMany("Meetups")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -845,7 +870,7 @@ namespace Backend.Infrastructure.Migrations
             modelBuilder.Entity("Backend.Infrastructure.Entities.SubSwapEntity", b =>
                 {
                     b.HasOne("Backend.Infrastructure.Entities.SwapEntity", "Swap")
-                        .WithMany()
+                        .WithMany("SubSwaps")
                         .HasForeignKey("SwapId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -853,13 +878,12 @@ namespace Backend.Infrastructure.Migrations
                     b.HasOne("Backend.Infrastructure.Entities.UserBookEntity", "UserBookReading")
                         .WithMany("SubSwaps")
                         .HasForeignKey("UserBookReadingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Backend.Infrastructure.Entities.UserEntity", "User")
                         .WithMany("SubSwaps")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Swap");
@@ -874,7 +898,8 @@ namespace Backend.Infrastructure.Migrations
                     b.HasOne("Backend.Infrastructure.Entities.SubSwapEntity", "SubSwapAccepting")
                         .WithOne()
                         .HasForeignKey("Backend.Infrastructure.Entities.SwapEntity", "SubSwapAcceptingId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Backend.Infrastructure.Entities.SubSwapEntity", "SubSwapRequesting")
                         .WithOne()
@@ -898,7 +923,7 @@ namespace Backend.Infrastructure.Migrations
                     b.HasOne("Backend.Infrastructure.Entities.UserEntity", "User")
                         .WithMany("SwapsTimelineupdates")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Swap");
@@ -911,7 +936,7 @@ namespace Backend.Infrastructure.Migrations
                     b.HasOne("Backend.Infrastructure.Entities.UserEntity", "Blocked")
                         .WithMany()
                         .HasForeignKey("BlockedId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Backend.Infrastructure.Entities.UserEntity", "Blocker")
@@ -944,6 +969,13 @@ namespace Backend.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Backend.Infrastructure.Entities.UserEntity", b =>
+                {
+                    b.HasOne("Backend.Infrastructure.Entities.GeneralBookEntity", null)
+                        .WithMany("WishlistedByUsers")
+                        .HasForeignKey("GeneralBookEntityId");
+                });
+
             modelBuilder.Entity("Backend.Infrastructure.Entities.UserFollowingEntity", b =>
                 {
                     b.HasOne("Backend.Infrastructure.Entities.UserEntity", "Followed")
@@ -963,34 +995,23 @@ namespace Backend.Infrastructure.Migrations
                     b.Navigation("Follower");
                 });
 
-            modelBuilder.Entity("GeneralBookEntityUserEntity", b =>
+            modelBuilder.Entity("Backend.Infrastructure.Entities.UserWishlistEntity", b =>
                 {
-                    b.HasOne("Backend.Infrastructure.Entities.GeneralBookEntity", null)
+                    b.HasOne("Backend.Infrastructure.Entities.GeneralBookEntity", "GeneralBook")
                         .WithMany()
-                        .HasForeignKey("WishlistId")
+                        .HasForeignKey("GeneralBookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Infrastructure.Entities.UserEntity", null)
-                        .WithMany()
-                        .HasForeignKey("WishlistedByUsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GeneralBookEntityUserEntity1", b =>
-                {
-                    b.HasOne("Backend.Infrastructure.Entities.GeneralBookEntity", null)
-                        .WithMany()
-                        .HasForeignKey("FollowedBooksId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("Backend.Infrastructure.Entities.UserEntity", "User")
+                        .WithMany("Wishlist")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Backend.Infrastructure.Entities.UserEntity", null)
-                        .WithMany()
-                        .HasForeignKey("FollowedByUsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("GeneralBook");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -1049,6 +1070,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("UserBooks");
+
+                    b.Navigation("WishlistedByUsers");
                 });
 
             modelBuilder.Entity("Backend.Infrastructure.Entities.SubSwapEntity", b =>
@@ -1062,11 +1085,15 @@ namespace Backend.Infrastructure.Migrations
                 {
                     b.Navigation("Meetups");
 
+                    b.Navigation("SubSwaps");
+
                     b.Navigation("TimelineUpdates");
                 });
 
             modelBuilder.Entity("Backend.Infrastructure.Entities.UserBookEntity", b =>
                 {
+                    b.Navigation("Bookmarks");
+
                     b.Navigation("SubSwaps");
                 });
 
@@ -1093,6 +1120,8 @@ namespace Backend.Infrastructure.Migrations
                     b.Navigation("SwapsTimelineupdates");
 
                     b.Navigation("UserBooks");
+
+                    b.Navigation("Wishlist");
                 });
 #pragma warning restore 612, 618
         }

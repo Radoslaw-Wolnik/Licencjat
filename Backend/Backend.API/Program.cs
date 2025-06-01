@@ -168,9 +168,6 @@ builder.Services.AddAutoMapper(cfg =>
 // health check for db
 builder.Services.AddScoped<DatabaseHealthCheck>();
 
-// validation exception middleware ? 
-builder.Services.AddScoped<ValidationExceptionMiddleware>();
-
 
 // ========== MEDIATR & VALIDATION ========== //
 

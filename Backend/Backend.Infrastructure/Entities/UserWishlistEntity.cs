@@ -2,6 +2,7 @@ namespace Backend.Infrastructure.Entities;
 
 public class UserWishlistEntity
 {
+    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public Guid GeneralBookId { get; set; }
     

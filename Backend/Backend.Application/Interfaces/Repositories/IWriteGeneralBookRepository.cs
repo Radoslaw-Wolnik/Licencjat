@@ -11,7 +11,7 @@ public interface IWriteGeneralBookRepository
     Task<Result> UpdateScalarsAsync(GeneralBook book, CancellationToken cancellationToken);
     
     // reviews child collection
-    Task<Result> AddReviewAsync(Review review, CancellationToken cancellationToken);
+    Task<Result> AddReviewAsync(Guid generalBookId, Review review, CancellationToken cancellationToken);
     Task<Result> UpdateReviewAsync(Review review, CancellationToken cancellationToken);
     Task<Result> RemoveReviewAsync(Guid reviewId, CancellationToken cancellationToken);
 }

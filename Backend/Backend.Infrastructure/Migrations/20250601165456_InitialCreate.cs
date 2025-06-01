@@ -20,11 +20,51 @@ namespace Backend.Infrastructure.Migrations
                     Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GeneralBooks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Author = table.Column<string>(type: "text", nullable: false),
+                    Published = table.Column<DateOnly>(type: "date", nullable: false),
+                    Language = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false),
+                    CoverPhoto = table.Column<string>(type: "text", nullable: false),
+                    Genres = table.Column<int[]>(type: "integer[]", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GeneralBooks", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetRoleClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -40,8 +80,9 @@ namespace Backend.Infrastructure.Migrations
                     ProfilePicture = table.Column<string>(type: "text", nullable: true),
                     Bio = table.Column<string>(type: "text", nullable: true),
                     Reputation = table.Column<float>(type: "numeric(4,3)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    GeneralBookEntityId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -60,47 +101,12 @@ namespace Backend.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                    table.CheckConstraint("CK_Reputation_Range", "\"Reputation\" BETWEEN 1 AND 5");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "GeneralBooks",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Author = table.Column<string>(type: "text", nullable: false),
-                    Published = table.Column<DateOnly>(type: "date", nullable: false),
-                    Language = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false),
-                    CoverPhoto = table.Column<string>(type: "text", nullable: false),
-                    Genres = table.Column<int[]>(type: "integer[]", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GeneralBooks", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetRoleClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.CheckConstraint("CK_Reputation_Range", "\"Reputation\" >= 1 AND \"Reputation\" <= 5");
                     table.ForeignKey(
-                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_AspNetUsers_GeneralBooks_GeneralBookEntityId",
+                        column: x => x.GeneralBookEntityId,
+                        principalTable: "GeneralBooks",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -112,7 +118,7 @@ namespace Backend.Infrastructure.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
                     ClaimValue = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -133,7 +139,7 @@ namespace Backend.Infrastructure.Migrations
                     ProviderKey = table.Column<string>(type: "text", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -152,7 +158,7 @@ namespace Backend.Infrastructure.Migrations
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -179,7 +185,7 @@ namespace Backend.Infrastructure.Migrations
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Value = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -193,14 +199,45 @@ namespace Backend.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Reviews",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Rating = table.Column<int>(type: "integer", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BookId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.CheckConstraint("CK_Review_Stars", "\"Rating\" >= 1 AND \"Rating\" <= 10");
+                    table.ForeignKey(
+                        name: "FK_Reviews_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Reviews_GeneralBooks_BookId",
+                        column: x => x.BookId,
+                        principalTable: "GeneralBooks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SocialMediaLinks",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Platform = table.Column<string>(type: "text", nullable: false),
+                    Platform = table.Column<int>(type: "integer", nullable: false),
                     Url = table.Column<string>(type: "text", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -217,104 +254,26 @@ namespace Backend.Infrastructure.Migrations
                 name: "UserBlockeds",
                 columns: table => new
                 {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     BlockerId = table.Column<Guid>(type: "uuid", nullable: false),
                     BlockedId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserBlockeds", x => new { x.BlockerId, x.BlockedId });
+                    table.PrimaryKey("PK_UserBlockeds", x => x.Id);
                     table.ForeignKey(
                         name: "FK_UserBlockeds_AspNetUsers_BlockedId",
                         column: x => x.BlockedId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserBlockeds_AspNetUsers_BlockerId",
                         column: x => x.BlockerId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserFollowings",
-                columns: table => new
-                {
-                    FollowerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FollowedId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserFollowings", x => new { x.FollowerId, x.FollowedId });
-                    table.ForeignKey(
-                        name: "FK_UserFollowings_AspNetUsers_FollowedId",
-                        column: x => x.FollowedId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_UserFollowings_AspNetUsers_FollowerId",
-                        column: x => x.FollowerId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BookFollowing",
-                columns: table => new
-                {
-                    FollowedBooksId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FollowedByUsersId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BookFollowing", x => new { x.FollowedBooksId, x.FollowedByUsersId });
-                    table.ForeignKey(
-                        name: "FK_BookFollowing_AspNetUsers_FollowedByUsersId",
-                        column: x => x.FollowedByUsersId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_BookFollowing_GeneralBooks_FollowedBooksId",
-                        column: x => x.FollowedBooksId,
-                        principalTable: "GeneralBooks",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Reviews",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Rating = table.Column<int>(type: "integer", nullable: false),
-                    Comment = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    BookId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reviews", x => x.Id);
-                    table.CheckConstraint("CK_Review_Stars", "\"Rating\" BETWEEN 1 AND 10");
-                    table.ForeignKey(
-                        name: "FK_Reviews_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Reviews_GeneralBooks_BookId",
-                        column: x => x.BookId,
-                        principalTable: "GeneralBooks",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -329,7 +288,7 @@ namespace Backend.Infrastructure.Migrations
                     State = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     BookId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -349,27 +308,77 @@ namespace Backend.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Wishlist",
+                name: "UserFollowings",
                 columns: table => new
                 {
-                    WishlistId = table.Column<Guid>(type: "uuid", nullable: false),
-                    WishlistedByUsersId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FollowerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FollowedId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Wishlist", x => new { x.WishlistId, x.WishlistedByUsersId });
+                    table.PrimaryKey("PK_UserFollowings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Wishlist_AspNetUsers_WishlistedByUsersId",
-                        column: x => x.WishlistedByUsersId,
+                        name: "FK_UserFollowings_AspNetUsers_FollowedId",
+                        column: x => x.FollowedId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Wishlist_GeneralBooks_WishlistId",
-                        column: x => x.WishlistId,
+                        name: "FK_UserFollowings_AspNetUsers_FollowerId",
+                        column: x => x.FollowerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserWishlists",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    GeneralBookId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserWishlists", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserWishlists_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserWishlists_GeneralBooks_GeneralBookId",
+                        column: x => x.GeneralBookId,
                         principalTable: "GeneralBooks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Bookmarks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Colour = table.Column<int>(type: "integer", nullable: false),
+                    Page = table.Column<int>(type: "integer", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    UserBookId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bookmarks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Bookmarks_UserBooks_UserBookId",
+                        column: x => x.UserBookId,
+                        principalTable: "UserBooks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -384,18 +393,18 @@ namespace Backend.Infrastructure.Migrations
                     Communication = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     SubSwapId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Feedbacks", x => x.Id);
-                    table.CheckConstraint("CK_Feedback_Stars", "\"Stars\" BETWEEN 1 AND 5");
+                    table.CheckConstraint("CK_Feedback_Stars", "\"Stars\" >= 1 AND \"Stars\" <= 5");
                     table.ForeignKey(
                         name: "FK_Feedbacks_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -406,7 +415,7 @@ namespace Backend.Infrastructure.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     SubSwapId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -416,7 +425,7 @@ namespace Backend.Infrastructure.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -424,23 +433,24 @@ namespace Backend.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Location_X = table.Column<double>(type: "numeric(10,7)", nullable: true),
-                    Location_Y = table.Column<float>(type: "numeric(10,7)", nullable: true),
+                    Location_X = table.Column<double>(type: "numeric(10,7)", nullable: false),
+                    Location_Y = table.Column<float>(type: "numeric(10,7)", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     SuggestedUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     SwapId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Meetups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Meetups_AspNetUsers_SuggestedUserId",
-                        column: x => x.SuggestedUserId,
+                        name: "FK_Meetups_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -451,11 +461,11 @@ namespace Backend.Infrastructure.Migrations
                     PageAt = table.Column<int>(type: "integer", nullable: false),
                     SwapId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserBookReadingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserBookReadingId = table.Column<Guid>(type: "uuid", nullable: true),
                     FeedbackId = table.Column<Guid>(type: "uuid", nullable: true),
                     IssueId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -465,7 +475,7 @@ namespace Backend.Infrastructure.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SubSwaps_UserBooks_UserBookReadingId",
                         column: x => x.UserBookReadingId,
@@ -479,10 +489,12 @@ namespace Backend.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
                     SubSwapRequestingId = table.Column<Guid>(type: "uuid", nullable: false),
-                    SubSwapAcceptingId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    SubSwapAcceptingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateOnly>(type: "date", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -510,7 +522,8 @@ namespace Backend.Infrastructure.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     SwapId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAtTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -520,7 +533,7 @@ namespace Backend.Infrastructure.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Timelines_Swaps_SwapId",
                         column: x => x.SwapId,
@@ -561,15 +574,20 @@ namespace Backend.Infrastructure.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_GeneralBookEntityId",
+                table: "AspNetUsers",
+                column: "GeneralBookEntityId");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_BookFollowing_FollowedByUsersId",
-                table: "BookFollowing",
-                column: "FollowedByUsersId");
+                name: "IX_Bookmarks_UserBookId",
+                table: "Bookmarks",
+                column: "UserBookId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Feedbacks_SubSwapId",
@@ -594,14 +612,14 @@ namespace Backend.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Meetups_SuggestedUserId",
-                table: "Meetups",
-                column: "SuggestedUserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Meetups_SwapId",
                 table: "Meetups",
                 column: "SwapId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Meetups_UserId",
+                table: "Meetups",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_BookId",
@@ -661,6 +679,11 @@ namespace Backend.Infrastructure.Migrations
                 column: "BlockedId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserBlockeds_BlockerId",
+                table: "UserBlockeds",
+                column: "BlockerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserBooks_BookId",
                 table: "UserBooks",
                 column: "BookId");
@@ -676,9 +699,19 @@ namespace Backend.Infrastructure.Migrations
                 column: "FollowedId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Wishlist_WishlistedByUsersId",
-                table: "Wishlist",
-                column: "WishlistedByUsersId");
+                name: "IX_UserFollowings_FollowerId",
+                table: "UserFollowings",
+                column: "FollowerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserWishlists_GeneralBookId",
+                table: "UserWishlists",
+                column: "GeneralBookId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserWishlists_UserId",
+                table: "UserWishlists",
+                column: "UserId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Feedbacks_SubSwaps_SubSwapId",
@@ -729,6 +762,10 @@ namespace Backend.Infrastructure.Migrations
                 table: "UserBooks");
 
             migrationBuilder.DropForeignKey(
+                name: "FK_SubSwaps_UserBooks_UserBookReadingId",
+                table: "SubSwaps");
+
+            migrationBuilder.DropForeignKey(
                 name: "FK_Swaps_SubSwaps_SubSwapAcceptingId",
                 table: "Swaps");
 
@@ -752,7 +789,7 @@ namespace Backend.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "BookFollowing");
+                name: "Bookmarks");
 
             migrationBuilder.DropTable(
                 name: "Feedbacks");
@@ -779,7 +816,7 @@ namespace Backend.Infrastructure.Migrations
                 name: "UserFollowings");
 
             migrationBuilder.DropTable(
-                name: "Wishlist");
+                name: "UserWishlists");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -791,13 +828,13 @@ namespace Backend.Infrastructure.Migrations
                 name: "GeneralBooks");
 
             migrationBuilder.DropTable(
+                name: "UserBooks");
+
+            migrationBuilder.DropTable(
                 name: "SubSwaps");
 
             migrationBuilder.DropTable(
                 name: "Swaps");
-
-            migrationBuilder.DropTable(
-                name: "UserBooks");
         }
     }
 }

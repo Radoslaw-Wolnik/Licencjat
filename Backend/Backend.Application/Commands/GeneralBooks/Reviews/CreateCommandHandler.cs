@@ -28,7 +28,7 @@ public class CreateReviewCommandHandler
             return Result.Fail(reviewResult.Errors);
         
         // saev via repository root
-        var persistanceResult = await _bookRepo.AddReviewAsync(reviewResult.Value, cancellationToken);
+        var persistanceResult = await _bookRepo.AddReviewAsync(request.BookId, reviewResult.Value, cancellationToken);
         if(persistanceResult.IsFailed)
             return Result.Fail(persistanceResult.Errors);
 
