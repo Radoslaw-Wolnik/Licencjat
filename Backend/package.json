@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "test:unit": "dotnet test Tests/Tests.Domain Tests/Tests.Application",
+    "test:integration": "dotnet test Tests/Tests.Infrastructure Tests/Tests.API",
+    "test:ci": "dotnet test --collect:\"XPlat Code Coverage\" --logger trx"
+  }
+}
