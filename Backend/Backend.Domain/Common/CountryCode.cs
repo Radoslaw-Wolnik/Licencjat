@@ -27,7 +27,7 @@ public sealed record CountryCode
         var normalized = code.Trim().ToUpper();
 
         if (string.IsNullOrWhiteSpace(normalized))
-            errors.Add(DomainErrorFactory.Invalid("CountryCode", "Country code was empty"));
+            return Result.Fail(DomainErrorFactory.Invalid("CountryCode", "Country code was empty"));
         
         if (!ValidationRegex.IsMatch(normalized))
             errors.Add(DomainErrorFactory.Invalid("Country Code", "Invalid country code format (must be 2-3 uppercase letters)"));

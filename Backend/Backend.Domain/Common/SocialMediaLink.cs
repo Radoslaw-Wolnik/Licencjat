@@ -6,14 +6,9 @@ namespace Backend.Domain.Common;
 
 public sealed record SocialMediaLink(Guid Id, SocialMediaPlatform Platform, string Url)
 {
-    public Guid Id { get; private set; } = Id;
-    public SocialMediaPlatform Platform { get; private set; } = Platform;
-    public string Url { get; private set; } = Url;
-
-
     public static Result<SocialMediaLink> Create(Guid id, SocialMediaPlatform platform, string url)
     {
-        if (Enum.IsDefined(typeof(SocialMediaPlatform), platform)) 
+        if (!Enum.IsDefined(typeof(SocialMediaPlatform), platform)) 
             return Result.Fail(DomainErrorFactory.Invalid("SocialMediaLink", "Platform not supported"));
         
         if (!Uri.TryCreate(url, UriKind.Absolute, out _))

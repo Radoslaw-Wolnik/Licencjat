@@ -6,13 +6,6 @@ namespace Backend.Domain.Common;
 
 public sealed record Bookmark(Guid Id, Guid UserBookId, BookmarkColours Colour, int Page, string? Description)
 {
-    public Guid Id { get; } = Id;
-    public Guid UserBookId { get; } = UserBookId;
-    public BookmarkColours Colour { get; private set; } = Colour;
-    public int Page { get; private set; } = Page;
-    public string? Description { get; private set; } = Description;
-
-
     public static Result<Bookmark> Create(Guid id, Guid userBookId, BookmarkColours colour, int page, string? description)
     {
         var errors = new List<IError>();

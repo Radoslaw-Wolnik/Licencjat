@@ -4,6 +4,6 @@ public enum SwapStatus
 {
     Requested, 
     Ongoing,
-    Finished,
+    Completed,
     Disputed
 }

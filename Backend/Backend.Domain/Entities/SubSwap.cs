@@ -59,7 +59,7 @@ public sealed class SubSwap
     {
         var errors = new List<IError>();
         
-        if (pageAt <= 0) errors.Add(DomainErrorFactory.Invalid("SubSwap", "Page must be above 0 or equal 0"));
+        if (pageAt < 0) errors.Add(DomainErrorFactory.Invalid("SubSwap", "Page must be above 0 or equal 0"));
         if (userId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("User", userId));
 
         return errors.Count != 0

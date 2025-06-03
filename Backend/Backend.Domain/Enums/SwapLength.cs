@@ -4,7 +4,7 @@ namespace Backend.Domain.Enums;
 public enum SwapLength
 {
     [Display(Name = "Just right")]
-    JustRigh,
+    JustRight,
     [Display(Name = "Too long")]
     TooLong,
     [Display(Name = "Too short")]

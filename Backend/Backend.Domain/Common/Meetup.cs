@@ -17,7 +17,7 @@ public sealed record Meetup(Guid Id, Guid SwapId, Guid SuggestedUserId, MeetupSt
         var errors = new List<IError>();
         
         if (suggestedUserId == Guid.Empty) errors.Add(DomainErrorFactory.NotFound("User", suggestedUserId));
-        if (!Enum.IsDefined(typeof(MeetupStatus), status)) errors.Add(DomainErrorFactory.Invalid("Swap", "Invalid satus"));
+        if (!Enum.IsDefined(typeof(MeetupStatus), status)) errors.Add(DomainErrorFactory.Invalid("Meetup", "Invalid satus"));
 
         if (errors.Count != 0) return Result.Fail<Meetup>(errors);
 

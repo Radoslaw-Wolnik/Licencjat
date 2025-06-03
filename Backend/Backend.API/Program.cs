@@ -131,6 +131,7 @@ builder.Services.AddScoped<ISignInService, SignInService>();
 
 // mappers
 builder.Services.AddAutoMapper(typeof(BookmarkProfile));
+/*
 builder.Services.AddAutoMapper(typeof(FeedbackProfile));
 builder.Services.AddAutoMapper(typeof(GeneralBookProfile));
 builder.Services.AddAutoMapper(typeof(IssueProfile));
@@ -141,6 +142,7 @@ builder.Services.AddAutoMapper(typeof(SubSwapProfile));
 builder.Services.AddAutoMapper(typeof(SwapProfile));
 builder.Services.AddAutoMapper(typeof(TimelineProfile));
 builder.Services.AddAutoMapper(typeof(UserBookProfile));
+*/
 builder.Services.AddAutoMapper(typeof(UserProfile)); // cfg => {cfg.AddExpressionMapping();},
 // the read models mappers
 builder.Services.AddAutoMapper(typeof(GeneralBookReadModelProfile));
