@@ -11,55 +11,79 @@ public class SwapReadModelProfile : Profile
     {
         // SwapListItem with full user mapping
         CreateMap<SwapEntity, SwapListItem>()
-            .ForMember(dest => dest.MyBookCoverUrl, opt => opt.MapFrom((src, _, _, ctx) =>
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("MyBookCoverUrl", opt => opt.MapFrom((src, ctx) =>
                 ctx.Items["UserId"].Equals(src.SubSwapRequesting.UserId)
                     ? src.SubSwapRequesting.UserBookReading!.CoverPhoto
                     : src.SubSwapAccepting.UserBookReading?.CoverPhoto))
-            .ForMember(dest => dest.TheirBookCoverUrl, opt => opt.MapFrom((src, _, _, ctx) =>
+            .ForCtorParam("TheirBookCoverUrl", opt => opt.MapFrom((src, ctx) =>
                 !ctx.Items["UserId"].Equals(src.SubSwapRequesting.UserId)
                     ? src.SubSwapRequesting.UserBookReading!.CoverPhoto
                     : src.SubSwapAccepting.UserBookReading?.CoverPhoto))
-            .ForMember(dest => dest.User, opt => opt.MapFrom((src, _, _, ctx) =>
-                ctx.Items["UserId"].Equals(src.SubSwapRequesting.UserId)
-                    ? src.SubSwapAccepting.User // Map entire user entity
-                    : src.SubSwapRequesting.User))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+            .ForCtorParam(
+        "User",
+        opt => opt.MapFrom((src, ctx) =>
+        {
+            // Decide which UserEntity to pick:
+            var chosenUserEntity = ctx.Items["UserId"].Equals(src.SubSwapRequesting.UserId)
+                ? src.SubSwapAccepting.User
+                : src.SubSwapRequesting.User;
+
+            // Now explicitly map that UserEntity → UserSmallReadModel:
+            // (requires that you have already registered a CreateMap<UserEntity, UserSmallReadModel>() somewhere)
+            return ctx.Mapper.Map<UserSmallReadModel>(chosenUserEntity);
+        }))
+            .ForCtorParam("Status", opt => opt.MapFrom(src => src.Status))
+            .ForCtorParam("CreatedAt", opt => opt.MapFrom(src => src.CreatedAt));
 
         // TimelineUpdate with user details
         CreateMap<TimelineEntity, TimelineUpdateReadModel>()
-            .ForMember(dest => dest.Comment, opt => opt.MapFrom(src => src.Description))
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
-            .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.User.ProfilePicture));
+            .ForCtorParam("Comment", opt => opt.MapFrom(src => src.Description))
+            .ForCtorParam("CreatedAt", opt => opt.MapFrom(src => src.CreatedAt))
+            .ForCtorParam("UserName", opt => opt.MapFrom(src => src.User.UserName))
+            .ForCtorParam("ProfilePictureUrl", opt => opt.MapFrom(src => src.User.ProfilePicture));
 
         // Main Swap → Details mapping
         CreateMap<SwapEntity, SwapDetailsReadModel>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.MySubSwap, opt => opt.MapFrom(src => src.SubSwapRequesting))
-            .ForMember(dest => dest.TheirSubSwap, opt => opt.MapFrom(src => src.SubSwapAccepting))
-            .ForMember(dest => dest.SocialMediaLinks, opt => opt.MapFrom((src, _, _, ctx) =>
-                ctx.Items.ContainsKey("CurrentUserId") && (Guid)ctx.Items["CurrentUserId"] == src.SubSwapRequesting.UserId
-                    ? src.SubSwapAccepting.User.SocialMediaLinks
-                    : src.SubSwapRequesting.User.SocialMediaLinks))
-            .ForMember(dest => dest.Updates, opt => opt.MapFrom((src, _, _, ctx) =>
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("MySubSwap", opt => opt.MapFrom(src => src.SubSwapRequesting))
+            .ForCtorParam("TheirSubSwap", opt => opt.MapFrom(src => src.SubSwapAccepting))
+            .ForCtorParam(
+                  "SocialMediaLinks",
+                  opt => opt.MapFrom((src, ctx) =>
+                  {
+                      var currentUserId = (Guid)ctx.Items["CurrentUserId"];
+                      bool isRequestingUser = currentUserId == src.SubSwapRequesting.UserId;
+
+                      // Pick the correct UserEntity
+                      var chosenUser = isRequestingUser
+                          ? src.SubSwapAccepting?.User
+                          : src.SubSwapRequesting?.User;
+
+                      // If chosenUser is null or has no SocialMediaLinks, return empty
+                      return chosenUser?.SocialMediaLinks 
+                             ?? Enumerable.Empty<SocialMediaLinkEntity>();
+                  })
+                )
+            .ForCtorParam("LastStatus", opt => opt.MapFrom(src => src.Status))
+            .ForCtorParam("Updates", opt => opt.MapFrom((src, ctx) =>
                 src.TimelineUpdates
                     .OrderByDescending(t => t.CreatedAt)
                     .Take((int)ctx.Items["MaxUpdates"])))
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-            .ForMember(dest => dest.LastStatus, opt => opt.MapFrom(src => src.Status));
+            .ForCtorParam("CreatedAt", opt => opt.MapFrom(src => src.CreatedAt));
+            
             
         // SubSwapEntity → SubSwapReadModel
         CreateMap<SubSwapEntity, SubSwapReadModel>()
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src =>
+            .ForCtorParam("Title", opt => opt.MapFrom(src =>
                 src.UserBookReading!.Book.Title))
-            .ForMember(dest => dest.CoverPhotoUrl, opt => opt.MapFrom(src =>
+            .ForCtorParam("CoverPhotoUrl", opt => opt.MapFrom(src =>
                 src.UserBookReading!.CoverPhoto))
-            .ForMember(dest => dest.PageCount, opt => opt.MapFrom(src =>
+            .ForCtorParam("PageCount", opt => opt.MapFrom(src =>
                 src.UserBookReading!.PageCount))
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src =>
+            .ForCtorParam("UserName", opt => opt.MapFrom(src =>
                 src.User.UserName ?? "__no__username__error__"))
-            .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src =>
+            .ForCtorParam("ProfilePictureUrl", opt => opt.MapFrom(src =>
                 src.User.ProfilePicture));
         
     }

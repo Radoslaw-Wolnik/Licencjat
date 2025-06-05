@@ -10,7 +10,7 @@ public class UserBookProfile : Profile
 {
     public UserBookProfile()
     {
-        
+
         // Entity -> Domain Mapping
         CreateMap<UserBookEntity, UserBook>(MemberList.None)
             .ConstructUsing((src, ctx) =>
@@ -30,7 +30,7 @@ public class UserBookProfile : Profile
                 }
                 if (photo == null)
                     throw new AutoMapperMappingException("Somehow photo was null but error was not thrown");
-                
+
                 // map SocialMediaLinks if EF actually loaded them:
                 var domainBookmarks = Enumerable.Empty<Bookmark>();
                 if (src.Bookmarks != null && src.Bookmarks.Count != 0)
@@ -39,23 +39,24 @@ public class UserBookProfile : Profile
                         .Map<IEnumerable<Bookmark>>(src.Bookmarks);
                 }
 
-                var bookResult =  UserBook.Reconstitute(
-                    id:            src.Id,
-                    ownerId:       src.UserId,
+                var bookResult = UserBook.Reconstitute(
+                    id: src.Id,
+                    ownerId: src.UserId,
                     generalBookId: src.BookId,
-                    status:        src.Status,
-                    state:         src.State,
-                    language:      languageCodeResult.Value,
-                    pageCount:     src.PageCount,
-                    coverPhoto:    photo,
-                    bookmarks:     domainBookmarks ?? []
+                    status: src.Status,
+                    state: src.State,
+                    language: languageCodeResult.Value,
+                    pageCount: src.PageCount,
+                    coverPhoto: photo,
+                    bookmarks: domainBookmarks ?? []
                 );
 
                 if (bookResult.IsFailed)
                     throw new AutoMapperMappingException($"Was unable to map the UserBookEntity to UserBook during domain class creation \n err: {bookResult.Errors}");
 
                 return bookResult.Value;
-            });
+            })
+            .ForAllMembers(opt => opt.Ignore());
         
         // Domain -> Entity Mapping
         CreateMap<UserBook, UserBookEntity>(MemberList.Source)
@@ -67,6 +68,6 @@ public class UserBookProfile : Profile
             .ForMember(dest => dest.Language,   opt => opt.MapFrom(src => src.Language.Code))
             .ForMember(dest => dest.PageCount,  opt => opt.MapFrom(src => src.PageCount))
             .ForMember(dest => dest.CoverPhoto, opt => opt.MapFrom(src => src.CoverPhoto.Link))
-            .ForMember(dest => dest.Bookmarks, opt => opt.Ignore());
+            .ForMember(dest => dest.Bookmarks, opt => opt.MapFrom(src => src.Bookmarks.ToList())); // not sure about too list
     }
 }

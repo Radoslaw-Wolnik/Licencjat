@@ -29,7 +29,7 @@ public class TimelineStatusToSwapStatusConverter
 
             case TimelineStatus.Finished:
             case TimelineStatus.Resolved:
-                return SwapStatus.Finished;
+                return SwapStatus.Completed;
 
             case TimelineStatus.Disputed:
                 return SwapStatus.Disputed;

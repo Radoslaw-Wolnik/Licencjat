@@ -15,7 +15,7 @@ namespace Backend.Infrastructure.Mapping
                 {
                     // map your two SubSwaps
                     var requesting = ctx.Mapper.Map<SubSwap>(src.SubSwapRequesting);
-                    var accepting  = ctx.Mapper.Map<SubSwap>(src.SubSwapAccepting);
+                    var accepting = ctx.Mapper.Map<SubSwap>(src.SubSwapAccepting);
 
                     // map any existing meetups & timeline updates
                     var meetups = src.Meetups?
@@ -28,7 +28,8 @@ namespace Backend.Infrastructure.Mapping
 
                     // Rehydrate your aggregate
                     return Swap.Reconstitute(src.Id, src.Status, requesting, accepting, meetups, timeline, src.CreatedAt);
-                });
+                })
+                .ForAllMembers(opt => opt.Ignore());
 
             // Domain → Entity
             CreateMap<Swap, SwapEntity>()

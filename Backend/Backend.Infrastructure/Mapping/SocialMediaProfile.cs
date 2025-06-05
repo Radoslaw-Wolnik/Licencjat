@@ -10,8 +10,17 @@ public class SocialMediaProfile : Profile
     public SocialMediaProfile()
     {
         CreateMap<SocialMediaLinkEntity, SocialMediaLink>()
-            .ConstructUsing(src => new SocialMediaLink(src.Id, src.Platform, src.Url))
-            .ReverseMap();
+            .ConstructUsing((src, _) =>
+            {
+            var result = SocialMediaLink.Create(src.Id, src.Platform, src.Url);
+                if (result.IsFailed)
+                    throw new AutoMapperMappingException($"Invalid social media link: {string.Join(", ", result.Errors)}");
+                return result.Value;
+            })
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<SocialMediaLink, SocialMediaLinkEntity>()
+            .ConstructUsing(src => new SocialMediaLinkEntity { Id = src.Id, Platform = src.Platform, Url = src.Url });
     }
 
 }

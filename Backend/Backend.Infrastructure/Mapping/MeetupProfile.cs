@@ -15,7 +15,7 @@ public class MeetupProfile : Profile
             {
                 var coordResult = LocationCoordinates.Create(src.Location_X, src.Location_Y);
                 if (coordResult.IsFailed)
-                    throw new AutoMapperMappingException($"Bad location: {src.Location_X} {src.Location_Y}");
+                    throw new AutoMapperMappingException($"Invalid coordinates: {src.Location_X} {src.Location_Y}");
                 
                 return new Meetup(
                     src.Id, 

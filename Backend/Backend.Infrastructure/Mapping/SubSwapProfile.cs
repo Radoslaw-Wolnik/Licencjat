@@ -39,7 +39,7 @@ public class SubSwapProfile : Profile
             .ForMember(dest => dest.Id,                 opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.UserId,             opt => opt.MapFrom(src => src.UserId))
             .ForMember(dest => dest.PageAt,             opt => opt.MapFrom(src => src.PageAt))
-            .ForMember(dest => dest.UserBookReadingId,  opt => opt.MapFrom(src => src.UserBookReading != null ? (Guid?) src.UserBookReading.OwnerId : null))
+            .ForMember(dest => dest.UserBookReadingId,  opt => opt.MapFrom(src => src.UserBookReading != null ? (Guid?) src.UserBookReading.Id : null))
             .ForMember(dest => dest.FeedbackId,         opt => opt.MapFrom(src => src.Feedback != null ? (Guid?) src.Feedback.Id : null))
             .ForMember(dest => dest.IssueId,            opt => opt.MapFrom(src => src.Issue != null ? (Guid?) src.Issue.Id : null));
     }

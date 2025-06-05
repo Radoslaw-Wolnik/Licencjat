@@ -74,7 +74,8 @@ public class UserProfile : Profile
                     ownedBooks:     userBooks,
                     socialMediaLinks: domainLinks
                 );
-            });
+            })
+            .ForAllMembers(opt => opt.Ignore());
         
         // Domain -> Entity Mapping
         CreateMap<User, UserEntity>(MemberList.Source)
@@ -86,7 +87,7 @@ public class UserProfile : Profile
             .ForMember(dest => dest.BirthDate,        opt => opt.MapFrom(src => src.BirthDate))
             .ForMember(dest => dest.City,             opt => opt.MapFrom(src => src.Location.City))
             .ForMember(dest => dest.Country,          opt => opt.MapFrom(src => src.Location.Country.Code))
-            .ForMember(dest => dest.ProfilePicture,   opt => opt.MapFrom(src => src.ProfilePicture))
+            .ForMember(dest => dest.ProfilePicture,   opt => opt.MapFrom(src => src.ProfilePicture != null ? src.ProfilePicture.Link : null))
             .ForMember(dest => dest.Bio,              opt => opt.MapFrom(src => src.Bio.Value))
             .ForMember(dest => dest.Reputation,       opt => opt.MapFrom(src => src.Reputation.Value))
             

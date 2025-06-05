@@ -14,66 +14,104 @@ public class UserBookReadModelProfile : Profile
     {
         // UserBookProjection (for ListAsync)
         CreateMap<UserBookEntity, UserBookProjection>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Book.Title))
-            .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Book.Author))
-            .ForMember(dest => dest.CoverPhoto, opt => opt.MapFrom(src => src.CoverPhoto))
-            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.User.Id))
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
-            .ForMember(dest => dest.ProfilePictureUrl, opt => opt.MapFrom(src => src.User.ProfilePicture))
-            .ForMember(dest => dest.UserReputation, opt => opt.MapFrom(src => src.User.Reputation));
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("UserId", opt => opt.MapFrom(src => src.User.Id))
+            .ForCtorParam("Title", opt => opt.MapFrom(src => src.Book.Title))
+            .ForCtorParam("Author", opt => opt.MapFrom(src => src.Book.Author))
+            .ForCtorParam("UserName", opt => opt.MapFrom(src => src.User.UserName))
+            .ForCtorParam("UserReputation", opt => opt.MapFrom(src => src.User.Reputation))
+            .ForCtorParam("ProfilePictureUrl", opt => opt.MapFrom(src => src.User.ProfilePicture))
+            .ForCtorParam("CoverPhoto", opt => opt.MapFrom(src => src.CoverPhoto));
 
-        // UserBookListItem
-        CreateMap<UserBookProjection, UserBookListItem>()
-            .ForMember(dest => dest.CoverUrl, opt => opt.MapFrom(src => src.CoverPhoto))
-            .ForMember(dest => dest.User, opt => opt.MapFrom(src => new UserSmallReadModel(
+        // mby needed the other way oround - from projection to the user book entity
+        /*
+        CreateMap<UserBookProjection, UserBookEntity>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.User.Id, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.Book.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.Book.Author, opt => opt.MapFrom(src => src.Author))
+            .ForMember(dest => dest.User.UserName, opt => opt.MapFrom(src => src.UserName))
+            .ForMember(dest => dest.User.Reputation, opt => opt.MapFrom(src => src.UserReputation))
+            .ForAllMembers(opt => opt.Ignore());
+        */
+
+        CreateMap<UserBookEntity, UserBookListItem>()
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("Title", opt => opt.MapFrom(src => src.Book.Title))
+            .ForCtorParam("Author", opt => opt.MapFrom(src => src.Book.Author))
+            .ForCtorParam("CoverUrl", opt => opt.MapFrom(src => src.CoverPhoto))
+            .ForCtorParam("User", opt => opt.MapFrom(src => new UserSmallReadModel(
                 src.UserId,
-                src.UserName,
-                src.ProfilePictureUrl, // Im not sure if needed in the projection
-                src.UserReputation,
+                src.User.UserName ?? "__no__username__error__",
+                src.User.ProfilePicture, // Im not sure if needed in the projection
+                src.User.Reputation,
                 null,
                 null,
                 null
-            )));
+            )))
+            .ForCtorParam("State", opt => opt.MapFrom(src => src.State))
+            .ForAllMembers(opt => opt.Ignore());
 
         // UserLibraryListItem
         CreateMap<UserBookEntity, UserLibraryListItem>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Book.Title))
-            .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Book.Author))
-            .ForMember(dest => dest.CoverUrl, opt => opt.MapFrom(src => src.CoverPhoto))
-            .ForMember(dest => dest.RatingAvg, opt => opt.MapFrom(src => 
-                src.Book.Reviews.Any() ? src.Book.Reviews.Average(r => r.Rating) : 0f));
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("Title", opt => opt.MapFrom(src => src.Book.Title))
+            .ForCtorParam("Author", opt => opt.MapFrom(src => src.Book.Author))
+            .ForCtorParam("CoverUrl", opt => opt.MapFrom(src => src.CoverPhoto))
+            .ForCtorParam("State", opt => opt.MapFrom(src => src.State))
+            .ForCtorParam("Status", opt => opt.MapFrom(src => src.Status))
+            .ForCtorParam("RatingAvg", opt => opt.MapFrom(src =>
+                src.Book.Reviews.Any() ? src.Book.Reviews.Average(r => r.Rating) : 7f));
 
         // UserBookDetailsReadModel
         CreateMap<UserBookEntity, UserBookDetailsReadModel>()
-            .ForMember(dest => dest.LanguageCode, opt => opt.MapFrom(src => src.Language))
-            .ForMember(dest => dest.CoverPhotoUrl, opt => opt.MapFrom(src => src.CoverPhoto));
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("Title", opt => opt.MapFrom(src => src.Book.Title))
+            .ForCtorParam("Author", opt => opt.MapFrom(src => src.Book.Author))
+            .ForCtorParam("LanguageCode", opt => opt.MapFrom(src => src.Language))
+            .ForCtorParam("PageCount", opt => opt.MapFrom(src => src.PageCount))
+            .ForCtorParam("CoverPhotoUrl", opt => opt.MapFrom(src => src.CoverPhoto))
+            .ForCtorParam("State", opt => opt.MapFrom(src => src.State))
+            .ForCtorParam("Status", opt => opt.MapFrom(src => src.Status))
+            .ForAllMembers(opt => opt.Ignore());
 
         // BookmarkReadModel
-        CreateMap<BookmarkEntity, BookmarkReadModel>();
+        CreateMap<BookmarkEntity, BookmarkReadModel>()
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("Page", opt => opt.MapFrom(src => src.Page))
+            .ForCtorParam("Colour", opt => opt.MapFrom(src => src.Colour))
+            .ForCtorParam("Description", opt => opt.MapFrom(src => src.Description))
+            .ForAllMembers(opt => opt.Ignore());
 
         // UserOwnBookProfileReadModel (complex mapping)
         CreateMap<UserBookEntity, UserOwnBookProfileReadModel>()
-            .ForMember(dest => dest.LanguageCode, opt => opt.MapFrom(src => src.Language))
-            .ForMember(dest => dest.CoverPhotoUrl, opt => opt.MapFrom(src => src.CoverPhoto))
-            .ForMember(dest => dest.UserReview, opt => opt.MapFrom(src => 
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("Title", opt => opt.MapFrom(src => src.Book.Title))
+            .ForCtorParam("Author", opt => opt.MapFrom(src => src.Book.Author))
+            .ForCtorParam("LanguageCode", opt => opt.MapFrom(src => src.Language))
+            .ForCtorParam("PageCount", opt => opt.MapFrom(src => src.PageCount))
+            .ForCtorParam("CoverPhotoUrl", opt => opt.MapFrom(src => src.CoverPhoto))
+            .ForCtorParam("State", opt => opt.MapFrom(src => src.State))
+            .ForCtorParam("Status", opt => opt.MapFrom(src => src.Status))
+            .ForCtorParam("UserReview", opt => opt.MapFrom(src =>
                 src.Book.Reviews.FirstOrDefault(r => r.UserId == src.UserId)))
-            .ForMember(dest => dest.Swaps, opt => opt.MapFrom(src => src.SubSwaps.Select(s => s.Swap)))
-            .ForMember(dest => dest.Bookmarks, opt => opt.MapFrom(src => 
+            .ForCtorParam("Swaps", opt => opt.MapFrom(src => src.SubSwaps.Select(s => s.Swap)))
+            .ForCtorParam("Bookmarks", opt => opt.MapFrom(src =>
                 src.Bookmarks.OrderByDescending(b => b.Page).Take(10)));
-        
+
         // SwapEntity to SwapBookListItem
         CreateMap<SwapEntity, SwapUserBookListItem>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Username, opt => opt.MapFrom((src, dest, _, ctx) => 
+            .ForCtorParam("Id", opt => opt.MapFrom(src => src.Id))
+            .ForCtorParam("Username", opt => opt.MapFrom((src, ctx) =>
                 ctx.Items["CurrentUserId"].Equals(src.SubSwapRequesting.UserId)
                     ? src.SubSwapAccepting.User.UserName
                     : src.SubSwapRequesting.User.UserName))
-            .ForMember(dest => dest.CoverPhotoUrl, opt => opt.MapFrom((src, dest, _, ctx) => 
+            .ForCtorParam("CreatedAt", opt => opt.MapFrom(src => src.CreatedAt))
+            .ForCtorParam("Status", opt => opt.MapFrom(src => src.Status))
+            .ForCtorParam("CoverPhotoUrl", opt => opt.MapFrom((src, ctx) =>
                 ctx.Items["CurrentUserId"].Equals(src.SubSwapRequesting.UserId)
-                    ? src.SubSwapAccepting.UserBookReading?.CoverPhoto
-                    : src.SubSwapRequesting.UserBookReading!.CoverPhoto))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+                    ? src.SubSwapRequesting.UserBookReading!.CoverPhoto
+                    : src.SubSwapAccepting.UserBookReading?.CoverPhoto))
+            .ForAllMembers(opt => opt.Ignore());
     }
 }

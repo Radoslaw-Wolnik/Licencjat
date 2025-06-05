@@ -26,12 +26,12 @@ public class GeneralBookProfile : Profile
                 var photoResult = Photo.Create(src.CoverPhoto);
                 if (photoResult.IsFailed)
                     throw new AutoMapperMappingException(
-                        $"Invalid reputation: {string.Join(", ", photoResult.Errors)}");
+                        $"Invalid photo: {string.Join(", ", photoResult.Errors)}");
 
                 // Handle calculating the total Review Score
                 var avgScore = src.Reviews.Count != 0
                     ? src.Reviews.Average(r => r.Rating)
-                    : 0.0f;
+                    : 7.0f; // mby nullable so thta we can write thta there is no avg yet
 
 
                 var ratingAvg = Rating.Create((float)avgScore).Value;
@@ -63,7 +63,8 @@ public class GeneralBookProfile : Profile
                     userBooks,
                     reviews
                 );
-            });
+            })
+            .ForAllMembers(opt => opt.Ignore());
 
         // Domain -> Entity Mapping
         CreateMap<GeneralBook, GeneralBookEntity>(MemberList.Source)
@@ -74,14 +75,17 @@ public class GeneralBookProfile : Profile
             .ForMember(dest => dest.Published, opt => opt.MapFrom(src => src.Published))
             .ForMember(dest => dest.Language, opt => opt.MapFrom(src => src.OriginalLanguage.Code))
             .ForMember(dest => dest.CoverPhoto, opt => opt.MapFrom(src => src.CoverPhoto.Link))
-            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres))
+            .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres.ToList()))
 
             // ignore the RatingAvg *source* property so MemberList.Source is happy
             .ForSourceMember(src => src.RatingAvg, opt => opt.DoNotValidate())
 
-            // explicitly IGNORE relations
+             .ForMember(dest => dest.Reviews, opt => opt.MapFrom(src => src.UserReviews.ToList()))
+
+            // explicitly IGNORE relations 
+            // - not sure about that becouse when we map from domain entity we usually have full entity
             .ForMember(dest => dest.UserBooks, opt => opt.Ignore())
-            .ForMember(dest => dest.Reviews, opt => opt.Ignore())
             .ForMember(dest => dest.WishlistedByUsers, opt => opt.Ignore());
+        
     }
 }
