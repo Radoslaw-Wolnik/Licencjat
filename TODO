@@ -1,0 +1,5 @@
+
+### Domain common/enums
+- languageCode and CountryCode should be an ENUM not a sealed record
+### INFRASTRUCTURE
+- email service (moq implementation)

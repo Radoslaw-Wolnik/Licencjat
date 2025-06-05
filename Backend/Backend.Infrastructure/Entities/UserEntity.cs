@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Backend.Domain.Enums;
 using Backend.Infrastructure.Data.Attributes;
 using Microsoft.AspNetCore.Identity;
 
@@ -17,11 +18,13 @@ public class UserEntity : IdentityUser<Guid>
     public DateOnly BirthDate { get; set; }
     [Required]
     public string City { get; set; } = null!; 
+    public string City { get; set; } = null!;
     [Required]
     public string Country { get; set; } = null!;
     public string? ProfilePicture { get; set; } = null;
     public string? Bio { get; set; } = null;
     
+
     [Column(TypeName = "decimal(4,3)")] // 4 digits total (e.g., 5.000)
     [Range(1.0, 5.0)]
     public float Reputation { get; set; } = 4.0f; // 1-5
@@ -32,6 +35,7 @@ public class UserEntity : IdentityUser<Guid>
     public virtual ICollection<SocialMediaLinkEntity> SocialMediaLinks { get; set; } = [];
 
     
+
     // Many to Many relations
     public virtual ICollection<UserWishlistEntity> Wishlist { get; set; } = [];
     public virtual ICollection<UserFollowingEntity> Following { get; set; } = [];

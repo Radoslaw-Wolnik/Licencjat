@@ -33,8 +33,10 @@ public class CreateSwapCommandHandler
         if (book == null)
             return Result.Fail(DomainErrorFactory.NotFound("UserBook", request.RequestedBookId));
 
+        var timeNow = DateOnly.FromDateTime(DateTime.UtcNow);
         // create swap
         var swapResult = Swap.Create(request.UserRequestingId, book, request.UserAcceptingId);
+        var swapResult = Swap.Create(request.UserRequestingId, book, request.UserAcceptingId, timeNow);
         if (swapResult.IsFailed)
             return Result.Fail(swapResult.Errors);
 
