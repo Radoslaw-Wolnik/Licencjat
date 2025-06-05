@@ -36,7 +36,7 @@ public class WriteUserRepository : IWriteUserRepository
 
     public async Task<Result> DeleteAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var existing = await _db.Users.FindAsync(userId);
+        var existing = await _db.Users.FindAsync(userId, cancellationToken);
         if (existing is null)
             return Result.Fail(DomainErrorFactory.NotFound("User", userId));
 
@@ -47,9 +47,24 @@ public class WriteUserRepository : IWriteUserRepository
     // Scalar-only update (profile, settings, etc.)
     public async Task<Result> UpdateProfileAsync(User domainUser, CancellationToken cancellationToken)
     {
-        // Attach stub entity with only key
-        var stub = new UserEntity { Id = domainUser.Id };
-        _db.Users.Attach(stub);
+        //Try to find a local (already-tracked) entity with the same Id
+        var localEntry = _db.ChangeTracker
+                                .Entries<UserEntity>()
+                                .FirstOrDefault(e => e.Entity.Id == domainUser.Id);
+
+        UserEntity stub;
+
+        if (localEntry != null)
+        {
+            // The context is already tracking that Id, so use the existing instance
+            stub = localEntry.Entity;
+        }
+        else
+        {
+            // Not tracked yet: create a "detached" stub and Attach it
+            stub = new UserEntity { Id = domainUser.Id };
+            _db.Users.Attach(stub);
+        }
 
         // Map scalar properties manually
         // stub.UserName = domainUser.Username;

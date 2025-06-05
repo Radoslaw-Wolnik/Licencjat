@@ -51,6 +51,6 @@ public class UserCommandProfile : Profile
         
         CreateMap<UserProfileReadModel, UserProfileFullResponse>()
         .ForMember(dest => dest.SocialMedias, 
-            opt => opt.MapFrom(src => src.SocialMsdias)); // i will need to fix s to e typo
+            opt => opt.MapFrom(src => src.SocialMedias));
     }
 }

@@ -15,7 +15,12 @@ public sealed class HttpUserContext : IUserContext
     }
 
     public Guid? UserId =>
-        _contextAccessor.HttpContext?.User.GetUserId(); // My extension method
+        _contextAccessor.HttpContext?.User.GetUserIdOrNull(); // this one doesnt throw error if the user is not uathenticated - safer aproach
+
+    public Guid GetRequiredUserId() =>
+        _contextAccessor.HttpContext?.User.GetUserId()
+        ?? throw new InvalidOperationException("No HTTP context or user not authenticated");
+
 
     public string? Username =>
         _contextAccessor.HttpContext?.User.Identity?.Name;

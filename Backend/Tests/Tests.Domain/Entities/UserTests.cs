@@ -21,14 +21,16 @@ public class UserTests
         // Arrange
         CountryCode Country = CountryCode.Create("GB").ValueOrDefault;
         Location _location = Location.Create("London", Country).ValueOrDefault;
+        var id = Guid.NewGuid();
 
         // Act
-        var result = User.Create(Email, Username, FirstName, LastName, _birthDate, _location);
+        var result = User.Create(id, Email, Username, FirstName, LastName, _birthDate, _location);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(new
         {
+            Id = id,
             Email,
             Username,
             FirstName,
@@ -45,9 +47,10 @@ public class UserTests
         CountryCode Country = CountryCode.Create("GB").ValueOrDefault;
         Location _location = Location.Create("London", Country).ValueOrDefault;
         var underageBirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-12));
+        var id = Guid.NewGuid();
         
         // Act
-        var result = User.Create(Email, Username, FirstName, LastName, underageBirthDate, _location);
+        var result = User.Create(id, Email, Username, FirstName, LastName, underageBirthDate, _location);
 
         // Assert
         result.IsFailed.Should().BeTrue();
@@ -97,8 +100,9 @@ public class UserTests
         // Arrange
         CountryCode Country = CountryCode.Create("GB").ValueOrDefault;
         Location _location = Location.Create("London", Country).ValueOrDefault;
+        var id = Guid.NewGuid();
 
-        var user = User.Create(Email, Username, FirstName, LastName, _birthDate, _location).Value;
+        var user = User.Create(id, Email, Username, FirstName, LastName, _birthDate, _location).Value;
         var newPhoto = new Photo("new-profile.jpg");
         
         // Act
@@ -114,8 +118,9 @@ public class UserTests
         // Arrange
         CountryCode Country = CountryCode.Create("GB").ValueOrDefault;
         Location _location = Location.Create("London", Country).ValueOrDefault;
+        var id = Guid.NewGuid();
 
-        var user = User.Create(Email, Username, FirstName, LastName, _birthDate, _location).Value;
+        var user = User.Create(id, Email, Username, FirstName, LastName, _birthDate, _location).Value;
         Location newLocation = Location.Create("Manchaster", Country).ValueOrDefault;
         
         // Act

@@ -25,6 +25,6 @@ public sealed record SwapUserBookListItem(
     Guid Id,
     string Username,
     DateOnly CreatedAt,
-    TimelineStatus Status,
+    SwapStatus Status,
     string CoverPhotoUrl
 );

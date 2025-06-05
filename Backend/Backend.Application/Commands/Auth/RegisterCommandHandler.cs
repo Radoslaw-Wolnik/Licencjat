@@ -33,17 +33,8 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         Console.WriteLine($"[Register command handler] Succesfully passed to the register command handler");
         Console.WriteLine($"Email passed: {command.Email}");
 
-        // Check uniqueness
-        var emailExists = await _userRead.ExistsAsync(u => u.Email == command.Email);
-        if (emailExists) return Result.Fail<Guid>(DomainErrorFactory.AlreadyExists("User", "User with this email adress already exsists"));
 
-        Console.WriteLine($"[Register command handler] checked the email for colisions");
-
-        var usernameExists = await _userRead.ExistsAsync(u => u.Username == command.Username);
-        if (usernameExists) return Result.Fail<Guid>(DomainErrorFactory.AlreadyExists("User", "User with this username already exsists"));
-
-        Console.WriteLine($"[Register command handler] checked the username for colisions");
-        
+        var userId = Guid.NewGuid();
 
         // Create domain entity
 
@@ -55,6 +46,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         if (loc.IsFailed) return Result.Fail<Guid>(DomainErrorFactory.Invalid("Location", "Given Location is invalid"));
 
         var userResult = User.Create(
+            userId,
             command.Email,
             command.Username,
             command.FirstName,
@@ -65,8 +57,10 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         if (userResult.IsFailed) return Result.Fail<Guid>(userResult.Errors);
         Console.WriteLine($"[Register command handler] Created domain entity");
 
+        // Check uniqueness
         // Create identity user (password handled here)
         var identityResult = await _identityService.CreateUserWithPasswordAsync(
+            userId,
             command.Email,
             command.Username,
             command.Password,

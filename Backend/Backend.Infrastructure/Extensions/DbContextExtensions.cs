@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Domain.Errors;
-using FluentResults;    // wherever your Error & Result live
+using FluentResults;
 
 namespace Backend.Infrastructure.Extensions
 {

@@ -182,6 +182,17 @@ docker-compose up --build --d
 curl https://localhost:5000/swagger
 ```
 
+### ✅ Testing <!-- ✔ -->
+```bash
+# for testing simply run dotnet test in the solution directory - Licencjat/Backend
+dotnet test
+
+# for integration tests cerate a volume for MinIO service
+docker volume create minio-test-data
+# and then run tests
+
+```
+
 ---
 
 ## 📂 Project Structure  
@@ -190,7 +201,7 @@ BookSwap/
 ├── Domain/               # Core business models
 ├── Application/          # Use cases & business logic
 ├── Infrastructure/       # Database & external services
-├── API/                  # Web API layer
+├── API/                  # Web API layer - Presentation
 └── Tests/                # Unit/integration tests
 ```
 
@@ -204,7 +215,7 @@ BookSwap/
    - [Presentation Layer](./Backend.API/README.md)
 
 2. View [Frontend Implementation](... coming soon) 
-3. Check [Figma Designs](https://figma.com/bookswap-designs)  
+3. Check [Figma Designs](https://www.figma.com/design/YhC9nWCKgyTJBFzh3iQDiC/main?node-id=22-14&t=SINBFbCife5wT7QQ-1)  
 
 This architecture ensures:  
 ✅ Decoupled business logic from implementation details  

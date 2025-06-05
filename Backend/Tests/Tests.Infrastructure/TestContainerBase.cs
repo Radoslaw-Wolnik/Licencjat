@@ -5,6 +5,7 @@ using Testcontainers.Minio;
 using Testcontainers.PostgreSql;
 
 using Backend.Infrastructure.Data;
+using DotNet.Testcontainers.Builders;
 
 namespace Tests.Infrastructure;
 
@@ -23,9 +24,22 @@ public abstract class TestContainersBase : IAsyncLifetime
             .WithPassword("postgres")
             .Build();
 
+        // _minioContainer = new MinioBuilder()
+        //    .WithImage("minio/minio")
+        //    .WithCommand("server /data")
+        //    .Build();
+
         _minioContainer = new MinioBuilder()
-            .WithImage("minio/minio")
-            .WithCommand("server /data")
+            .WithImage("minio/minio:latest") // minio:latest
+            .WithCommand("/dataminio")
+            .WithEnvironment("MINIO_ROOT_USER", "minioadmin")
+            .WithEnvironment("MINIO_ROOT_PASSWORD", "minioadmin")
+            .WithPortBinding(9000, true)
+            .WithVolumeMount("minio-test-data", "/dataminio") // docker volume create minio-test-data
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(9000) // Wait for port
+                .UntilMessageIsLogged("API:")) // Wait for startup log
+                // .WithStartupTimeout(TimeSpan.FromMinutes(2)))
             .Build();
     }
 
@@ -47,6 +61,9 @@ public abstract class TestContainersBase : IAsyncLifetime
             DbAdapter = DbAdapter.Postgres,
             SchemasToInclude = new[] { "public" }
         });
+
+        // for initialisation specyfic for the child tests
+        await OnTestInitializedAsync();
     }
 
     protected ApplicationDbContext CreateDbContext()
@@ -65,9 +82,11 @@ public abstract class TestContainersBase : IAsyncLifetime
     public async Task ResetDatabase()
     {
         if (_respawner == null) return;
-        
+
         var conn = new NpgsqlConnection(_dbContainer.GetConnectionString());
         await conn.OpenAsync();
         await _respawner.ResetAsync(conn);
     }
+    
+    protected virtual Task OnTestInitializedAsync() => Task.CompletedTask;
 }

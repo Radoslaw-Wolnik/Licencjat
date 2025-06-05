@@ -41,6 +41,7 @@ public sealed class User : Entity<Guid>
 
     // constructor for Create — empty collections
     private User(
+        Guid id,
         string email,
         string username,
         string firstName,
@@ -48,7 +49,7 @@ public sealed class User : Entity<Guid>
         DateOnly birthDate,
         Location location
     ) : this(
-        Guid.NewGuid(),
+        id,
         email, username, firstName, lastName, birthDate, location, 
         initialWishlist: Enumerable.Empty<Guid>(),
         initialFollowing: [],
@@ -92,6 +93,7 @@ public sealed class User : Entity<Guid>
     }
 
     public static Result<User> Create(
+        Guid id,
         string email,
         string username,
         string firstName,
@@ -108,6 +110,7 @@ public sealed class User : Entity<Guid>
         ? Result.Fail<User>(errors)
         : Result.Ok( 
             new User(
+                id,
                 email,
                 username,
                 firstName,
@@ -154,7 +157,7 @@ public sealed class User : Entity<Guid>
 
     // Core business methods
 
-    public Result AddToWishlist(Guid bookId) 
+    public Result AddToWishlist(Guid bookId)
         => _wishlist.Add(bookId);
 
     public Result RemoveFromWishlist(Guid bookId)

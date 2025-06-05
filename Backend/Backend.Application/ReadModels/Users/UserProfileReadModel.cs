@@ -5,8 +5,8 @@ namespace Backend.Application.ReadModels.Users;
 public sealed record UserProfileReadModel(
     Guid Id,
     string UserName,
-    float Reputation,
-    int SwapCount,
+    double Reputation,
+    int? SwapCount,
 
     string City,
     string Country,
@@ -14,7 +14,7 @@ public sealed record UserProfileReadModel(
     string? ProfilePictureUrl,
     string? Bio,
 
-    IReadOnlyCollection<SocialMediaLinkReadModel> SocialMsdias,
+    IReadOnlyCollection<SocialMediaLinkReadModel> SocialMedias,
     IReadOnlyCollection<BookCoverItemReadModel> Wishlist,
     IReadOnlyCollection<BookCoverItemReadModel> Reading,
     IReadOnlyCollection<BookCoverItemReadModel> UserLibrary

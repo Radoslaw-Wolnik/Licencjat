@@ -5,6 +5,8 @@ using Minio.DataModel.Args;
 using Microsoft.Extensions.Options;
 using Backend.Infrastructure.Configuration;
 using Backend.Domain.Enums;
+using Minio.DataModel;
+using System.Reactive.Linq;
 
 namespace Backend.Infrastructure.Services;
 
@@ -12,7 +14,7 @@ public class MinioImageStorageService : IImageStorageService
 {
     private readonly IMinioClient _client;
     private readonly MinioSettings _settings;
-    
+
     public MinioImageStorageService(IMinioClient client, IOptions<MinioSettings> options)
     {
         _client   = client;
@@ -22,10 +24,10 @@ public class MinioImageStorageService : IImageStorageService
     public string GenerateObjectKey(StorageDestination dest, Guid id, string originalName)
     {
         if (dest == StorageDestination.UserBooks) throw new Exception("Used wrong function! Use GenerateUserBookObjectKey ");
-        
+
         var ext = Path.GetExtension(originalName);
         if (string.IsNullOrWhiteSpace(ext)) ext = ".jpg";
-        
+
         var fileName = $"{Guid.NewGuid()}{ext}";
         return $"{dest.ToPath()}/{id}/{fileName}";
     }
@@ -39,22 +41,24 @@ public class MinioImageStorageService : IImageStorageService
         return $"{StorageDestination.UserBooks.ToPath()}/{userId}/{userBookId}/{fileName}";
     }
     
-    public async Task<string> GenerateUploadUrlAsync(string objectKey)
+    public async Task<string> GenerateUploadUrlAsync(string objectKey, string? bucketName = null)
     {
+        bucketName ??= _settings.BucketName;
+
         var presignedUrl = await _client.PresignedPutObjectAsync(
             new PresignedPutObjectArgs()
-                .WithBucket(_settings.BucketName)
+                .WithBucket(bucketName) // or here bucketName ??_settings.BucketName;
                 .WithObject(objectKey)
                 .WithExpiry(_settings.ExpiryMinutes * 60));
         
         return presignedUrl;
     }
     
-    public async Task<string> GenerateSignedDownloadUrlAsync(string objectKey, TimeSpan expiration)
+    public async Task<string> GenerateSignedDownloadUrlAsync(string objectKey, TimeSpan expiration, string? bucketName = null)
     {
         var presignedUrl = await _client.PresignedGetObjectAsync(
             new PresignedGetObjectArgs()
-                .WithBucket(_settings.BucketName)
+                .WithBucket(bucketName??_settings.BucketName)
                 .WithObject(objectKey)
                 .WithExpiry((int)expiration.TotalSeconds));
         return presignedUrl;
@@ -72,33 +76,39 @@ public class MinioImageStorageService : IImageStorageService
 
     public async Task<bool> ExistsAsync(
         string objectKey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? bucketName = null)
     {
+        bucketName ??= _settings.BucketName;
+
         try
         {
-            await _client.StatObjectAsync(
-                new StatObjectArgs()
-                    .WithBucket(_settings.BucketName)
-                    .WithObject(objectKey),
-                cancellationToken);
-            return true;    // object was found
-        }
-        catch (ObjectNotFoundException)
-        {
-            return false;   // 404 from MinIO
+            // Use ListObjects to verify existence
+            var listArgs = new ListObjectsArgs()
+                .WithBucket(bucketName)
+                .WithPrefix(objectKey)
+                .WithRecursive(false);
+
+            var found = false;
+            var observable = _client.ListObjectsAsync(listArgs, cancellationToken);
+            
+            await observable.ForEachAsync(item => 
+            {
+                if (item.Key == objectKey) found = true;
+            }, cancellationToken);
+
+            return found;
         }
         catch (MinioException ex)
         {
-            // some other MinIO error (e.g. connectivity)
-            // you can choose to rethrow or wrap in your own exception
             throw new Exception(
                 $"Could not check existence of '{objectKey}': {ex.Message}", ex);
         }
     }
     
-    public async Task DeleteAsync(string objectKey, CancellationToken ct = default)
+    public async Task DeleteAsync(string objectKey, CancellationToken ct = default, string? bucket = null)
     {
-        var bucket = _settings.BucketName;
+        bucket ??= _settings.BucketName;
         // delete the main object
         await _client.RemoveObjectAsync(
             new RemoveObjectArgs()

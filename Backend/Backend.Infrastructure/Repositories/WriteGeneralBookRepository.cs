@@ -38,7 +38,7 @@ public class WriteGeneralBookRepository : IWriteGeneralBookRepository
     public async Task<Result> DeleteAsync(Guid bookId, CancellationToken cancellationToken)
     {
         // var existing = await _context.GeneralBooks.FindAsync(bookId, cancellationToken);
-        var existing = await _context.GeneralBooks.FindAsync([bookId], cancellationToken);
+        var existing = await _context.GeneralBooks.FindAsync(bookId, cancellationToken);
         if (existing is null)
             return Result.Fail(DomainErrorFactory.NotFound("GeneralBook", bookId));
             
@@ -47,11 +47,27 @@ public class WriteGeneralBookRepository : IWriteGeneralBookRepository
         return await _context.SaveChangesWithResultAsync(cancellationToken, "Failed to delete book");
     }
 
-    // 1) Scalar-only update (no touching genres, copies, reviews)
+    // Scalar-only update (no touching genres, copies, reviews)
     public async Task<Result> UpdateScalarsAsync(GeneralBook book, CancellationToken cancellationToken)
     {
-        var stub = new GeneralBookEntity { Id = book.Id };
-        _context.GeneralBooks.Attach(stub);
+        //Try to find a local (already-tracked) entity with the same Id
+        var localEntry = _context.ChangeTracker
+                                .Entries<GeneralBookEntity>()
+                                .FirstOrDefault(e => e.Entity.Id == book.Id);
+
+        GeneralBookEntity stub;
+
+        if (localEntry != null)
+        {
+            // The context is already tracking that Id, so use the existing instance
+            stub = localEntry.Entity;
+        }
+        else
+        {
+            // Not tracked yet: create a "detached" stub and Attach it
+            stub = new GeneralBookEntity { Id = book.Id };
+            _context.GeneralBooks.Attach(stub);
+        }
 
         stub.Title = book.Title;
         stub.Author = book.Author;
@@ -88,16 +104,31 @@ public class WriteGeneralBookRepository : IWriteGeneralBookRepository
     public async Task<Result> UpdateReviewAsync(Review review, CancellationToken cancellationToken)
     {
         var exists = await _context.Reviews.AnyAsync(r => r.Id == review.Id, cancellationToken);
-            if (!exists)
-                return Result.Fail(DomainErrorFactory.NotFound("Review", review.Id));
+        if (!exists)
+            return Result.Fail(DomainErrorFactory.NotFound("Review", review.Id));
+        
+        var localEntry = _context.ChangeTracker
+                                .Entries<ReviewEntity>()
+                                .FirstOrDefault(e => e.Entity.Id == review.Id);
 
-        // attach stub for review
-        var revEntity = new ReviewEntity { Id = review.Id };
-        _context.Reviews.Attach(revEntity);
-        revEntity.Rating  = review.Rating;
-        revEntity.Comment = review.Comment;
+        ReviewEntity stub;
 
-        var entry = _context.Entry(revEntity);
+        if (localEntry != null)
+        {
+            // The context is already tracking that Id, so use the existing instance
+            stub = localEntry.Entity;
+        }
+        else
+        {
+            // Not tracked yet: create a "detached" stub and Attach it
+            stub = new ReviewEntity { Id = review.Id };
+            _context.Reviews.Attach(stub);
+        }
+
+        stub.Rating  = review.Rating;
+        stub.Comment = review.Comment;
+
+        var entry = _context.Entry(stub);
         entry.Property(e => e.Rating).IsModified  = true;
         entry.Property(e => e.Comment).IsModified = true;
 

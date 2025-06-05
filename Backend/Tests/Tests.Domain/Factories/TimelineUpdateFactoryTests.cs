@@ -172,7 +172,7 @@ public class TimelineUpdateFactoryTests
         // Assert
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => 
-            e.Message.Contains("Description too long"));
+            e.Message.Contains("Invalid description too long for timelineupdate"));
     }
 
     [Fact]

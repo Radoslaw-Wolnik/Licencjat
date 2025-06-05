@@ -1,4 +1,3 @@
-// Backend.Infrastructure/Data/ApplicationDbContext.cs
 using Backend.Infrastructure.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

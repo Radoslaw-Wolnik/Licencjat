@@ -200,15 +200,30 @@ public class WriteSwapRepository : IWriteSwapRepository
         Meetup updated,
         CancellationToken cancellationToken
     ) {
-        // attach stub for meetup
-        var meetupEntity = new MeetupEntity { Id = updated.Id };
-        _db.Meetups.Attach(meetupEntity);
+        //Try to find a local (already-tracked) entity with the same Id
+        var localEntry = _db.ChangeTracker
+                                .Entries<MeetupEntity>()
+                                .FirstOrDefault(e => e.Entity.Id == updated.Id);
+
+        MeetupEntity stub;
+
+        if (localEntry != null)
+        {
+            // The context is already tracking that Id, so use the existing instance
+            stub = localEntry.Entity;
+        }
+        else
+        {
+            // Not tracked yet: create a "detached" stub and Attach it
+            stub = new MeetupEntity { Id = updated.Id };
+            _db.Meetups.Attach(stub);
+        }
         
-        meetupEntity.Status = updated.Status;
-        meetupEntity.Location_X = (float)updated.Location.Latitude;
-        meetupEntity.Location_Y = (float)updated.Location.Longitude;
+        stub.Status = updated.Status;
+        stub.Location_X = (float)updated.Location.Latitude;
+        stub.Location_Y = (float)updated.Location.Longitude;
         
-        var entry = _db.Entry(meetupEntity);
+        var entry = _db.Entry(stub);
         entry.Property(e => e.Status).IsModified = true;
         entry.Property(e => e.Location_X).IsModified  = true;
         entry.Property(e => e.Location_Y).IsModified = true;

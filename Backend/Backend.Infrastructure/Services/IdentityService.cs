@@ -16,7 +16,8 @@ public sealed class IdentityService : IIdentityService
         _userManager = userManager;
     }
     
-    public async Task<Result> CreateUserWithPasswordAsync(
+    public async Task<Result<Guid>> CreateUserWithPasswordAsync(
+        Guid id,
         string email, 
         string username, 
         string password,
@@ -26,12 +27,22 @@ public sealed class IdentityService : IIdentityService
         string country,
         DateOnly birthdate)
     {
-        var user = new UserEntity { Email = email, UserName = username, FirstName = firstname, LastName = lastname, City = city, Country = country, BirthDate = birthdate};
+        var user = new UserEntity { Id = id, Email = email, UserName = username, FirstName = firstname, LastName = lastname, City = city, Country = country, BirthDate = birthdate, Reputation = 4.0f};
         var result = await _userManager.CreateAsync(user, password);
 
-        return result.Succeeded
-            ? Result.Ok()
-            : Result.Fail(result.Errors
-                .Select(e => new DomainError(e.Code, e.Description, ErrorType.Validation)));
+        if (result.Succeeded)
+            return Result.Ok(user.Id);
+
+        // Convert IdentityErrors to domain errors
+        var errors = result.Errors.Select(e => 
+            e.Code switch
+            {
+                "DuplicateUserName" => DomainErrorFactory.AlreadyExists("User.UsernameExists", e.Description),
+                "DuplicateEmail" => DomainErrorFactory.AlreadyExists("User.EmailExists", e.Description),
+                "PasswordTooShort" => DomainErrorFactory.Invalid("User.PasswordTooShort", e.Description),
+                _ => DomainErrorFactory.Invalid(e.Code, e.Description)
+            });
+        
+        return Result.Fail(errors);
     }
 }

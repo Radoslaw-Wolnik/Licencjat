@@ -19,7 +19,7 @@ public class GeneralBookEntity
     public string CoverPhoto { get; set; } = null!;
 
 
-    public virtual ICollection<BookGenre> Genres { get; set; } = [];
+    public virtual IList<BookGenre> Genres { get; set; } = [];
 
     // references
     public virtual ICollection<UserBookEntity> UserBooks { get; set; } = [];

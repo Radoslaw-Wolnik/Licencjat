@@ -4,7 +4,8 @@ namespace Backend.Application.Interfaces;
 
 public interface IIdentityService
 {
-    Task<Result> CreateUserWithPasswordAsync(
+    Task<Result<Guid>> CreateUserWithPasswordAsync(
+        Guid id,
         string email, 
         string username, 
         string password, 
