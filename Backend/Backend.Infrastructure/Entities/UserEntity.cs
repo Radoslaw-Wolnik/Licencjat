@@ -17,13 +17,11 @@ public class UserEntity : IdentityUser<Guid>
     [Required]
     public DateOnly BirthDate { get; set; }
     [Required]
-    public string City { get; set; } = null!; 
     public string City { get; set; } = null!;
     [Required]
     public string Country { get; set; } = null!;
     public string? ProfilePicture { get; set; } = null;
     public string? Bio { get; set; } = null;
-    
 
     [Column(TypeName = "decimal(4,3)")] // 4 digits total (e.g., 5.000)
     [Range(1.0, 5.0)]
@@ -34,7 +32,6 @@ public class UserEntity : IdentityUser<Guid>
     public virtual ICollection<ReviewEntity> Reviews { get; set; } = [];
     public virtual ICollection<SocialMediaLinkEntity> SocialMediaLinks { get; set; } = [];
 
-    
 
     // Many to Many relations
     public virtual ICollection<UserWishlistEntity> Wishlist { get; set; } = [];
