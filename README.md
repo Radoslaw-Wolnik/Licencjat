@@ -24,6 +24,7 @@ flowchart TD
     subgraph Application
     CQRS[CQRS Pattern]
     UseCases[Use Cases]
+    Interfaces[Service Interfaces]
     end
     
     subgraph Domain
@@ -33,6 +34,7 @@ flowchart TD
     
     subgraph Infrastructure
     DB[(Database)]
+    Internal[Internal Services]
     External[External Services]
     end
     
