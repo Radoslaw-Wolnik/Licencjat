@@ -1,6 +1,6 @@
 # BookSwap - Community Book Exchange Platform 🌱📚  
 
-![BookSwap Screenshot](Docs/swap%20details.png)  
+![BookSwap Screenshot](Figma/swap%20details.png)  
 *A community-powered platform for sharing books instead of buying new ones*
 
 ## 🌟 Inspiration  
@@ -24,7 +24,7 @@ flowchart TD
     subgraph Application
     CQRS[CQRS Pattern]
     UseCases[Use Cases]
-    Interfaces[Service Interfaces]
+    Interfaces[Service Definitions]
     end
     
     subgraph Domain
