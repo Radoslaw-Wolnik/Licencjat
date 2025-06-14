@@ -170,29 +170,33 @@ public async Task<Result> CreateUserWithPasswordAsync(...)
 ---
 
 ## 🗄️ Enhanced Database Schema
-```mermaid
+``` mermaid
 erDiagram
+    %% USER RELATED
     USER ||--o{ USER_BOOK : owns
     USER ||--o{ SOCIAL_MEDIA : has
     USER ||--o{ WISHLIST_ITEM : has
     USER ||--|{ USER_FOLLOWING : follows
     USER ||--|{ USER_BLOCKED : blocks
-    
+
+    %% BOOK RELATED
     BOOK ||--o{ USER_BOOK : "catalog entry"
     BOOK ||--o{ REVIEW : has
     BOOK ||--o{ WISHLIST_ITEM : in
-    
+
+    %% USER_BOOK RELATIONS
     USER_BOOK ||--o{ BOOKMARK : contains
     USER_BOOK ||--o{ SUB_SWAP : "reading in"
-    
+
+    %% SWAP STRUCTURE
     SWAP ||--|{ SUB_SWAP : contains
     SWAP ||--|{ MEETUP : has
     SWAP ||--|{ TIMELINE : has
-    
+
+    %% SUB_SWAP DETAILS
     SUB_SWAP ||--|{ FEEDBACK : has
     SUB_SWAP ||--|{ ISSUE : has
 ```
-
 
 ---
 
